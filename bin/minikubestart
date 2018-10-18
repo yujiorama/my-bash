@@ -1,0 +1,21 @@
+#!/bin/bash
+minikube start \
+    --profile minikube \
+    --vm-driver virtualbox \
+    --cpus 4 \
+    --disk-size 50g \
+    --memory $(( 1024 * 8 )) \
+    --docker-opt "bip=192.168.200.5/24" \
+    --docker-opt "fixed-cidr=192.168.200.5/25" \
+    --host-only-cidr "192.168.199.1/24" \
+     --container-runtime containerd \
+     --network-plugin cni
+if [[ $? -ne 0 ]]; then
+    exit 1
+fi
+echo "sudo sysctl -w vm.max_map_count=262144" | \
+    ssh -t \
+        -i ~/.minikube/machines/minikube/id_rsa \
+        -o UpdateHostKeys=no \
+        -o StrictHostKeyChecking=no \
+        docker@$(minikube ip)

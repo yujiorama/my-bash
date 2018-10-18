@@ -1,0 +1,78 @@
+#!/bin/bash
+
+export PANDOC_DIR="${HOME}/.pandoc"
+export PATH="${PANDOC_DIR}:${PATH}"
+
+case "$(uname -a)" in
+	MINGW*)
+		PYPANDOC_PANDOC="$(which pandoc.exe 2>/dev/null)"
+		PYPANDOC_PANDOC="$(cygpath -wa ${PYPANDOC_PANDOC})";;
+	*)
+		PYPANDOC_PANDOC="$(which pandoc 2>/dev/null)";;
+esac
+export PYPANDOC_PANDOC
+
+PYTHON=py
+if which py >/dev/null 2>&1; then
+	PYTHON="py -3"
+	py -3 -m venv ${HOME}/.venv/md2rst
+elif which python3 >/dev/null 2>&1; then
+	PYTHON=python3
+else
+	echo "py or python3 not found"
+	exit 1
+fi
+$PYTHON -m venv ${HOME}/.venv/md2rst
+[[ -e ${HOME}/.venv/md2rst/Scripts ]] && source ${HOME}/.venv/md2rst/Scripts/activate
+[[ -e ${HOME}/.venv/md2rst/bin ]]     && source ${HOME}/.venv/md2rst/bin/activate
+pip install pypandoc
+
+cat - <<SCRIPT | ${PYTHON} - "$1" "$2"
+import sys
+import os
+import shutil
+import tempfile
+from pathlib import Path
+import subprocess
+import pypandoc
+try:
+	pypandoc.get_pandoc_version()
+except OSError:
+	try:
+		def _handle_linux(filename, targetfolder):
+			print('* Unpacking %s to tempfolder...' % (filename))
+			tempfolder = tempfile.mkdtemp()
+			cur_wd = os.getcwd()
+			filename = Path(filename).resolve()
+			try:
+				os.chdir(tempfolder)
+				cmd = ['ar', 'x', filename]
+				# if only 3.5 is supported, should be run(..., check=True)
+				subprocess.check_call(cmd)
+				datafile = [x.name for x in Path().glob('*tar*') if x.name.startswith('data.tar')]
+				cmd = ['tar', 'xf', datafile[0]]
+				subprocess.check_call(cmd)
+				# pandoc and pandoc-citeproc are in ./usr/bin subfolder
+				for exe in ['pandoc', 'pandoc-citeproc']:
+					src = Path(tempfolder, 'usr', 'bin', exe)
+					dst = Path(targetfolder, exe)
+					print('* Copying %s to %s ...' % (exe, targetfolder))
+					shutil.copyfile(src, dst)
+					pypandoc.pandoc_download._make_executable(dst)
+				src = Path(tempfolder, 'usr', 'share', 'doc', 'pandoc', 'copyright')
+				dst = Path(targetfolder, 'copyright.pandoc')
+				print('* Copying copyright to %s ...' % (targetfolder))
+				shutil.copyfile(src, dst)
+			finally:
+				os.chdir(cur_wd)
+				shutil.rmtree(tempfolder)
+		pypandoc.pandoc_download._handle_linux = _handle_linux
+		pypandoc.pandoc_download.download_pandoc(version='2.2.3.2', targetfolder=os.getenv('PANDOC_DIR'))
+	except OSError:
+		sys.exit(1)
+
+if len(sys.argv) > 2 and sys.argv[2] != "":
+	pypandoc.convert_file(sys.argv[1], 'rst', outputfile=sys.argv[2], format='markdown_github', encoding='utf-8')
+else:
+	print(pypandoc.convert_file(sys.argv[1], 'rst', format='markdown_github', encoding='utf-8'))
+SCRIPT
