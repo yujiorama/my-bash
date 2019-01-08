@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <key name="Software">
 	<key name="ConEmu">
-		<key name=".Vanilla" modified="2018-10-18 09:24:34" build="180626">
+		<key name=".Vanilla" modified="2019-01-08 14:44:53" build="180626">
 			<value name="StartType" type="hex" data="02"/>
 			<value name="CmdLine" type="string" data=""/>
 			<value name="StartTasksFile" type="string" data=""/>
@@ -256,12 +256,6 @@
 				<value name="Multi.NewWndConfirm" type="dword" data="00000000"/>
 				<value name="CheckUpdates" type="dword" data="00105b55"/>
 			</key>
-			<value name="CmdLineHistory" type="multi">
-				<line data="{Shells::PowerShell (Admin)}"/>
-				<line data="{Bash::Git bash}"/>
-				<line data="{Shells::PowerShell}"/>
-				<line data="{Bash::Msys2-64}"/>
-			</value>
 			<value name="StartCreateDelay" type="ulong" data="100"/>
 			<value name="ExtendFonts" type="hex" data="00"/>
 			<value name="ExtendFontNormalIdx" type="hex" data="01"/>
@@ -359,11 +353,11 @@
 			<value name="Cascaded" type="hex" data="01"/>
 			<value name="IntegralSize" type="hex" data="00"/>
 			<value name="WindowMode" type="dword" data="0000051f"/>
-			<value name="ConWnd X" type="long" data="2523"/>
-			<value name="ConWnd Y" type="long" data="210"/>
-			<value name="LastMonitor" type="string" data="1920,0,3840,1200"/>
-			<value name="ConWnd Width" type="dword" data="000000b9"/>
-			<value name="ConWnd Height" type="dword" data="0000003d"/>
+			<value name="ConWnd X" type="long" data="383"/>
+			<value name="ConWnd Y" type="long" data="21"/>
+			<value name="LastMonitor" type="string" data="0,0,1920,1040"/>
+			<value name="ConWnd Width" type="dword" data="000000d8"/>
+			<value name="ConWnd Height" type="dword" data="0000003e"/>
 			<value name="16bit Height" type="ulong" data="0"/>
 			<value name="Restore2ActiveMon" type="hex" data="01"/>
 			<value name="QuakeAnimation" type="ulong" data="300"/>
@@ -601,8 +595,8 @@
 			<value name="Update.DownloadPath" type="string" data="%TEMP%\ConEmu"/>
 			<value name="Update.LeavePackages" type="hex" data="00"/>
 			<value name="Update.PostUpdateCmd" type="string" data="echo Last successful update&gt;ConEmuUpdate.info &amp;&amp; date /t&gt;&gt;ConEmuUpdate.info &amp;&amp; time /t&gt;&gt;ConEmuUpdate.info"/>
-			<key name="Tasks" modified="2018-07-10 08:40:59" build="180617">
-				<value name="Count" type="long" data="20"/>
+			<key name="Tasks" modified="2018-12-18 15:05:37" build="180626">
+				<value name="Count" type="long" data="19"/>
 				<key name="Task1" modified="2018-02-07 14:35:00" build="180114">
 					<value name="Name" type="string" data="{Shells::cmd}"/>
 					<value name="Flags" type="dword" data="00000000"/>
@@ -716,16 +710,7 @@
 					<value name="Active" type="long" data="0"/>
 					<value name="Count" type="long" data="1"/>
 				</key>
-				<key name="Task13" modified="2018-07-10 08:40:59" build="180617">
-					<value name="Name" type="string" data="{Bash::Msys2-64}"/>
-					<value name="Flags" type="dword" data="00000004"/>
-					<value name="Hotkey" type="dword" data="00000000"/>
-					<value name="GuiArgs" type="string" data=""/>
-					<value name="Cmd1" type="string" data='set CHERE_INVOKING=1 &amp; set "PATH=%ConEmuDrive%\msys64\usr\bin;%PATH%" &amp; %ConEmuBaseDirShort%\conemu-msys2-64.exe -new_console:p %ConEmuDrive%\msys64\usr\bin\bash.exe --login -i -new_console:C:"%ConEmuDrive%\msys64\msys2.ico"'/>
-					<value name="Active" type="long" data="0"/>
-					<value name="Count" type="long" data="1"/>
-				</key>
-				<key name="Task14" modified="2018-07-10 08:40:59" build="180617">
+				<key name="Task13" modified="2018-12-18 15:05:37" build="180626">
 					<value name="Name" type="string" data="{Helper::Show ANSI colors}"/>
 					<value name="Flags" type="dword" data="00000004"/>
 					<value name="Hotkey" type="dword" data="00000000"/>
@@ -734,7 +719,7 @@
 					<value name="Active" type="long" data="0"/>
 					<value name="Count" type="long" data="1"/>
 				</key>
-				<key name="Task15" modified="2018-07-10 08:40:59" build="180617">
+				<key name="Task14" modified="2018-12-18 15:05:37" build="180626">
 					<value name="Name" type="string" data="{Tools::Chocolatey (Admin)}"/>
 					<value name="Flags" type="dword" data="00000004"/>
 					<value name="Hotkey" type="dword" data="00000000"/>
@@ -743,7 +728,7 @@
 					<value name="Active" type="long" data="0"/>
 					<value name="Count" type="long" data="1"/>
 				</key>
-				<key name="Task16" modified="2018-07-10 08:40:59" build="180617">
+				<key name="Task15" modified="2018-12-18 15:05:37" build="180626">
 					<value name="Name" type="string" data="{Putty}"/>
 					<value name="Flags" type="dword" data="00000004"/>
 					<value name="Hotkey" type="dword" data="00000000"/>
@@ -752,7 +737,7 @@
 					<value name="Active" type="long" data="0"/>
 					<value name="Count" type="long" data="1"/>
 				</key>
-				<key name="Task17" modified="2018-07-10 08:40:59" build="180617">
+				<key name="Task16" modified="2018-12-18 15:05:37" build="180626">
 					<value name="Name" type="string" data="{SDK::VS 14.0 x86 tools prompt}"/>
 					<value name="Flags" type="dword" data="00000004"/>
 					<value name="Hotkey" type="dword" data="00000000"/>
@@ -761,16 +746,16 @@
 					<value name="Active" type="long" data="0"/>
 					<value name="Count" type="long" data="1"/>
 				</key>
-				<key name="Task18" modified="2018-07-10 08:40:59" build="180617">
+				<key name="Task17" modified="2018-12-18 15:05:37" build="180626">
 					<value name="Name" type="string" data="{SDK::VS 15.0 x86 tools prompt}"/>
 					<value name="Flags" type="dword" data="00000004"/>
 					<value name="Hotkey" type="dword" data="00000000"/>
 					<value name="GuiArgs" type="string" data=""/>
+					<value name="Cmd1" type="string" data='cmd /k ""%ConEmuDrive%\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat"" x86 -new_console:t:"VS 15.0" -new_console:C:"%CommonProgramFiles(x86)%\microsoft shared\MSEnv\VSFileHandler.dll,38"'/>
 					<value name="Active" type="long" data="0"/>
 					<value name="Count" type="long" data="1"/>
-					<value name="Cmd1" type="string" data='cmd /k ""%ConEmuDrive%\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat"" x86 -new_console:t:"VS 15.0" -new_console:C:"%CommonProgramFiles(x86)%\microsoft shared\MSEnv\VSFileHandler.dll,38"'/>
 				</key>
-				<key name="Task19" modified="2018-07-10 08:40:59" build="180617">
+				<key name="Task18" modified="2018-12-18 15:05:37" build="180626">
 					<value name="Name" type="string" data="{SDK::VS 14.0 x64 tools prompt}"/>
 					<value name="Flags" type="dword" data="00000004"/>
 					<value name="Hotkey" type="dword" data="00000000"/>
@@ -779,7 +764,7 @@
 					<value name="Count" type="long" data="1"/>
 					<value name="Cmd1" type="string" data='cmd /k ""%ConEmuDrive%\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"" x64 -new_console:t:"VS 14.0" -new_console:C:"%CommonProgramFiles(x86)%\microsoft shared\MSEnv\VSFileHandler.dll,33"'/>
 				</key>
-				<key name="Task20" modified="2018-07-10 08:40:59" build="180617">
+				<key name="Task19" modified="2018-12-18 15:05:37" build="180626">
 					<value name="Name" type="string" data="{SDK::VS 15.0 x64 tools prompt}"/>
 					<value name="Flags" type="dword" data="00000004"/>
 					<value name="Hotkey" type="dword" data="00000000"/>
@@ -803,6 +788,11 @@
 			<value name="StatusBar.Hide.WMode" type="hex" data="01"/>
 			<value name="Language" type="string" data="en"/>
 			<value name="RestoreInactive" type="hex" data="00"/>
+			<value name="CmdLineHistory" type="multi">
+				<line data="{Shells::PowerShell (Admin)}"/>
+				<line data="{Bash::bash}"/>
+				<line data="{Bash::Git bash}"/>
+			</value>
 		</key>
 	</key>
 </key>

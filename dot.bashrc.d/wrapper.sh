@@ -26,10 +26,12 @@ ksar() {
     "${HOME}/.ksar/kSar-5.0.6/run.sh" $*
 }
 ghqd() {
-    pushd $(ghq root)/$(ghq list | peco)
+    local d="$(ghq root)/$(ghq list | peco)"
+    [[ -d "${d}" ]] && pushd "${d}"
 }
 ghqv() {
-    subl $(ghq root)/$(ghq list | peco)
+    local d="$(ghq root)/$(ghq list | peco)"
+    [[ -d "${d}" ]] && subl -a "${d}"
 }
 dc() {
     COMPOSE_CONVERT_WINDOWS_PATHS=1 docker-compose $*

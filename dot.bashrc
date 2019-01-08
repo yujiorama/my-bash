@@ -5,3 +5,5 @@ done
 if [[ ! -z "${ConEmuPID}" ]]; then
   /c/WINDOWS/system32/chcp.com 65001
 fi
+
+echo "Startup Time: $SECONDS sec"

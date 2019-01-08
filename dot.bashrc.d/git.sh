@@ -1,3 +1,11 @@
+export GIT_SSH
+if which plink >/dev/null 2>&1; then
+    GIT_SSH=plink
+else
+    GIT_SSH=ssh
+fi
+
+
 if [[ -d /usr/share/git/completion ]]; then
     for f in /usr/share/git/completion/*.bash /usr/share/git/completion/*.sh /mingw64/share/git/completion/*.bash; do
         source ${f}
