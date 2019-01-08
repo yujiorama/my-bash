@@ -1,0 +1,91 @@
+#!/bin/bash
+minikube start \
+    --profile minikube \
+    --vm-driver hyperv \
+    --hyperv-virtual-switch "既定のスイッチ" \
+    --cpus 4 --memory $(( 1024 * 8 )) --disk-size 50g \
+    --network-plugin cni \
+    --docker-opt "bip=10.1.0.5/24" --docker-opt "fixed-cidr=10.1.0.5/25"
+
+# Starting local Kubernetes v1.10.0 cluster...
+# Starting VM...
+# Downloading Minikube ISO
+#  178.87 MB / 178.87 MB [============================================] 100.00% 0s
+# Getting VM IP address...
+# E1218 11:04:54.000806    6392 start.go:210] Error parsing version semver:  Version string empty
+# Moving files into cluster...
+# Downloading kubelet v1.10.0
+# Downloading kubeadm v1.10.0
+# Finished Downloading kubeadm v1.10.0
+# Finished Downloading kubelet v1.10.0
+# Setting up certs...
+# Connecting to cluster...
+# Setting up kubeconfig...
+# Stopping extra container runtimes...
+# Starting cluster components...
+# Verifying kubelet health ...
+# Verifying apiserver health ...Setting up hostmount on C:\:/C...
+# Kubectl is now configured to use the cluster.
+# Loading cached images from config file.
+# 
+# 
+# Everything looks great. Please enjoy minikube!
+
+if [[ $? -ne 0 ]]; then
+    exit 1
+fi
+
+## preprocess
+##   config vm.max_map_count
+##   add host folder credential
+##   mount host folder as cifs
+echo -n "Logon Password (${USERDOMAIN}\\${USERNAME}): "
+read -s password
+echo ""
+if [[ -z "${password}" ]]; then
+    exit 1
+fi
+password=$(printf "%q" ${password})
+
+minikube ssh << SCRIPT
+sudo sysctl -w vm.max_map_count=262144
+echo vm.max_map_count=262144 | sudo tee /etc/sysctl.d/vm.conf
+printf "username=%s\npassword=%s\nworkroup=%s\n" ${USERNAME} ${password} ${USERDOMAIN} | sudo tee /root/.credentials >/dev/null
+sudo chmod 600 /root/.credentials
+docker_uid=\$(id -u docker)
+docker_gid=\$(id -g docker)
+sudo umount -f /c
+sudo mkdir -p /c
+sudo chown docker:docker /c
+sudo mount -t cifs -o user,uid=\${docker_uid},gid=\${docker_gid},credentials=/root/.credentials //${COMPUTERNAME}/C /c
+exit
+SCRIPT
+unset password
+
+# $ minikube ip
+# 172.24.224.135
+
+# $ minikube docker-env
+# export DOCKER_TLS_VERIFY="1"
+# export DOCKER_HOST="tcp://172.24.224.135:2376"
+# export DOCKER_CERT_PATH="C:\Users\y.okazawa\.minikube\certs"
+# export DOCKER_API_VERSION="1.35"
+# # Run this command to configure your shell:
+# # eval $(minikube docker-env)
+
+# $ eval $(minikube docker-env)
+
+# $ docker images
+# REPOSITORY                                 TAG                 IMAGE ID            CREATED             SIZE
+# k8s.gcr.io/kubernetes-dashboard-amd64      v1.10.0             0dab2435c100        3 months ago        122MB
+# k8s.gcr.io/kube-proxy-amd64                v1.10.0             bfc21aadc7d3        8 months ago        97MB
+# k8s.gcr.io/kube-apiserver-amd64            v1.10.0             af20925d51a3        8 months ago        225MB
+# k8s.gcr.io/kube-controller-manager-amd64   v1.10.0             ad86dbed1555        8 months ago        148MB
+# k8s.gcr.io/kube-scheduler-amd64            v1.10.0             704ba848e69a        8 months ago        50.4MB
+# k8s.gcr.io/etcd-amd64                      3.1.12              52920ad46f5b        9 months ago        193MB
+# k8s.gcr.io/kube-addon-manager              v8.6                9c16409588eb        10 months ago       78.4MB
+# k8s.gcr.io/k8s-dns-dnsmasq-nanny-amd64     1.14.8              c2ce1ffb51ed        11 months ago       41MB
+# k8s.gcr.io/k8s-dns-sidecar-amd64           1.14.8              6f7f2dc7fab5        11 months ago       42.2MB
+# k8s.gcr.io/k8s-dns-kube-dns-amd64          1.14.8              80cc5ea4b547        11 months ago       50.5MB
+# k8s.gcr.io/pause-amd64                     3.1                 da86e6ba6ca1        12 months ago       742kB
+# gcr.io/k8s-minikube/storage-provisioner    v1.8.1              4689081edb10        13 months ago       80.8MB
