@@ -1,10 +1,12 @@
-alias ls='/bin/ls -F --color=auto --show-control-chars'
-alias l='/bin/ls -la --time-style=long-iso'
-alias la='/bin/ls -a --time-style=long-iso'
-alias ll='/bin/ls -l --time-style=long-iso'
-alias be='bundle exec'
-alias dm='docker-machine'
-alias xmlstarlet='xml'
-alias zstdmt='zstd -T0'
-alias unzstd='zstd -d'
-alias zstdcat='zstd -dcf'
+alias ls='/bin/ls -F --color=auto --show-control-chars '
+alias l='ls -la --time-style=long-iso '
+alias la='ls -a --time-style=long-iso '
+alias ll='ls -l --time-style=long-iso '
+if which xml >/dev/null 2>&1; then
+    alias xmlstarlet='xml '
+fi
+if which zstd >/dev/null 2>&1; then
+    alias zstdmt='zstd -T0 '
+    alias unzstd='zstd -d '
+    alias zstdcat='zstd -dcf '
+fi

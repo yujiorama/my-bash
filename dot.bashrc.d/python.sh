@@ -1,4 +1,3 @@
-
 PATH=$(echo $PATH | tr ':' '\n' | grep -v -e '^$' | grep -v -e 'Python' | tr '\n' ':')
 
 if [[ -d "/c/Python37" ]]; then
@@ -15,4 +14,8 @@ if [[ -e ${HOME}/.pythonrc.py ]]; then
     fi
     echo 'from see import see' > ${HOME}/.pythonrc.py
     export PYTHONSTARTUP="$HOME/.pythonrc.py"
+fi
+
+if which aws_completer >/dev/null 2>&1; then
+    complete -C aws_completer aws
 fi

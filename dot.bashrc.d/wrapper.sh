@@ -1,9 +1,9 @@
 open() {
-    start $(readlink -m $1)
+    start "$(readlink -m $1)"
 }
 iview() {
     a=$1
-    "/c/Program Files/IrfanView/i_view64.exe" $(cygpath -wa ${a})
+    "/c/Program Files/IrfanView/i_view64.exe" "$(cygpath -wa ${a})"
 }
 winmerge() {
     a=$1;shift
@@ -35,10 +35,4 @@ ghqv() {
 }
 dc() {
     COMPOSE_CONVERT_WINDOWS_PATHS=1 docker-compose $*
-}
-java8() {
-    JAVA_HOME="${JDK8_HOME}" "${JDK8_HOME}/bin/java" $*
-}
-az() {
-    "/c/Program Files (x86)/Microsoft SDKs/Azure/CLI2/wbin/az.cmd" $*
 }

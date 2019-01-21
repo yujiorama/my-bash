@@ -29,46 +29,12 @@ echo "/c/WINDOWS/system32" >> ${HOME}/.bash_path_suffix
 echo "/c/WINDOWS/System32/Wbem" >> ${HOME}/.bash_path_suffix
 echo "/c/WINDOWS/System32/WindowsPowerShell/v1.0" >> ${HOME}/.bash_path_suffix
 
-if [[ -d "/c/ProgramData/chocolatey/bin" ]]; then
-    echo "/c/ProgramData/chocolatey/bin" >> ${HOME}/.bash_path_suffix
-fi
-
 if [[ -d "${HOME}/scoop/shims" ]]; then
     echo "${HOME}/scoop/shims" >> ${HOME}/.bash_path_suffix
 fi
 
-if [[ -d "/c/HashiCorp/Vagrant" ]]; then
-    VAGRANT_ROOT="/c/HashiCorp/Vagrant"
-    cygpath --unix "${VAGRANT_ROOT}/bin" >> ${HOME}/.bash_path_suffix
-    cygpath --unix "${VAGRANT_ROOT}/embedded/bin" >> ${HOME}/.bash_path_suffix
-    cygpath --unix "${VAGRANT_ROOT}/embedded/mingw/bin" >> ${HOME}/.bash_path_suffix
-fi
-
-if [[ -d "/c/Program Files/Oracle/VirtualBox" ]]; then
-    cygpath --unix "/c/Program Files/Oracle/VirtualBox" >> ${HOME}/.bash_path_suffix
-fi
-
-if [[ -d "/c/Program Files/MySQL/MySQL Workbench 8.0 CE" ]]; then
-    export MYSQLINSTALL
-    MYSQLINSTALL="/c/Program Files/MySQL/MySQL Workbench 8.0 CE"
-    cygpath --unix "${MYSQLINSTALL}" >> ${HOME}/.bash_path_suffix
-fi
-if [[ -d "/c/Program Files/TortoiseSVN" ]]; then
-    export TORTOISESVNINSTALL
-    TORTOISESVNINSTALL="/c/Program Files/TortoiseSVN"
-    cygpath --unix "${TORTOISESVNINSTALL}/bin" >> ${HOME}/.bash_path_suffix
-fi
-
-if [[ -d "/c/Program Files/Git LFS" ]]; then
-    echo "/c/Program Files/Git LFS" >> ${HOME}/.bash_path_suffix
-fi
-
-if [[ -d "${LOCALAPPDATA}/Programs/Microsoft Git Credential Manager for Windows" ]]; then
-    cygpath --unix "${LOCALAPPDATA}/Programs/Microsoft Git Credential Manager for Windows" >> ${HOME}/.bash_path_suffix
-fi
-
-if [[ -d "/c/Program Files/heroku/bin" ]]; then
-    echo "/c/Program Files/heroku/bin" >> ${HOME}/.bash_path_suffix
+if [[ -d "/c/ProgramData/chocolatey/bin" ]]; then
+    echo "/c/ProgramData/chocolatey/bin" >> ${HOME}/.bash_path_suffix
 fi
 
 if [[ -d "/c/Program Files/Microsoft VS Code/bin" ]]; then
@@ -89,10 +55,6 @@ if [[ -d "${ConEmuBaseDir}" ]]; then
     cygpath --unix "$(dirname "${ConEmuBaseDir}")" >> ${HOME}/.bash_path_suffix
     cygpath --unix "${ConEmuBaseDir}" >> ${HOME}/.bash_path_suffix
     cygpath --unix "${ConEmuBaseDir}/Scripts" >> ${HOME}/.bash_path_suffix
-fi
-
-if [[ -d "$LOCALAPPDATA/Pandoc" ]]; then
-    cygpath --unix "$LOCALAPPDATA/Pandoc" >> ${HOME}/.bash_path_suffix
 fi
 
 if [[ -d "/c/Program Files/Docker/Docker/Resources/bin" ]]; then
