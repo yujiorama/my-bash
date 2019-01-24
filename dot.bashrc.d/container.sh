@@ -97,3 +97,9 @@ dbxcli() {
     fi
     ${app_exe_path} $*
 }
+sslyze() {
+    if ! which docker >/dev/null 2>&1; then
+        exit 1
+    fi
+    docker container run -it --rm --network host nablac0d3/sslyze $*
+}

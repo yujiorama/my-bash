@@ -1,5 +1,6 @@
 #!/bin/bash
 minikube start \
+    --logtostderr \
     --profile minikube \
     --vm-driver hyperv \
     --hyperv-virtual-switch "既定のスイッチ" \
@@ -39,15 +40,19 @@ fi
 ##   config vm.max_map_count
 ##   add host folder credential
 ##   mount host folder as cifs
-echo -n "Logon Password (${USERDOMAIN}\\${USERNAME}): "
-read -s password
-echo ""
+if [[ -e ${HOME}/.secret.json ]]; then
+	password=$(jq -r --arg key ${USERDOMAIN}\\${USERNAME} '.[] | select(.user == $key) | .secret' < ${HOME}/.secret.json)
+else
+    echo -n "Logon Password (${USERDOMAIN}\\${USERNAME}): "
+    read -s password
+    echo ""
+fi
 if [[ -z "${password}" ]]; then
     exit 1
 fi
 password=$(printf "%q" ${password})
 
-minikube ssh << SCRIPT
+minikube ssh << SCRIPT >/dev/null
 sudo sysctl -w vm.max_map_count=262144
 echo vm.max_map_count=262144 | sudo tee /etc/sysctl.d/vm.conf
 printf "username=%s\npassword=%s\nworkroup=%s\n" ${USERNAME} ${password} ${USERDOMAIN} | sudo tee /root/.credentials >/dev/null
