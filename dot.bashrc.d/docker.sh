@@ -28,14 +28,9 @@ if [[ ! -z "${DOCKER_HOST}" ]]; then
     host_=$(echo ${DOCKER_HOST} | cut -d : -f 2)
     host_=${host_:2}
     port_=$(echo ${DOCKER_HOST} | cut -d : -f 3)
-    if which go >/dev/null 2>&1; then
-        go get -u bitbucket.org/yujiorama/tiny-nc
-    fi
-    if which tiny-nc >/dev/null 2>&1; then
-        tiny-nc -timeout 1s ${host_} ${port_} >/dev/null 2>&1
-    fi
-    if [[ $? -eq 0 ]]; then
+    if online ${host_} ${port_}; then
         docker_version=$(docker version --format '{{.Server.Version}}' | cut -c1-5)
+        echo "Server.Version ${docker_version}"
         if [[ "18.09" > "${docker_version}" ]]; then
             enable_buildkit=0
         else

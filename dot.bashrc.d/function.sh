@@ -10,3 +10,7 @@ ip()
         ;;
     esac
 }
+
+java_home() {
+    echo "${JAVA_HOME}"
+}
