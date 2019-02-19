@@ -22,6 +22,10 @@ if which docker-compose >/dev/null 2>&1; then
         Windows*) export COMPOSE_CONVERT_WINDOWS_PATHS=1 ;;
         *) ;;
     esac
+    if alias | grep -w dc= >/dev/null 2>&1; then
+        unalias dc
+    fi
+    alias dc='docker-compose '
 fi
 
 if [[ ! -z "${DOCKER_HOST}" ]]; then

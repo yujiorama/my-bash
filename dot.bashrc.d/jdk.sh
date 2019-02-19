@@ -2,12 +2,17 @@ PATH=$(echo $PATH | tr ':' '\n' | grep -v -e '^$' | grep -v -e 'jdk' | tr '\n' '
 
 export JAVA_OPTS
 JAVA_OPTS="-Dfile.encoding=UTF-8"
-export JDK8_HOME
-if scoop list | grep -w ojdkbuild8; then
-    JDK8_HOME=$(cygpath --mixed "$(scoop prefix ojdkbuild8)")
+if scoop list | grep -w "adopt8-openj9"; then
+    export JDK8_HOME
+    JDK8_HOME=$(cygpath --mixed "$(scoop prefix adopt8-openj9)")
 fi
-export JDK12_HOME
+if scoop list | grep -w openjdk11; then
+    export JDK11_HOME
+    JDK11_HOME=$(cygpath --mixed "$(scoop prefix openjdk11)")
+fi
+export JDK10_HOME=$(cygpath --mixed /c/work/happinet/jdk-10.0.2+13)
 if scoop list | grep -w openjdk12; then
+    export JDK12_HOME
     JDK12_HOME=$(cygpath --mixed "$(scoop prefix openjdk12)")
 fi
 export JAVA_HOME
@@ -17,19 +22,29 @@ if [[ -z "${JAVA_HOME}" ]]; then
     return
 fi
 
-if [[ ! -e "${HOME}/.bashrc.d/jdk.function" ]]; then
-    touch "${HOME}/.bashrc.d/jdk.function"
-    for e in $(find ${JDK8_HOME}/bin -type f -name \*.exe); do
-        e_name=$(basename ${e} .exe)
-        printf "function %s8() {\nJAVA_HOME=\"\${JDK8_HOME}\" \"%s\" \$*\n}\n" ${e_name} ${e}
-    done >> "${HOME}/.bashrc.d/jdk.function"
+__jdk_function()
+{
+    local java_home="$1"
+    local version="$2"
+    local suffix="$3"
+    local function_source="${HOME}/.jdk/java${version}"
+    mkdir -p ${HOME}/.jdk
+    echo ":" > ${HOME}/.jdk/empty
+    if [[ -e "${java_home}/bin/java" ]] &&
+        [[ "${java_home}/bin/java" -nt "${function_source}" ]]; then
+        cp /dev/null "${function_source}"
+        for e in $(find ${java_home}/bin -type f -name \*.exe); do
+            e_name=$(basename ${e} .exe)
+            printf "function %s%s() {\nJAVA_HOME=\"\${java_home}\" \"%s\" \$*\n}\n" "${e_name}" "${suffix}" "${e}"
+        done >> "${function_source}"
+    fi
+    source "${function_source}"
+}
 
-    for e in $(find ${JDK12_HOME}/bin -type f -name \*.exe); do
-        e_name=$(basename ${e} .exe)
-        printf "function %s() {\nJAVA_HOME=\"\${JDK12_HOME}\" \"%s\" \$*\n}\n" ${e_name} ${e}
-    done >> "${HOME}/.bashrc.d/jdk.function"
-fi
-source "${HOME}/.bashrc.d/jdk.function"
+__jdk_function "${JDK8_HOME}" "8"  "8"
+__jdk_function "${JDK10_HOME}" "10" "10"
+__jdk_function "${JDK11_HOME}" "11" "11"
+__jdk_function "${JDK12_HOME}" "12" ""
 
 mkdir -p ${HOME}/.lombok
 download_new_file "https://projectlombok.org/downloads/lombok.jar" "${HOME}/.lombok/lombok.jar" &

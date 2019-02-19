@@ -40,6 +40,7 @@ __update_go_tool()
 alias update_go_tool='__update_go_tool'
 
 update_go_tool golang.org/x/tools/cmd/goimports &
+update_go_tool golang.org/x/tools/cmd/gotype &
 update_go_tool github.com/motemen/ghq &
 update_go_tool github.com/mholt/archiver/cmd/arc &
 update_go_tool github.com/schemalex/schemalex/cmd/schemadiff &
@@ -49,3 +50,14 @@ update_go_tool github.com/tsenart/vegeta &
 update_go_tool bitbucket.org/yujiorama/docker-tag-search &
 
 wait
+
+if which ghq >/dev/null 2>&1; then
+    ghqd() {
+        local d="$(ghq root)/$(ghq list | peco)"
+        [[ -d "${d}" ]] && pushd "${d}"
+    }
+    ghqv() {
+        local d="$(ghq root)/$(ghq list | peco)"
+        [[ -d "${d}" ]] && subl -a "${d}"
+    }
+fi

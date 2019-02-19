@@ -14,3 +14,9 @@ ip()
 java_home() {
     echo "${JAVA_HOME}"
 }
+
+npm_exec() {
+    PATH=$(npm bin):${PATH}
+    echo "$*"
+    eval "$*"
+}

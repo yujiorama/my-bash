@@ -1,6 +1,6 @@
-if [[ ! -z "${ConEmuPID}" ]]; then
-  /c/WINDOWS/system32/chcp.com 65001
-fi
+# if [[ ! -z "${ConEmuPID}" ]]; then
+#   /c/WINDOWS/system32/chcp.com 65001
+# fi
 
 [[ -e ${HOME}/.bashrc.d/.function ]] && source ${HOME}/.bashrc.d/.function
 

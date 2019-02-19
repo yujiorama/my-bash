@@ -4,7 +4,7 @@ minikube start \
     --profile minikube \
     --vm-driver hyperv \
     --hyperv-virtual-switch "既定のスイッチ" \
-    --cpus 4 --memory $(( 1024 * 8 )) --disk-size 50g \
+    --cpus 4 --memory $(( 1024 * 2 )) --disk-size 50g \
     --network-plugin cni \
     --docker-opt "bip=10.1.0.5/24" --docker-opt "fixed-cidr=10.1.0.5/25"
 

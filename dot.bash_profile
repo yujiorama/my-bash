@@ -30,15 +30,11 @@ echo "/c/WINDOWS/System32/Wbem" >> ${HOME}/.bash_path_suffix
 echo "/c/WINDOWS/System32/WindowsPowerShell/v1.0" >> ${HOME}/.bash_path_suffix
 
 if [[ -d "${HOME}/scoop/shims" ]]; then
-    echo "${HOME}/scoop/shims" >> ${HOME}/.bash_path_suffix
+    echo "${HOME}/scoop/shims" >> ${HOME}/.bash_path_prefix
 fi
 
 if [[ -d "/c/ProgramData/chocolatey/bin" ]]; then
-    echo "/c/ProgramData/chocolatey/bin" >> ${HOME}/.bash_path_suffix
-fi
-
-if [[ -d "/c/Program Files/Microsoft VS Code/bin" ]]; then
-    echo "/c/Program Files/Microsoft VS Code/bin" >> ${HOME}/.bash_path_suffix
+    echo "/c/ProgramData/chocolatey/bin" >> ${HOME}/.bash_path_prefix
 fi
 
 if [[ -d "/c/Program Files/nodejs" ]]; then
