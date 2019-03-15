@@ -6,11 +6,15 @@ if scoop list | grep -w "adopt8-openj9"; then
     export JDK8_HOME
     JDK8_HOME=$(cygpath --mixed "$(scoop prefix adopt8-openj9)")
 fi
-if scoop list | grep -w openjdk11; then
+if scoop list | grep -w adopt11-hotspot; then
     export JDK11_HOME
-    JDK11_HOME=$(cygpath --mixed "$(scoop prefix openjdk11)")
+    JDK11_HOME=$(cygpath --mixed "$(scoop prefix adopt11-hotspot)")
 fi
-export JDK10_HOME=$(cygpath --mixed /c/work/happinet/jdk-10.0.2+13)
+
+if scoop list | grep -w openjdk10; then
+    export JDK10_HOME
+    JDK10_HOME=$(cygpath --mixed "$(scoop prefix openjdk10)")
+fi
 if scoop list | grep -w openjdk12; then
     export JDK12_HOME
     JDK12_HOME=$(cygpath --mixed "$(scoop prefix openjdk12)")

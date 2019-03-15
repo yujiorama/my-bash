@@ -4,13 +4,13 @@ else
     SSH_AGENT_PID="none"
 fi
 
-agent_pid=$(ps aux | grep ssh-agent | grep -v grep | awk '{print $1}')
+agent_pid=$(ps -ef | grep ssh-agent | grep -v grep | awk '{print $2}')
 if [[ "${agent_pid}" != "${SSH_AGENT_PID}" ]]; then
     unset SSH_AUTH_SOCK SSH_AGENT_PID
     if [[ "${agent_pid}" != "" ]]; then
-        if which pkill >/dev/null 2>&1; then
+        if which pkill 2>&1 >/dev/null; then
             pkill ssh-agent
-        elif which taskkill >/dev/null 2>&1; then
+        elif which taskkill 2>&1 >/dev/null; then
             taskkill //F //IM ssh-agent.exe
         fi
     fi

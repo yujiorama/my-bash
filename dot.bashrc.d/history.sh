@@ -2,8 +2,8 @@
 # http://qiita.com/tay07212/items/9509aef6dc3bffa7dd0c
 #
 export PROMPT_COMMAND_share_history="history -a; history -c; history -r"
-if which ConEMUC64.exe >/dev/null 2>&1; then
-    export PROMPT_COMMAND_conemu_storecwd="if which ConEMUC64.exe >/dev/null 2>&1; then ConEMUC64.exe -StoreCWD; fi"
+if which ConEMUC64.exe 2>&1 >/dev/null; then
+    export PROMPT_COMMAND_conemu_storecwd="if which ConEMUC64.exe 2>&1 >/dev/null; then ConEMUC64.exe -StoreCWD; fi"
 fi
 dispatch() {
     export EXIT_STATUS="$?" # 直前のコマンド実行結果のエラーコードを保存

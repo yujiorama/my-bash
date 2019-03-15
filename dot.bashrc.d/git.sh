@@ -1,4 +1,4 @@
-if ! which git-credential-manager >/dev/null 2>&1; then
+if ! which git-credential-manager 2>&1 >/dev/null; then
     if [[ -d "${LOCALAPPDATA}/Programs/Microsoft Git Credential Manager for Windows" ]]; then
         PATH=${PATH}:"$(cygpath --unix "${LOCALAPPDATA}/Programs/Microsoft Git Credential Manager for Windows")"
     fi
@@ -7,9 +7,9 @@ fi
 unset GIT_LFS_PATH
 
 export GIT_SSH
-if which plink >/dev/null 2>&1; then
+if which plink 2>&1 >/dev/null; then
     GIT_SSH=plink
-elif which ssh >/dev/null 2>&1; then
+elif which ssh 2>&1 >/dev/null; then
     GIT_SSH=ssh
 else
     :
@@ -28,6 +28,6 @@ PS1='\[\033]0;$TITLEPREFIX:$PWD\007\]\n\[\033[32m\]\u@\h \[\033[35m\]$MSYSTEM \[
 PS1='\033[35m\]\u@\h `here`\n\[\033[33m\]\w\[\033[36m\]`__git_ps1 " (%s)"`\[\033[0m\]\n$ '
 if [[ -e ${HOME}/git-prompt.sh ]]; then
     source ${HOME}/git-prompt.sh
-else
+elif [[ -e source /mingw64/share/git/completion/git-prompt.sh ]]; then
     source /mingw64/share/git/completion/git-prompt.sh
 fi

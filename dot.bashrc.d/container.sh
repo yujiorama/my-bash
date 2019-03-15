@@ -6,7 +6,7 @@ gibo() {
     docker container run --rm simonwhitaker/gibo $*
 }
 shellcheck() {
-    if ! which docker >/dev/null 2>&1; then
+    if ! which docker 2>&1 >/dev/null; then
         exit 1
     fi
     opts=()
@@ -30,7 +30,7 @@ shellcheck() {
         ${opts[*]} ${files[*]}
 }
 dot() {
-    if ! which docker >/dev/null 2>&1; then
+    if ! which docker 2>&1 >/dev/null; then
         exit 1
     fi
     infile=$1
@@ -38,7 +38,7 @@ dot() {
     docker container run --rm --mount type=bind,src=/$(pwd),dst=//work fgrehm/graphviz dot -Tpng -o//work/${outfile} //work/${infile}
 }
 dockviz() {
-    if ! which docker >/dev/null 2>&1; then
+    if ! which docker 2>&1 >/dev/null; then
         exit 1
     fi
     docker container run -it --rm -v /var/run/docker.sock:/var/run/docker.sock nate/dockviz $*
@@ -98,7 +98,7 @@ dbxcli() {
     ${app_exe_path} $*
 }
 sslyze() {
-    if ! which docker >/dev/null 2>&1; then
+    if ! which docker 2>&1 >/dev/null; then
         exit 1
     fi
     docker container run -it --rm --network host nablac0d3/sslyze $*

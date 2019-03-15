@@ -1,5 +1,5 @@
 # try docker-machine
-if which docker-machine >/dev/null 2>&1; then
+if which docker-machine 2>&1 >/dev/null; then
     if (docker-machine ls --quiet --timeout 1 --filter state=Running --filter name=default | grep running) >/dev/null; then
         eval $(docker-machine env default | tee ${HOME}/.docker_env)
     else
@@ -7,7 +7,7 @@ if which docker-machine >/dev/null 2>&1; then
     fi
 fi
 # try minikube
-if which minikube >/dev/null 2>&1; then
+if which minikube 2>&1 >/dev/null; then
     if minikube status --profile minikube >/dev/null; then
         eval $(minikube docker-env --profile minikube | tee ${HOME}/.docker_env)
         source <(minikube completion bash)
@@ -16,13 +16,13 @@ if which minikube >/dev/null 2>&1; then
     fi
 fi
 
-if which docker-compose >/dev/null 2>&1; then
+if which docker-compose 2>&1 >/dev/null; then
     docker-compose --version | cut -c24- | cut -d , -f 1 > ${HOME}/.docker-compose.version
-    case $OS in
+    case ${OS:-Linux} in
         Windows*) export COMPOSE_CONVERT_WINDOWS_PATHS=1 ;;
-        *) ;;
+        *)        export COMPOSE_CONVERT_WINDOWS_PATHS=0 ;;
     esac
-    if alias | grep -w dc= >/dev/null 2>&1; then
+    if alias | grep -w dc= 2>&1 >/dev/null; then
         unalias dc
     fi
     alias dc='docker-compose '
@@ -46,3 +46,7 @@ if [[ ! -z "${DOCKER_HOST}" ]]; then
     export DOCKER_BUILDKIT=${enable_buildkit}
     unset enable_buildkit docker_version
 fi
+
+docker_reconfigure() {
+    source ${HOME}/.bashrc.d/docker.sh
+}
