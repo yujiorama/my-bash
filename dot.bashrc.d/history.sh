@@ -1,10 +1,20 @@
+# vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
+
+export HISTSIZE
+HISTSIZE=100000
+export HISTCONTROL
+HISTCONTROL=ignoredups
+export HISTTIMEFORMAT
+HISTTIMEFORMAT='%Y-%m-%d %T '
+
 # prompt_command で複数のコマンドを実行
 # http://qiita.com/tay07212/items/9509aef6dc3bffa7dd0c
 #
 export PROMPT_COMMAND_share_history="history -a; history -c; history -r"
-if which ConEMUC64.exe 2>&1 >/dev/null; then
-    export PROMPT_COMMAND_conemu_storecwd="if which ConEMUC64.exe 2>&1 >/dev/null; then ConEMUC64.exe -StoreCWD; fi"
+if [[ ! -z "${ConEmuPID}" ]] && [[ "0" -eq "$(which ConEMUC64.exe >/dev/null 2>&1; echo $?)" ]]; then
+    export PROMPT_COMMAND_conemu_storecwd="ConEMUC64.exe -StoreCWD"
 fi
+
 dispatch() {
     export EXIT_STATUS="$?" # 直前のコマンド実行結果のエラーコードを保存
 

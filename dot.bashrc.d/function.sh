@@ -1,3 +1,5 @@
+# vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
+
 ip()
 {
     local subcommand=$1

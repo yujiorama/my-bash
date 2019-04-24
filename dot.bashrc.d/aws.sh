@@ -9,8 +9,3 @@ if [[ -e "${HOME}/.aws/credentials" ]]; then
     export AWS_SHARED_CREDENTIALS_FILE
     AWS_SHARED_CREDENTIALS_FILE="${HOME}/.aws/credentials"
 fi
-
-if which aws_completer 2>&1 >/dev/null; then
-    complete -C $(which aws_completer) aws
-fi
-
