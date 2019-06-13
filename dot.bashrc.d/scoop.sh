@@ -8,6 +8,6 @@ if [[ ${last_week} -gt ${scoop_check} ]]; then
     if online github.com 443; then
         scoop update >/dev/null 2>&1
     fi
-    scoop status
     touch ${HOME}/.scoop_check
 fi
+scoop status

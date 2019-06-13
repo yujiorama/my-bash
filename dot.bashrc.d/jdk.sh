@@ -12,15 +12,10 @@ if scoop list | grep -w adopt11-openj9; then
     export JDK11_HOME
     JDK11_HOME=$(cygpath --mixed "$(scoop prefix adopt11-openj9)")
 fi
-if scoop list | grep -w openjdk10; then
+if scoop list | grep -w adopt10-hotspot; then
     export JDK10_HOME
-    JDK10_HOME=$(cygpath --mixed "$(scoop prefix openjdk10)")
+    JDK10_HOME=$(cygpath --mixed "$(scoop prefix adopt10-hotspot)")
 fi
-if scoop list | grep -w adopt12-openj9; then
-    export JDK12_HOME
-    JDK12_HOME=$(cygpath --mixed "$(scoop prefix adopt12-openj9)")
-fi
-
 if scoop list | grep -w openjdk13; then
     export JDK13_HOME
     JDK13_HOME=$(cygpath --mixed "$(scoop prefix openjdk13)")
@@ -54,7 +49,6 @@ __jdk_function()
 __jdk_function "${JDK8_HOME}" "8"  "8"
 __jdk_function "${JDK10_HOME}" "10" "10"
 __jdk_function "${JDK11_HOME}" "11" "11"
-__jdk_function "${JDK12_HOME}" "12" "12"
 __jdk_function "${JDK13_HOME}" "13" ""
 
 mkdir -p ${HOME}/.lombok

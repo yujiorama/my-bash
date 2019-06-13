@@ -5,12 +5,12 @@ open() {
 }
 iview() {
     a=$1
-    "/c/Users/y_okazawa/scoop/apps/irfanview/current/i_view64.exe" "$(cygpath -wa ${a})"
+    "$(cygpath -ma $(scoop prefix irfanview))/i_view64.exe" "$(cygpath -wa ${a})"
 }
 winmerge() {
     a=$1;shift
     b=$1;
-    "/c/Users/y_okazawa/scoop/apps/winmerge/current/WinMergeU.exe" "$(cygpath -wa ${a})" "$(cygpath -wa ${b})"
+    "$(cygpath -ma $(scoop prefix winmerge))/WinMergeU.exe" "$(cygpath -wa ${a})" "$(cygpath -wa ${b})"
 }
 
-alias vscode="/c/Users/y_okazawa/scoop/apps/vscode/current/Code.exe "
+alias vscode="$(cygpath -ma $(scoop prefix vscode))/Code.exe "

@@ -1,9 +1,12 @@
-#!/bin/bash
-
+# vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
 __here()
 {
-    cygpath -wa "$PWD"
+    if [[ 0 -eq "$(which cygpath >/dev/null 2>&1; echo $?)" ]]; then
+        cygpath -wa "$PWD"
+    else
+        echo "$PWD"
+    fi
 }
 alias here='__here'
 

@@ -11,9 +11,9 @@ if [[ -d "/c/tools/ruby26" ]]; then
     PATH=${PATH}:/c/tools/ruby26/bin
 fi
 
-if [[ -d "${HOME}/.ruby/current" ]]; then
+if [[ -d "${HOME}/bin/ruby/current" ]]; then
     PATH=$(echo $PATH | tr ':' '\n' | grep -v -e '^$' | grep -v -e '.ruby.current' | tr '\n' ':')
-    PATH=${PATH}:${HOME}/.ruby/current/bin
+    PATH=${PATH}:${HOME}/bin/ruby/current/bin
 fi
 
 if alias | grep -w be >/dev/null 2>&1    ; then unalias be    ; fi

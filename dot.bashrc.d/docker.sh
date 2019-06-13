@@ -10,9 +10,9 @@ if which docker-machine >/dev/null 2>&1; then
 fi
 # try minikube
 if which minikube >/dev/null 2>&1; then
+    source <(minikube completion bash)
     if minikube status --profile minikube >/dev/null; then
         eval $(minikube docker-env --profile minikube | tee ${HOME}/.docker_env)
-        source <(minikube completion bash)
     else
         rm -f ${HOME}/.docker_env
     fi

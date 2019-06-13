@@ -1,10 +1,21 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
+# sudo apt install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
+# curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+# sudo apt-key fingerprint 0EBFCD88
+# sudo add-apt-repository \
+#    "deb [arch=amd64] https://download.docker.com/linux/debian \
+#    $(lsb_release -cs) \
+#    stable"
+# sudo apt update
+# sudo apt install -y docker-ce docker-ce-cli containerd.io
+# sudo usermod -aG docker $(id -u -n)
+
 function _update_docker_comopse() {
-    if [[ -e /mnt/c/Users/y.okazawa/.docker-compose.version ]]; then
+    if [[ -e /mnt/c/Users/y_okazawa/.docker-compose.version ]]; then
         return
     fi
-    local host_docker_compose_version=$(cat /mnt/c/Users/y.okazawa/.docker-compose.version)
+    local host_docker_compose_version=$(cat /mnt/c/Users/y_okazawa/.docker-compose.version)
     if which docker-compose >/dev/null 2>&1; then
         local wsl_docker_compose_version=$(docker-compose --version | cut -c24- | cut -d , -f 1)
         if [[ $host_docker_compose_version = $wsl_docker_compose_version ]]; then
@@ -29,8 +40,8 @@ if which docker-compose >/dev/null 2>&1; then
     alias dc='docker-compose '
 fi
 
-if [[ -e /mnt/c/Users/y.okazawa/.docker_env ]]; then
-    cat /mnt/c/Users/y.okazawa/.docker_env > ${HOME}/.docker_env
+if [[ -e /mnt/c/Users/y_okazawa/.docker_env ]]; then
+    cat /mnt/c/Users/y_okazawa/.docker_env > ${HOME}/.docker_env
     chmod 644 ${HOME}/.docker_env
     source ${HOME}/.docker_env
     mkdir -p ${HOME}/.docker_cert
@@ -58,4 +69,18 @@ if [[ -e /mnt/c/Users/y.okazawa/.docker_env ]]; then
     unset enable_buildkit docker_version
 else
     export DOCKER_HOST=tcp://0.0.0.0:2375
+fi
+
+if [[ -e /mnt/c/Users/y_okazawa/.lpc-2167 ]]; then
+    mkdir -p ${HOME}/.lpc-2167/certs
+    for f in ca.crt client.crt client.key; do
+        cat /mnt/c/Users/y_okazawa/.lpc-2167/${f} > ${HOME}/.lpc-2167/${f}
+    done
+    cat /mnt/c/Users/y_okazawa/.lpc-2167/env |
+    sed -e "s|DOCKER_CERT_PATH=.*|DOCKER_CERT_PATH=${HOME}/.lpc-2167/certs|" > ${HOME}/.lpc-2167/env
+    for f in $(find /mnt/c/Users/y_okazawa/.lpc-2167/certs -type f); do
+        cat ${f} > ${HOME}/.lpc-2167/certs/$(basename ${f})
+    done
+    source ${HOME}/.lpc-2167/env
+    docker version
 fi

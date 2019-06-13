@@ -46,12 +46,23 @@ update_go_tool bitbucket.org/yujiorama/tiny-nc &
 wait
 
 if which ghq >/dev/null 2>&1; then
-    ghqd() {
-        local d="$(ghq root)/$(ghq list | peco)"
-        [[ -d "${d}" ]] && pushd "${d}"
-    }
-    ghqv() {
-        local d="$(ghq root)/$(ghq list | peco)"
-        [[ -d "${d}" ]] && subl -a "${d}"
-    }
+    if which fzf >/dev/null 2>&1; then
+        ghqd() {
+            local d="$(ghq root)/$(ghq list | fzf)"
+            [[ -d "${d}" ]] && pushd "${d}"
+        }
+        ghqv() {
+            local d="$(ghq root)/$(ghq list | fzf)"
+            [[ -d "${d}" ]] && subl -a "${d}"
+        }
+    elif which peco >/dev/null 2>&1; then
+        ghqd() {
+            local d="$(ghq root)/$(ghq list | peco)"
+            [[ -d "${d}" ]] && pushd "${d}"
+        }
+        ghqv() {
+            local d="$(ghq root)/$(ghq list | peco)"
+            [[ -d "${d}" ]] && subl -a "${d}"
+        }
+    fi
 fi

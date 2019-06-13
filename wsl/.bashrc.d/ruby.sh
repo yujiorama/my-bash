@@ -1,26 +1,17 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
+# sudo apt install -y libssl-dev libreadline-dev zlib1g-dev
+# git clone https://github.com/rbenv/rbenv.git ~/.rbenv
+# cd ~/.rbenv && src/configure && make -C src
+# source ~/wsl/.bashrc.d/ruby.sh
+# mkdir -p $(rbenv root)/plugins
+# git clone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-build
+# rbenv install 2.6.2
+# rbenv global
+
 if [[ -d ${HOME}/.rbenv ]]; then
     PATH=${PATH/\/home\/y_okazawa\/.rbenv\/bin:}
     PATH=${HOME}/.rbenv/bin:${PATH}
     eval "$(rbenv init -)"
-fi
-
-if [[ -d "/c/tools/ruby26" ]]; then
-    PATH=$(echo $PATH | tr ':' '\n' | grep -v -e '^$' | grep -v -e '/c/tools/ruby' | tr '\n' ':')
-    PATH=${PATH}:/c/tools/ruby26/bin
-fi
-
-if alias | grep -w be >/dev/null 2>&1    ; then unalias be    ; fi
-if alias | grep -w bundle >/dev/null 2>&1; then unalias bundle; fi
-
-if which bundle >/dev/null 2>&1; then
     alias be='bundle exec ' 
-else
-    RUBY_ROOT_="$(dirname "$(which ruby)")"
-    if [[ -e "${RUBY_ROOT_}/bundle.cmd" ]]; then
-        alias be="${RUBY_ROOT_}/bundle.cmd exec "
-        alias bundle="${RUBY_ROOT_}/bundle.cmd "
-    fi
-    unset RUBY_ROOT_
 fi

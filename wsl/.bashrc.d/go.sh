@@ -1,5 +1,11 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
+# sudo mkdir -p /usr/local/share
+# curl -fsSL https://dl.google.com/go/go1.12.linux-amd64.tar.gz | sudo tar -C /usr/local/share -xzf -
+# for f in $(find /usr/local/share/go/bin -type f); do
+#     sudo ln -f -s ${f} /usr/local/bin/$(basename ${f})
+# done
+
 if ! which go 2>&1 >/dev/null; then
     return
 fi

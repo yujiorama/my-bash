@@ -1,6 +1,6 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
-HOST_USER_HOME=/mnt/c/Users/y.okazawa
+HOST_USER_HOME=/mnt/c/Users/y_okazawa
 if [[ -d "${HOST_USER_HOME}/.ssh" ]]; then
     for f in $(grep -l 'PRIVATE KEY' ${HOST_USER_HOME}/.ssh/*); do
         mkdir -m 700 -p ${HOME}/.ssh

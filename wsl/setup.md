@@ -104,3 +104,44 @@ for f in $(find /usr/local/share/go/bin -type f); do
     sudo ln -f -s ${f} /usr/local/bin/$(basename ${f})
 done
 ```
+
+### LaTeX
+
+```bash
+sudo apt install -y --no-install-recommends \
+  texlive-lang-japanese texlive-fonts-recommended texlive-latex-extra lmodern fonts-lmodern tex-gyre fonts-texgyre texlive-pictures \
+  ghostscript gsfonts zip ruby-zip ruby-nokogiri mecab ruby-mecab mecab-ipadic-utf8 poppler-data cm-super \
+  graphviz gnuplot python-blockdiag python-aafigure
+sudo apt-get clean
+```
+
+### Ruby
+
+https://github.com/rbenv/rbenv
+
+https://github.com/rbenv/ruby-build
+
+```bash
+sudo apt install -y libssl-dev libreadline-dev zlib1g-dev
+git clone https://github.com/rbenv/rbenv.git ~/.rbenv
+cd ~/.rbenv && src/configure && make -C src
+source ~/wsl/.bashrc.d/ruby.sh
+mkdir -p $(rbenv root)/plugins
+git clone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-build
+rbenv install 2.6.2
+rbenv global
+```
+
+### SDKMAN
+
+https://sdkman.io/
+
+```bash
+curl -s "https://get.sdkman.io" | bash
+source ~/wsl/.bashrc.d/sdkman.sh
+sdk install java 11.0.2-zulu
+sdk install java 8.0.202-amzn
+sdk use java 11.0.2-zulu
+sdk install gradle 5.3.1
+sdk install maven 3.6.3
+```
