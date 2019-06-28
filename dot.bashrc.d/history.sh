@@ -1,7 +1,7 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
 export HISTSIZE
-HISTSIZE=100000
+HISTSIZE=1000000
 export HISTCONTROL
 HISTCONTROL=ignoredups
 export HISTTIMEFORMAT

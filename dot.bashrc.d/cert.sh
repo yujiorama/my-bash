@@ -8,6 +8,3 @@ if [[ ! -e ${HOME}/cacert.pem ]] ||
         http --download --output ${HOME}/cacert.pem https://curl.haxx.se/ca/cacert.pem >/dev/null 2>&1
     fi
 fi
-
-export SSL_CERT_FILE
-SSL_CERT_FILE=${HOME}/cacert.pem

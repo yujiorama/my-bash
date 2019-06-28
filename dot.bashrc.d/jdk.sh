@@ -1,32 +1,5 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
-PATH=$(echo $PATH | tr ':' '\n' | grep -v -e '^$' | grep -v -e 'jdk|adopt' | tr '\n' ':')
-
-export JAVA_OPTS
-JAVA_OPTS="-Dfile.encoding=UTF-8"
-if scoop list | grep -w adopt8-openj9; then
-    export JDK8_HOME
-    JDK8_HOME=$(cygpath --mixed "$(scoop prefix adopt8-openj9)")
-fi
-if scoop list | grep -w adopt11-openj9; then
-    export JDK11_HOME
-    JDK11_HOME=$(cygpath --mixed "$(scoop prefix adopt11-openj9)")
-fi
-if scoop list | grep -w adopt10-hotspot; then
-    export JDK10_HOME
-    JDK10_HOME=$(cygpath --mixed "$(scoop prefix adopt10-hotspot)")
-fi
-if scoop list | grep -w openjdk13; then
-    export JDK13_HOME
-    JDK13_HOME=$(cygpath --mixed "$(scoop prefix openjdk13)")
-fi
-export JAVA_HOME
-JAVA_HOME="${JDK13_HOME}"
-
-if [[ -z "${JAVA_HOME}" ]]; then
-    return
-fi
-
 __jdk_function()
 {
     local java_home="$1"

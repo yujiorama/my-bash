@@ -2,6 +2,6 @@
 
 PATH=$(echo $PATH | tr ':' '\n' | grep -v -e '^$' | grep -v -e 'sdkman' | tr '\n' ':')
 
-export SDKMAN_DIR="${HOME}/.sdkman" \
-    && source "${HOME}/.sdkman/bin/sdkman-init.sh"
-PATH=${PATH//C:\\Users\\y_okazawa\\.sdkman\\/\/c\/Users\/y_okazawa\/.sdkman\/}
+export SDKMAN_DIR
+SDKMAN_DIR="${HOME}/.sdkman"
+source <( /bin/cat "${HOME}/.sdkman/bin/sdkman-init.sh" )

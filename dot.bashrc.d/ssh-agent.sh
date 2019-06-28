@@ -1,7 +1,7 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
 if [[ -e ${HOME}/.ssh-agent.env ]]; then
-    source ${HOME}/.ssh-agent.env
+    source <(/bin/cat ${HOME}/.ssh-agent.env)
 else
     SSH_AGENT_PID="none"
 fi
@@ -17,7 +17,5 @@ if [[ "${agent_pid}" != "${SSH_AGENT_PID}" ]]; then
         fi
     fi
     source <(ssh-agent -s | tee ${HOME}/.ssh-agent.env)
-    for f in $(grep -l 'PRIVATE KEY' ${HOME}/.ssh/*); do
-        ssh-add -q ${f}
-    done
+    grep -l 'PRIVATE KEY' ${HOME}/.ssh/* | xargs -L1 -I{} ssh-add -q {}
 fi

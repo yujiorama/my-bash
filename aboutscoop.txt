@@ -1,63 +1,70 @@
 ## buckets:
  
-dev-scoop https://team.gxp.jp/git/scm/~y.okazawa_gx/dev-scoop.git
-extras https://github.com/lukesampson/scoop-extras.git
-java https://github.com/se35710/scoop-java
-jetbrains https://github.com/Ash258/Scoop-JetBrains
-versions https://github.com/scoopinstaller/versions
+dev-scoop https://bitbucket.org/yujiorama/scoop
 
 ## Installed apps: 
 
+Installed apps: 
+
+```
   7zip 19.00
-  a5m2 2.14.1 [dev-scoop]
-  adopt11-openj9 11.0.3-7-0.14.0 [java]
-  adopt12-openj9 12-33-0.13.0 [java]
-  adopt8-openj9 8u212-b03-0.14.0 [java]
-  azure-cli 2.0.62 [extras]
-  chrome 73.0.3683.86 [extras]
-  conemu 19.03.31 [extras]
+  adopt10-hotspot 10.0.2-13 [java]
+  adopt10-openj9 10.0.2-13-0.9.0 [java]
+  adopt11-openj9 11.0.3-7-0.14.3 [java]
+  adopt8-openj9 8u212-b04-0.14.2 [java]
+  chrome 74.0.3729.131 [extras]
+  conemu 19.05.26 [extras]
+  dark 3.11.1
   docker 18.09.3
-  docker-compose 1.24.0
-  firefox 66.0.3 [extras]
-  git 2.21.0.windows.1
-  go 1.12.4
+  docker-compose 1.24.1
+  eksctl 0.1.32 [dev-scoop]
+  ffmpeg 4.1.3
+  firefox 67.0.4 [extras]
+  fzf 0.18.0
+  git 2.22.0.windows.1
+  go 1.12.6
   graphviz 2.38
-  helm 2.13.1
+  helm 2.14.1
   heroku-cli nightly-20190407 [extras]
-  innounp 0.48
+  highlight 3.52
+  innounp 0.49
   IntelliJ-IDEA-Ultimate 2019.1-191.6183.87 [jetbrains]
-  irfanview 4.52 [extras]
+  irfanview 4.53 [extras]
   jq 1.6
-  kubectl 1.14.1
+  kotlin 1.3.40
+  kubectl 1.15.0
   launchy 2.9.66 [extras]
-  minikube 1.0.0
+  make 4.2.1
+  minikube 1.2.0
+  minishift 1.34.0
   mkcert 1.3.0 [extras]
-  mysql-workbench 8.0.15
-  nodejs 11.14.0
-  openjdk10 10.0.2-13 [java]
-  openjdk13 13-17-ea [java]
+  mysql-workbench 8.0.16
+  nodejs 12.5.0
+  openjdk13 13-27-ea [java]
+  openshift-origin-client 3.11.0
   openvpn 2.4.7-I603 [extras]
-  packer 1.4.0
-  pandoc 2.7.2 [extras]
+  packer 1.4.2
+  pandoc 2.7.3
   peco 0.5.3
-  plantuml 1.2019.5 [extras]
+  plantuml 1.2019.7 [extras]
   pleiades-ultimate 2019-03_20190324 [dev-scoop]
+  protobuf 3.8.0 [extras]
   putty 0.71 [extras]
   python 3.7.3
-  r 3.5.3
+  r 3.6.0
   sublime-text 3207 [extras]
   sudo 0.2018.07.25
-  sysinternals April.4.2019 [extras]
-  tablacus 19.4.3 [dev-scoop]
-  terraform 0.11.13
-  thunderbird 60.6.1 [extras]
+  sysinternals June.14.2019 [extras]
+  tablacus 19.5.22 [dev-scoop]
+  thunderbird 60.7.2 [extras]
   tlatoolbox 1.5.7 [dev-scoop]
-  tortoisesvn 1.11.1.28492 [extras]
+  tortoisesvn 1.12.0.28568 [extras]
   unzip 6.00
-  vagrant 2.2.4
-  vscode 1.33.1 [extras]
+  vagrant 2.2.5
+  vscode 1.35.1 [extras]
   winmerge 2.16.2 [extras]
-  winscp 5.15.1 [extras]
+  winscp 5.15.2 [extras]
   xmlstarlet 1.6.1
   zip 3.0
   zstd 1.4.0
+```
