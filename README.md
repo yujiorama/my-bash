@@ -15,6 +15,10 @@ Windows 10
 
 ## 使い方
 
+### 0. このリポジトリの clone
+
+適当な場所にこのリポジトリを clone します。
+
 ### 1. `Chocolatey` のインストール
 
 [Installation](https://chocolatey.org/install)
@@ -45,7 +49,7 @@ Visual Studio Installer が自動更新してしまうし、ワークロード�
 
 そしてたぶん Windows の再起動が必要です。
 
-### 2. `Scoop` をインストール
+### 2. `Scoop` のインストール
 
 [Scoop](https://scoop.sh/)
 
@@ -76,4 +80,15 @@ scoop update
 
 ```ps1
 scoop install sudo launchy sysinternals tortoisesvn chrome firefox thunderbird adopt11-openj9 openjdk13 go nodejs python IntelliJ-IDEA-Ultimate sublime-text vscode winmerge vagrant docker docker-compose kubectl minikube openvpn putty winscp 7zip zip unzip zstd mysql-workbench peco jq
+```
+
+### 4. .bash_profile の変更
+
+このリポジトリのスクリプトを読み込むようにします。
+
+`.bash_profile` の最後に次の行を追加するだけです。
+
+```bash
+
+[ -e ${HOME}/windows-gitbash-config/.bash_profile ] && source ${HOME}/windows-gitbash-config/.bash_profile
 ```
