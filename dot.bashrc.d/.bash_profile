@@ -119,7 +119,6 @@ envdir="${HOME}/.bashrc.d"
 mkdir -p "${cachedir}"
 echo '__TEST=1' > ${cachedir}/.test
 /bin/find ${cachedir} -type f -mtime +5 -exec /bin/rm -f {} \;
-source <( /bin/cat $(/bin/find ${cachedir} -type f | /bin/sort) )
 
 for f in $(/bin/find "${envdir}" -type f | /bin/grep -v .bash_profile | /bin/sort); do
     stdout_log=$(/bin/mktemp)
@@ -128,9 +127,10 @@ for f in $(/bin/find "${envdir}" -type f | /bin/grep -v .bash_profile | /bin/sor
     starttime=$SECONDS
     cached_=""
     if [[ "env" = "${f##*.}" ]]; then
-        cachefile_="${cachedir}/$(basename ${f}).cache"
+        cachefile_="${cachedir}/$(basename ${f})-$(/bin/md5sum --binary ${f} | cut -d ' ' -f 1)"
         if [[ -e "${cachefile_}" ]]; then
             cached_=" (cached)"
+            source <( /bin/cat ${cachefile_} )
         else
             envbefore=$(mktemp)
             envafter=$(mktemp)
