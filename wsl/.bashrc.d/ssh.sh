@@ -30,9 +30,7 @@ if which ssh-agent >/dev/null 2>&1; then
             fi
         fi
         source <(ssh-agent -s | tee ${HOME}/.ssh-agent.env)
-        for f in $(grep -l 'PRIVATE KEY' ${HOME}/.ssh/*); do
-            ssh-add ${f}
-        done
+        grep -l 'PRIVATE KEY' ${HOME}/.ssh/* | xargs -L1 -I{} ssh-add {}
     fi
 fi
 

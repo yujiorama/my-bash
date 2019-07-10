@@ -19,3 +19,5 @@ else
     (cd ${HOME}/.kube-ps1 && git pull)
 fi
 source ${HOME}/.kube-ps1/kube-ps1.sh
+kubeoff
+

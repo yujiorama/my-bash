@@ -36,17 +36,23 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/local/games:/usr/sbin:/usr/bin:/sbin:/b
 PATH=${HOME}/bin:${HOME}/.local/bin:${PATH}
 PATH=${PATH}:/mnt/c/Windows:/mnt/c/Windows/System32
 
-error_log=$(/bin/mktemp)
-for f in $(/usr/bin/find ${HOME}/wsl/.bashrc.d -type f | /bin/grep -v .bash_profile | /usr/bin/sort); do
+envdir="${HOME}/wsl/.bashrc.d"
+for f in $(/usr/bin/find ${envdir} -type f | /bin/grep -v .bash_profile | /usr/bin/sort); do
+    stdout_log=$(/bin/mktemp)
+    stderr_log=$(/bin/mktemp)
+    echo -n "${f}: "
     starttime=$SECONDS
-    source ${f} 2>${error_log}
-    if [[ -s ${error_log} ]]; then
-        echo "${f}: $(/bin//bin/cat ${error_log})"
-    fi
+    source <( /bin/cat ${f} ) 2>${stderr_log} >${stdout_log}
     laptime=$(( SECONDS - starttime ))
-    echo "${f}: $laptime sec"
+    echo "${laptime} sec"
+    if [[ -s ${stdout_log} ]]; then
+        echo "=== stdout"; /bin/cat ${stdout_log}; echo
+    fi
+    if [[ -s ${stderr_log} ]]; then
+        echo "=== stderr"; /bin/cat ${stderr_log}; echo
+    fi
+    /bin/rm -f ${stdout_log} ${stderr_log}
 done
-/bin/rm -f ${error_log}
 
 if [[ -d ${HOME}/.sdkman ]]; then
     export SDKMAN_DIR="${HOME}/.sdkman"
@@ -67,4 +73,3 @@ export PS1
 PS1='\033[01;32m\]\u@\h `here`\n\[\033[33m\]\w\[\033[36m\]`__git_ps1 " (%s)"`\[\033[0m\]\n`kube_ps1`\n$ '
 
 echo "Startup Time: $SECONDS sec"
-

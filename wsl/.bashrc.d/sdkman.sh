@@ -8,7 +8,7 @@
 # sdk install gradle 5.3.1
 # sdk install maven 3.6.3
 
-if [[ -d ${HOME}/.sdkman ]]; then
-    export SDKMAN_DIR="${HOME}/.sdkman"
-    [[ -s "${SDKMAN_DIR}/bin/sdkman-init.sh" ]] && source "${SDKMAN_DIR}/bin/sdkman-init.sh"
-fi
+# if [[ -d ${HOME}/.sdkman ]]; then
+#     export SDKMAN_DIR="${HOME}/.sdkman"
+#     [[ -s "${SDKMAN_DIR}/bin/sdkman-init.sh" ]] && source "${SDKMAN_DIR}/bin/sdkman-init.sh"
+# fi
