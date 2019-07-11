@@ -114,20 +114,22 @@ alias online='__online '
 
 
 cachedir="${HOME}/.cache"
-envdir="${HOME}/.bashrc.d"
-
 mkdir -p "${cachedir}"
-echo '__TEST=1' > ${cachedir}/.test
-/bin/find ${cachedir} -type f -mtime +5 -exec /bin/rm -f {} \;
+cacheid=$(/bin/find "${HOME}/.bashrc.d" -type f -name \*.env \
+        | /bin/xargs -r /bin/cat \
+        | /bin/md5sum --binary - \
+        | /bin/cut -d ' ' -f 1)
 
-for f in $(/bin/find "${envdir}" -type f | /bin/grep -v .bash_profile | /bin/sort); do
+/bin/find "${cachedir}" -type f -not -name \*-${cacheid} | /bin/xargs -r /bin/rm -f
+
+for f in $(/bin/find "${HOME}/.bashrc.d" -type f | /bin/grep -v .bash_profile | /bin/sort); do
     stdout_log=$(/bin/mktemp)
     stderr_log=$(/bin/mktemp)
     echo -n "${f}: "
     starttime=$SECONDS
     cached_=""
     if [[ "env" = "${f##*.}" ]]; then
-        cachefile_="${cachedir}/$(basename ${f})-$(/bin/md5sum --binary ${f} | cut -d ' ' -f 1)"
+        cachefile_="${cachedir}/$(basename ${f})-${cacheid}"
         if [[ -e "${cachefile_}" ]]; then
             cached_=" (cached)"
             source <( /bin/cat ${cachefile_} )

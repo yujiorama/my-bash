@@ -1,28 +1,16 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
-GNUPG_BIN="${HOME}/scoop/apps/gnupg/current/bin"
-
-if [[ ! -d "${GNUPG_BIN}" ]]; then
+if ! type ssh-pageant >/dev/null 2>&1; then
     return
 fi
 
-export GNUPGHOME
-GNUPGHOME="${HOME}/.gnupg"
+if ! type pageant >/dev/null 2>&1; then
+    return
+fi
 
-/bin/cat - > ${GNUPGHOME}/gpg-agent.conf << EOS
-log-file gpg-agent.log
-enable-putty-support
-default-cache-ttl     3600
-max-cache-ttl         36000
-default-cache-ttl-ssh 3600
-max-cache-ttl-ssh     36000
-EOS
-${GNUPG_BIN}/gpg-connect-agent killagent '//bye'
-${GNUPG_BIN}/gpg-connect-agent '//bye'
-
-source <(/usr/bin/ssh-pageant -s --reuse -a "${HOME}/.ssh-pageant-${USERNAME}")
+source <( ssh-pageant -s --reuse -a "${HOME}/.ssh-pageant-${USERNAME}" )
 for ppk in $(/bin/find ${HOME}/.ssh -type f -name \*.ppk); do
-  echo "${ppk}"
+  /bin/echo "${ppk}"
   pageant ${ppk}
 done
 
@@ -45,5 +33,3 @@ done
 #     source <(ssh-pageant -s | tee ${HOME}/.ssh-agent.env)
 #     grep -l 'PRIVATE KEY' ${HOME}/.ssh/* | xargs -L1 -I{} ssh-add -q {}
 # fi
-
-# C:\Users\y_okazawa\scoop\apps\putty\current\PAGEANT.EXE C:\Users\y_okazawa\.ssh\id_ed25519.ppk
