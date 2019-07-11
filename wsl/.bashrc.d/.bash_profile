@@ -2,10 +2,13 @@
 
 [[ -e ${HOME}/.bashrc ]] && source ${HOME}/.bashrc
 
+export HOST_USER_HOME
+HOST_USER_HOME="/mnt/c/Users/y_okazawa"
+
 for d in work Downloads .aws .m2 wsl; do
     if ! /bin/mountpoint -q ${HOME}/${d}; then
         /bin/mkdir -p ${HOME}/${d}
-        /usr/bin/sudo /bin/mount --bind /mnt/c/Users/y_okazawa/${d} ${HOME}/${d}
+        /usr/bin/sudo /bin/mount --bind "${HOST_USER_HOME}/${d}" "${HOME}/${d}"
     fi
 done
 

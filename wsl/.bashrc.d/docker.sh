@@ -16,10 +16,10 @@ docker_reconfigure() {
 }
 
 _update_docker_comopse() {
-    if [[ -e /mnt/c/Users/y_okazawa/.docker-compose.version ]]; then
+    if [[ -e ${HOST_USER_HOME}/.docker-compose.version ]]; then
         return
     fi
-    local host_docker_compose_version=$(cat /mnt/c/Users/y_okazawa/.docker-compose.version)
+    local host_docker_compose_version=$(cat ${HOST_USER_HOME}/.docker-compose.version)
     if which docker-compose >/dev/null 2>&1; then
         local wsl_docker_compose_version=$(docker-compose --version | cut -c24- | cut -d , -f 1)
         if [[ $host_docker_compose_version = $wsl_docker_compose_version ]]; then
@@ -41,8 +41,8 @@ if which docker-compose >/dev/null 2>&1; then
     esac
 fi
 
-if [[ -s /mnt/c/Users/y_okazawa/.docker_env ]]; then
-    source <(cat /mnt/c/Users/y_okazawa/.docker_env | tee ${HOME}/.docker_env)
+if [[ -s ${HOST_USER_HOME}/.docker_env ]]; then
+    source <(cat ${HOST_USER_HOME}/.docker_env | tee ${HOME}/.docker_env)
     mkdir -p "${HOME}/.docker_cert"
     find "${HOME}/.docker_cert" -type f -exec rm -f {} \;
     for f in $(find $(wslpath "${DOCKER_CERT_PATH}") -type f); do

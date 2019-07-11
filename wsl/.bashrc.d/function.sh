@@ -8,8 +8,8 @@ subl() {
     if ! mountpoint -q $(readlink -f ${wsl_file} | cut -d '/' -f 1,2,3,4); then
         return
     fi
-    windows_file=c:/Users/y_okazawa/$(readlink -f ${wsl_file} | cut -d '/' -f 4-)
-    "/mnt/c/Users/y_okazawa/scoop/shims/subl.exe" ${windows_file}
+    windows_file="$(wslpath -m ${HOST_USER_HOME}/$(readlink -f ${wsl_file}))"
+    "${HOST_USER_HOME}/scoop/shims/subl.exe" ${windows_file}
 }
 code() {
     wsl_file=$1
@@ -19,7 +19,7 @@ code() {
     if ! mountpoint -q $(readlink -f ${wsl_file} | cut -d '/' -f 1,2,3,4); then
         return
     fi
-    windows_file=c:/Users/y_okazawa/$(readlink -f ${wsl_file} | cut -d '/' -f 4-)
-    /mnt/c/Users/y_okazawa/scoop/shims/code.exe ${windows_file}
+    windows_file="$(wslpath -m ${HOST_USER_HOME}/$(readlink -f ${wsl_file}))"
+    "${HOST_USER_HOME}/scoop/shims/code.exe" ${windows_file}
 }
 

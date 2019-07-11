@@ -1,6 +1,16 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
-HOST_USER_HOME=/mnt/c/Users/y_okazawa
+if ! type gpgconf >/dev/null 2>&1; then
+    return
+fi
+
+export SSH_AUTH_SOCK
+SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+
+if [[ ! -z "${TERM_PROGRAM}" ]]; then
+    return
+fi
+
 if [[ -d "${HOST_USER_HOME}/.ssh" ]]; then
     for f in $(grep -l 'PRIVATE KEY' ${HOST_USER_HOME}/.ssh/*); do
         mkdir -m 700 -p ${HOME}/.ssh
@@ -12,27 +22,7 @@ if [[ -d "${HOST_USER_HOME}/.ssh" ]]; then
     fi
 fi
 
-if [[ -e ${HOME}/.ssh-agent.env ]]; then
-    source ${HOME}/.ssh-agent.env
-else
-    SSH_AGENT_PID="none"
-fi
-
-if which ssh-agent >/dev/null 2>&1; then
-    agent_pid=$(ps -ef | grep ssh-agent | grep -v grep | awk '{print $2}')
-    if [[ "${agent_pid}" != "${SSH_AGENT_PID}" ]]; then
-        unset SSH_AUTH_SOCK SSH_AGENT_PID
-        if [[ "${agent_pid}" != "" ]]; then
-            if which pkill 2>&1 >/dev/null; then
-                pkill ssh-agent
-            elif which taskkill 2>&1 >/dev/null; then
-                taskkill //F //IM ssh-agent.exe
-            fi
-        fi
-        source <(ssh-agent -s | tee ${HOME}/.ssh-agent.env)
-        grep -l 'PRIVATE KEY' ${HOME}/.ssh/* | xargs -L1 -I{} ssh-add {}
-    fi
-fi
+grep -l 'PRIVATE KEY' ${HOME}/.ssh/* | xargs -r -L1 ssh-add
 
 __hostname_completion()
 {
