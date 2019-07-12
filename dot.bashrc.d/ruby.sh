@@ -1,6 +1,6 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
-if ! which ruby >/dev/null 2>&1; then
+if ! command -v ruby >/dev/null 2>&1; then
     return
 fi
 

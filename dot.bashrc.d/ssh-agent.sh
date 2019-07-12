@@ -8,10 +8,11 @@ if ! type pageant >/dev/null 2>&1; then
     return
 fi
 
+# shellcheck source=/dev/null
 source <( ssh-pageant -s --reuse -a "${HOME}/.ssh-pageant-${USERNAME}" )
-for ppk in $(/bin/find ${HOME}/.ssh -type f -name \*.ppk); do
+/bin/find "${HOME}/.ssh" -type f -name \*.ppk | while read -r ppk; do
   /bin/echo "${ppk}"
-  pageant ${ppk}
+  pageant "${ppk}"
 done
 
 # if [[ -e ${HOME}/.ssh-agent.env ]]; then
@@ -24,9 +25,9 @@ done
 # if [[ "${agent_pid}" != "${SSH_AGENT_PID}" ]]; then
 #     unset SSH_AUTH_SOCK SSH_AGENT_PID
 #     if [[ "${agent_pid}" != "" ]]; then
-#         if which pkill >/dev/null 2>&1; then
+#         if command -v pkill >/dev/null 2>&1; then
 #             pkill ssh-pageant
-#         elif which taskkill >/dev/null 2>&1; then
+#         elif command -v taskkill >/dev/null 2>&1; then
 #             taskkill //F //IM ssh-pageant.exe
 #         fi
 #     fi

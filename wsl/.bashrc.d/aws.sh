@@ -10,6 +10,6 @@ if [[ -e "${HOME}/.aws/credentials" ]]; then
     AWS_SHARED_CREDENTIALS_FILE="${HOME}/.aws/credentials"
 fi
 
-if which aws_completer >/dev/null 2>&1; then
-    complete -C $(which aws_completer) aws
+if command -v aws_completer >/dev/null 2>&1; then
+    complete -C "$(command -v aws_completer)" aws
 fi

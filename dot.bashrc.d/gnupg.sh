@@ -8,18 +8,16 @@ if ! type gpg-connect-agent >/dev/null 2>&1; then
     return
 fi
 
-gpg-agent 2>/dev/null
+if ! gpg-agent 2>/dev/null; then
+    mkdir -p "${GNUPGHOME}"
 
-if [[ 0 -ne $? ]]; then
-    mkdir -p ${GNUPGHOME}
-
-    /bin/cat - > ${GNUPGHOME}/gpg-agent.conf << EOS
+    /bin/cat - > "${GNUPGHOME}/gpg-agent.conf" << EOS
     log-file gpg-agent.log
     enable-putty-support
-    default-cache-ttl     3600
-    max-cache-ttl         36000
-    default-cache-ttl-ssh 3600
-    max-cache-ttl-ssh     36000
+    default-cache-ttl     86400
+    max-cache-ttl         86400
+    default-cache-ttl-ssh 86400
+    max-cache-ttl-ssh     86400
 EOS
 
     gpg-connect-agent --homedir "${GNUPGHOME}" killagent '//bye'

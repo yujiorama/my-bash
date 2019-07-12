@@ -13,9 +13,12 @@ export GIT_PS1_DESCRIBE_STYLE=branch
 export GIT_PS1_SHOWCOLORHINTS=true
 
 if [[ -e ${HOME}/git-prompt.sh ]]; then
-    source ${HOME}/git-prompt.sh
+	# shellcheck source=/dev/null
+    source "${HOME}/git-prompt.sh"
 elif [[ -e /mingw64/share/git/completion/git-prompt.sh ]]; then
-    source /mingw64/share/git/completion/git-prompt.sh
+	# shellcheck source=/dev/null
+    source "/mingw64/share/git/completion/git-prompt.sh"
 elif [[ -e /etc/bash_completion.d ]] && [[ -e /etc/bash_completion.d/git-prompt ]]; then
-    source /etc/bash_completion.d/git-prompt
+	# shellcheck source=/dev/null
+    source "/etc/bash_completion.d/git-prompt"
 fi

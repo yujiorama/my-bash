@@ -7,22 +7,34 @@ fi
 export SSH_AUTH_SOCK
 SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
 
-if [[ ! -z "${TERM_PROGRAM}" ]]; then
+if [[ -n "${TERM_PROGRAM}" ]]; then
     return
 fi
 
 if [[ -d "${HOST_USER_HOME}/.ssh" ]]; then
-    for f in $(grep -l 'PRIVATE KEY' ${HOST_USER_HOME}/.ssh/*); do
-        mkdir -m 700 -p ${HOME}/.ssh
-        cp ${f} ${HOME}/.ssh/
-        chmod 600 ${HOME}/.ssh/$(basename ${f})
+    mkdir -p "${HOME}/.ssh"
+    chmod 700 "${HOME}/.ssh"
+    grep -l 'PRIVATE KEY' "${HOST_USER_HOME}/.ssh/"* | while read -r f; do
+        cp "${f}" "${HOME}/.ssh/"
+        if [[ -e "${f}.pub" ]]; then
+            cp "${f}.pub" "${HOME}/.ssh/"
+            chmod 600 "${HOME}/.ssh/$(basename "${f}").pub"
+        fi
+        chmod 600 "${HOME}/.ssh/$(basename "${f}")"
     done
-    if [[ -e ${HOST_USER_HOME}/.ssh/config ]]; then
-        cat ${HOST_USER_HOME}/.ssh/config > ${HOME}/.ssh/config
+    if [[ -e "${HOST_USER_HOME}/.ssh/config" ]]; then
+        cat "${HOST_USER_HOME}/.ssh/config" > "${HOME}/.ssh/config"
     fi
 fi
 
-grep -l 'PRIVATE KEY' ${HOME}/.ssh/* | xargs -r -L1 ssh-add
+grep -l 'PRIVATE KEY' "${HOME}/.ssh/"* | while read -r f; do
+    if [[ -e "${f}.pub" ]]; then
+        if grep -f "${f}.pub" <(ssh-add -L) >/dev/null 2>&1; then
+            continue
+        fi
+    fi
+    ssh-add -t 86400 "${f}"
+done
 
 __hostname_completion()
 {

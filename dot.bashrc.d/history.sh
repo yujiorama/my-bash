@@ -11,7 +11,7 @@ HISTTIMEFORMAT='%Y-%m-%d %T '
 # http://qiita.com/tay07212/items/9509aef6dc3bffa7dd0c
 #
 export PROMPT_COMMAND_share_history="history -a; history -c; history -r"
-if [[ ! -z "${ConEmuPID}" ]] && [[ "0" -eq "$(which ConEMUC64.exe >/dev/null 2>&1; echo $?)" ]]; then
+if [[ -n "${ConEmuPID}" ]] && [[ "0" -eq "$(command -v ConEMUC64.exe >/dev/null 2>&1; echo $?)" ]]; then
     export PROMPT_COMMAND_conemu_storecwd="ConEMUC64.exe -StoreCWD"
 fi
 

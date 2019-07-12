@@ -6,7 +6,7 @@
 #     sudo ln -f -s ${f} /usr/local/bin/$(basename ${f})
 # done
 
-if ! which go 2>&1 >/dev/null; then
+if ! command -v go >/dev/null 2>&1; then
     return
 fi
 
@@ -14,7 +14,7 @@ export GOROOT
 GOROOT=/usr/local/share/go
 
 export GOPATH
-mkdir -p ${HOME}/.go
+mkdir -p "${HOME}/.go"
 GOPATH=${HOME}/.go
 
 export PATH

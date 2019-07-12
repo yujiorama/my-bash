@@ -7,6 +7,6 @@ if online pypi.org 443; then
     wait
 fi
 
-if which aws_completer >/dev/null 2>&1; then
+if command -v aws_completer >/dev/null 2>&1; then
     complete -C aws_completer aws
 fi

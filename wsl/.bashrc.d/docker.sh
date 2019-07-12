@@ -12,29 +12,32 @@
 # sudo usermod -aG docker $(id -u -n)
 
 docker_reconfigure() {
-    source ${HOME}/wsl/.bashrc.d/docker.sh
+    # shellcheck source=/dev/null
+    source "${HOME}/wsl/.bashrc.d/docker.sh"
 }
 
 _update_docker_comopse() {
     if [[ -e ${HOST_USER_HOME}/.docker-compose.version ]]; then
         return
     fi
-    local host_docker_compose_version=$(cat ${HOST_USER_HOME}/.docker-compose.version)
-    if which docker-compose >/dev/null 2>&1; then
-        local wsl_docker_compose_version=$(docker-compose --version | cut -c24- | cut -d , -f 1)
-        if [[ $host_docker_compose_version = $wsl_docker_compose_version ]]; then
+    local host_docker_compose_version wsl_docker_compose_version uri
+    host_docker_compose_version=$(cat "${HOST_USER_HOME}/.docker-compose.version")
+    if command -v docker-compose >/dev/null 2>&1; then
+        wsl_docker_compose_version=$(docker-compose --version | cut -c24- | cut -d , -f 1)
+        if [[ "$host_docker_compose_version" = "$wsl_docker_compose_version" ]]; then
             return
         fi
     fi
-    sudo curl -L https://github.com/docker/compose/releases/download/${host_docker_compose_version}/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+    uri="https://github.com/docker/compose/releases/download/${host_docker_compose_version}/docker-compose-$(uname -s)-$(uname -m)"
+    sudo curl -fsL "${uri}" -o /usr/local/bin/docker-compose
     sudo chmod 755 /usr/local/bin/docker-compose
 }
 _update_docker_comopse
 
 
-if which docker-compose >/dev/null 2>&1; then
+if command -v docker-compose >/dev/null 2>&1; then
     alias dc='docker-compose '
-    docker-compose --version | cut -c24- | cut -d , -f 1 > ${HOME}/.docker-compose.version
+    docker-compose --version | cut -c24- | cut -d , -f 1 > "${HOME}/.docker-compose.version"
     case ${OS:-Linux} in
         Windows*) export COMPOSE_CONVERT_WINDOWS_PATHS=1 ;;
         *)        export COMPOSE_CONVERT_WINDOWS_PATHS=0 ;;
@@ -42,11 +45,13 @@ if which docker-compose >/dev/null 2>&1; then
 fi
 
 if [[ -s ${HOST_USER_HOME}/.docker_env ]]; then
-    source <(cat ${HOST_USER_HOME}/.docker_env | tee ${HOME}/.docker_env)
+    cp "${HOST_USER_HOME}/.docker_env" "${HOME}/.docker_env"
+    # shellcheck source=/dev/null
+    source "${HOME}/.docker_env"
     mkdir -p "${HOME}/.docker_cert"
     find "${HOME}/.docker_cert" -type f -exec rm -f {} \;
-    for f in $(find $(wslpath "${DOCKER_CERT_PATH}") -type f); do
-      cat "${f}" > "${HOME}/.docker_cert/$(basename ${f})"
+    /usr/bin/find "$(wslpath "${DOCKER_CERT_PATH}")" -type f | while read -r f; do
+      cat "${f}" > "${HOME}/.docker_cert/$(basename "${f}")"
     done
     export DOCKER_CERT_PATH="${HOME}/.docker_cert"
 fi
