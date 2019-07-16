@@ -16,8 +16,9 @@ fi
 [[ -e "/usr/share/bash-completion/completions/pass" ]] && source "/usr/share/bash-completion/completions/pass"
 
 passstore_dir="${HOME}/.password-store/"
-rsync --delete -az "${HOST_USER_HOME}/.password-store/" "${passstore_dir}"
-
-chmod 700 "${passstore_dir}"
-/usr/bin/find "${passstore_dir}" -type d | xargs -r chmod 700
-/usr/bin/find "${passstore_dir}" -type f | xargs -r chmod 600
+if [[ -d "${HOST_USER_HOME}/.password-store/" ]]; then
+    rsync --delete -az "${HOST_USER_HOME}/.password-store/" "${passstore_dir}"
+    chmod 700 "${passstore_dir}"
+    /usr/bin/find "${passstore_dir}" -type d | xargs -r chmod 700
+    /usr/bin/find "${passstore_dir}" -type f | xargs -r chmod 600
+fi
