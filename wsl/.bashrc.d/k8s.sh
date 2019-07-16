@@ -10,15 +10,6 @@ fi
 # sudo mv kubectl /usr/local/bin/kubectl
 
 if command -v kubectl >/dev/null 2>&1; then
-	# shellcheck source=/dev/null
+    # shellcheck source=/dev/null
     source <(kubectl completion bash)
 fi
-
-if [[ ! -d ${HOME}/.kube-ps1 ]]; then
-    git clone https://github.com/jonmosco/kube-ps1 "${HOME}/.kube-ps1"
-else
-    (cd "${HOME}/.kube-ps1" && git pull)
-fi
-# shellcheck source=/dev/null
-source "${HOME}/.kube-ps1/kube-ps1.sh"
-kubeoff

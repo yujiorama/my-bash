@@ -65,11 +65,6 @@ sourcedir="$(dirname "${BASH_SOURCE[0]}")"
     /bin/rm -f "${stdout_log}" "${stderr_log}"
 done
 
-if [[ -d ${HOME}/.sdkman ]]; then
-    export SDKMAN_DIR="${HOME}/.sdkman"
-    [[ -s "${SDKMAN_DIR}/bin/sdkman-init.sh" ]] && source "${SDKMAN_DIR}/bin/sdkman-init.sh"
-fi
-
 __here()
 {
     case ${OS:-Linux} in
@@ -81,6 +76,6 @@ alias here='__here'
 
 export PS1
 # PS1='[\u@\h \W$(__git_ps1 " (%s)")]\$ '
-PS1='\[\e[01;32m\]\u@\h `here`\n\[\e[33m\]\w\[\e[36m\]`__git_ps1 " (%s)"`\[\e[0m\]\n`kube_ps1`\n$ '
+PS1='\[\e[01;32m\]\u@\h `here`\n\[\e[33m\]\w\[\e[36m\]`__git_ps1 " (%s)"`\[\e[0m\]\n$ '
 
 echo "Startup Time: $SECONDS sec"

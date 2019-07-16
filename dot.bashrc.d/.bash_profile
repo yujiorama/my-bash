@@ -173,9 +173,6 @@ fi
 if declare -f __git_ps1 >/dev/null; then
     PS1=$PS1'\[\e[33m\]\w\[\e[36m\]`__git_ps1 " (%s)"`\[\e[0m\]\n'
 fi
-if declare -f kube_ps1 >/dev/null; then
-    PS1=$PS1'`kube_ps1`\n'
-fi
 PS1=$PS1'$ '
 # PS1='\[\e[35m\]\u@\h `__here`\n\[\e[33m\]\w\[\e[36m\]`__git_ps1 " (%s)"`\[\e[0m\]\n`kube_ps1`\n$'
 echo "Startup Time: $SECONDS sec"
