@@ -17,6 +17,8 @@ if [[ -z "${HOME}" ]]; then
 fi
 export PAGER
 PAGER='less -r -F'
+export MSYS
+MSYS=winsymlinks:nativestrict
 
 # shellcheck source=/dev/null
 [[ -e /bin/dircolors ]] && source <(/bin/dircolors --sh)
@@ -111,7 +113,7 @@ __online()
 }
 alias online='__online '
 
-sourcedir="$(dirname "${BASH_SOURCE}")"
+sourcedir="$(dirname "${BASH_SOURCE[0]}")"
 
 [[ -e "${sourcedir}/go.sh" ]] && source "${sourcedir}/go.sh"
 

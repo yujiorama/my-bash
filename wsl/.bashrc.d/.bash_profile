@@ -6,7 +6,13 @@
 export HOST_USER_HOME
 HOST_USER_HOME="/mnt/c/Users/y_okazawa"
 
-for d in work Downloads .aws .m2 wsl; do
+
+if ! /bin/mountpoint -q "${HOME}/wsl"; then
+    /bin/mkdir -p "${HOME}/wsl"
+    /usr/bin/sudo /bin/mount --bind "${HOST_USER_HOME}/config-scripts/wsl" "${HOME}/wsl"
+fi
+
+for d in work Downloads .aws .m2; do
     if ! /bin/mountpoint -q "${HOME}/${d}"; then
         /bin/mkdir -p "${HOME}/${d}"
         /usr/bin/sudo /bin/mount --bind "${HOST_USER_HOME}/${d}" "${HOME}/${d}"
@@ -40,8 +46,9 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/local/games:/usr/sbin:/usr/bin:/sbin:/b
 PATH=${HOME}/bin:${HOME}/.local/bin:${PATH}
 PATH=${PATH}:/mnt/c/Windows:/mnt/c/Windows/System32
 
-envdir="${HOME}/wsl/.bashrc.d"
-for f in $(/usr/bin/find "${envdir}" -type f | /bin/grep -v .bash_profile | /usr/bin/sort); do
+sourcedir="$(dirname "${BASH_SOURCE[0]}")"
+
+/usr/bin/find "${sourcedir}" -type f | /bin/grep -v .bash_profile | /usr/bin/sort | while read -r f; do
     stdout_log=$(/bin/mktemp)
     stderr_log=$(/bin/mktemp)
     echo -n "${f}: "
