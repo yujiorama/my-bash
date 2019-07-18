@@ -29,8 +29,8 @@ if ! gpg-agent 2>/dev/null; then
     max-cache-ttl         86400
 EOS
     /bin/chmod 700 "${GNUPGHOME}"
-    /usr/bin/find "${GNUPGHOME}" -type d | xargs -r chmod 700
-    /usr/bin/find "${GNUPGHOME}" -type f | xargs -r chmod 600
+    /usr/bin/find -L "${GNUPGHOME}" -type d | xargs -r chmod 700
+    /usr/bin/find -L "${GNUPGHOME}" -type f | xargs -r chmod 600
 
     gpg-connect-agent --homedir "${GNUPGHOME}" killagent '/bye'
     gpg-connect-agent --homedir "${GNUPGHOME}" '/bye'

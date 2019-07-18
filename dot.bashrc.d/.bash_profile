@@ -121,14 +121,14 @@ sourcedir="$(dirname "${BASH_SOURCE[0]}")"
 
 cachedir="${HOME}/.cache"
 mkdir -p "${cachedir}"
-cacheid=$(/bin/find "${sourcedir}" -type f -name \*.env \
+cacheid=$(/usr/bin/find -L "${sourcedir}" -type f -name \*.env \
         | /bin/xargs -r /bin/cat \
         | /bin/md5sum --binary - \
         | /bin/cut -d ' ' -f 1)
 
-/bin/find "${cachedir}" -type f -not -name \*"-${cacheid}" | /bin/xargs -r /bin/rm -f
+/usr/bin/find -L "${cachedir}" -type f -not -name \*"-${cacheid}" | /bin/xargs -r /bin/rm -f
 
-for f in $(/bin/find "${sourcedir}" -type f | /bin/grep -v .bash_profile | /bin/sort); do
+for f in $(/usr/bin/find -L "${sourcedir}" -type f | /bin/grep -v .bash_profile | /bin/sort); do
     stdout_log=$(/bin/mktemp)
     stderr_log=$(/bin/mktemp)
     /bin/echo -n "${f}: "

@@ -10,7 +10,7 @@ fi
 
 # shellcheck source=/dev/null
 source <( ssh-pageant -s --reuse -a "${HOME}/.ssh-pageant-${USERNAME}" )
-/bin/find "${HOME}/.ssh" -type f -name \*.ppk | while read -r ppk; do
+/usr/bin/find -L "${HOME}/.ssh" -type f -name \*.ppk | while read -r ppk; do
   /bin/echo "${ppk}"
   pageant "${ppk}"
 done

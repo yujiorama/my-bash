@@ -36,7 +36,7 @@ gcviewer() {
     if [[ ! -d "${app_dir_path}" ]]; then
         mkdir -p "${app_dir_path}"
     fi
-    outdated=$(find ${app_dir_path} -type f -name "${app_jar_name}" -mtime +14)
+    outdated=$(/usr/bin/find -L ${app_dir_path} -type f -name "${app_jar_name}" -mtime +14)
     if [[ ! -e "${app_jar_path}" ]] || [[ ! -z "${outdated}" ]]; then
         ## XXX
         download_url="http://central.maven.org/maven2/com/github/chewiebug/gcviewer/1.35/gcviewer-1.35.jar"
@@ -52,7 +52,7 @@ stream2es() {
     if [[ ! -d "${app_dir_path}" ]]; then
         mkdir -p "${app_dir_path}"
     fi
-    outdated=$(find ${app_dir_path} -type f -name "${app_jar_name}" -mtime +14)
+    outdated=$(/usr/bin/find -L ${app_dir_path} -type f -name "${app_jar_name}" -mtime +14)
     if [[ ! -e "${app_jar_path}" ]] || [[ ! -z "${outdated}" ]]; then
         download_url="https://download.elasticsearch.org/stream2es/stream2es"
         curl --connect-timeout 3 --location --continue-at - --silent --output "${app_jar_path}" "${download_url}"

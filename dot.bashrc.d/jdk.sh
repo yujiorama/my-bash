@@ -12,7 +12,7 @@ __jdk_function()
     if [[ -e "${java_home}/bin/java" ]] &&
         [[ "${java_home}/bin/java" -nt "${function_source}" ]]; then
         cp /dev/null "${function_source}"
-        find "${java_home}/bin" -type f -name \*.exe | while read -r e; do
+        /usr/bin/find -L "${java_home}/bin" -type f -name \*.exe | while read -r e; do
             local e_name
             e_name=$(basename "${e}" .exe)
             printf "function %s%s() {\nJAVA_HOME=\"\${java_home}\" \"%s\" \$*\n}\n" "${e_name}" "${suffix}" "${e}"
