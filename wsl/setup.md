@@ -56,6 +56,37 @@ sudo sed -i.bak -e 's/^# ja_JP.UTF-8.*/ja_JP.UTF-8 UTF-8/' /etc/locale.gen \
   && sudo update-locale LANG=ja_JP.UTF-8
 ```
 
+`$HOME/.bash_profile` にホスト側の情報を追加。
+
+```bash
+# 必須
+export HOST_USER_HOME
+HOST_USER_HOME="/mnt/c/Users/!!ここにWindowsのユーザー名!!"
+
+# ホスト側の置き場所はともかく WSL 側の置き場所は固定
+if ! /bin/mountpoint -q "${HOME}/.bashrc.d"; then
+    /bin/mkdir -p "${HOME}/.bashrc.d"
+    /usr/bin/sudo /bin/mount --bind "${HOST_USER_HOME}/config-scripts/wsl/.bashrc.d" "${HOME}/.bashrc.d"
+fi
+
+# 任意。あると便利だと思う
+for d in work Downloads .aws .m2; do
+    if ! /bin/mountpoint -q "${HOME}/${d}"; then
+        /bin/mkdir -p "${HOME}/${d}"
+        /usr/bin/sudo /bin/mount --bind "${HOST_USER_HOME}/${d}" "${HOME}/${d}"
+    fi
+done
+
+# これも任意。Git bash は /c から始まるパス文字列を扱うのであると便利。
+if ! /bin/mountpoint -q /c; then
+    /usr/bin/sudo /bin/mkdir -p /c
+    /usr/bin/sudo /bin/mount --bind /mnt/c /c
+fi
+
+# 必須。読み込みする
+[[ -e ${HOME}/.bashrc.d/.bash_profile ]] && source ${HOME}/.bashrc.d/.bash_profile
+```
+
 ### 後からやること
 
 #### Docker

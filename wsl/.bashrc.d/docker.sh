@@ -13,7 +13,7 @@
 
 docker_reconfigure() {
     # shellcheck source=/dev/null
-    source "${HOME}/wsl/.bashrc.d/docker.sh"
+    source "${HOME}/.bashrc.d/docker.sh"
 }
 
 _update_docker_comopse() {

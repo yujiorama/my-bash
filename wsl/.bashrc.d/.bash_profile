@@ -3,27 +3,6 @@
 # shellcheck source=/dev/null
 [[ -s ${HOME}/.bashrc ]] && source "${HOME}/.bashrc"
 
-export HOST_USER_HOME
-HOST_USER_HOME="/mnt/c/Users/y_okazawa"
-
-
-if ! /bin/mountpoint -q "${HOME}/wsl"; then
-    /bin/mkdir -p "${HOME}/wsl"
-    /usr/bin/sudo /bin/mount --bind "${HOST_USER_HOME}/config-scripts/wsl" "${HOME}/wsl"
-fi
-
-for d in work Downloads .aws .m2; do
-    if ! /bin/mountpoint -q "${HOME}/${d}"; then
-        /bin/mkdir -p "${HOME}/${d}"
-        /usr/bin/sudo /bin/mount --bind "${HOST_USER_HOME}/${d}" "${HOME}/${d}"
-    fi
-done
-
-if ! /bin/mountpoint -q /c; then
-    /usr/bin/sudo /bin/mkdir -p /c
-    /usr/bin/sudo /bin/mount --bind /mnt/c /c
-fi
-
 umask 0022
 
 export LANG
