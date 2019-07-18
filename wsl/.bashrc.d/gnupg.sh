@@ -17,13 +17,20 @@ if [[ ! -d ${HOST_USER_HOME}/.gnupg ]]; then
 fi
 
 if ! gpg-agent 2>/dev/null; then
-    gnupg_dir="${HOME}/.gnupg/"
-    /usr/bin/rsync --delete -az "${HOST_USER_HOME}/.gnupg/" "${gnupg_dir}"
-    /bin/rm -f "${gnupg_dir}/gnupg_spawn_agent_sentinel.lock" "${gnupg_dir}"/S.* "${gnupg_dir}/sshcontrol"
+    mkdir -p "${GNUPGHOME}"
+    if [[ -d "${HOST_USER_HOME}/.gnupg/" ]]; then
+        /usr/bin/rsync --delete -az "${HOST_USER_HOME}/.gnupg/" "${GNUPGHOME}"
+        /bin/rm -f "${GNUPGHOME}/gnupg_spawn_agent_sentinel.lock" "${GNUPGHOME}"/S.* "${GNUPGHOME}/sshcontrol"
+    fi
 
-    /bin/chmod 700 "${gnupg_dir}"
-    /usr/bin/find "${gnupg_dir}" -type d | xargs -r chmod 700
-    /usr/bin/find "${gnupg_dir}" -type f | xargs -r chmod 600
+    /bin/cat - > "${GNUPGHOME}/gpg-agent.conf" << EOS
+    log-file gpg-agent.log
+    default-cache-ttl     86400
+    max-cache-ttl         86400
+EOS
+    /bin/chmod 700 "${GNUPGHOME}"
+    /usr/bin/find "${GNUPGHOME}" -type d | xargs -r chmod 700
+    /usr/bin/find "${GNUPGHOME}" -type f | xargs -r chmod 600
 
     gpg-connect-agent --homedir "${GNUPGHOME}" killagent '/bye'
     gpg-connect-agent --homedir "${GNUPGHOME}" '/bye'

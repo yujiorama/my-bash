@@ -20,6 +20,8 @@ PAGER='less -r -F'
 export MSYS
 MSYS=winsymlinks:nativestrict
 
+umask 0022
+
 # shellcheck source=/dev/null
 [[ -e /bin/dircolors ]] && source <(/bin/dircolors --sh)
 

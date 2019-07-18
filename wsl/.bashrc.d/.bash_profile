@@ -48,7 +48,7 @@ PATH=${PATH}:/mnt/c/Windows:/mnt/c/Windows/System32
 
 sourcedir="$(dirname "${BASH_SOURCE[0]}")"
 
-/usr/bin/find "${sourcedir}" -type f | /bin/grep -v .bash_profile | /usr/bin/sort | while read -r f; do
+for f in $(/usr/bin/find "${sourcedir}" -type f | /bin/grep -v .bash_profile | /usr/bin/sort); do
     stdout_log=$(/bin/mktemp)
     stderr_log=$(/bin/mktemp)
     echo -n "${f}: "

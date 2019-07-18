@@ -1,12 +1,5 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
-if ! type gpgconf >/dev/null 2>&1; then
-    return
-fi
-
-export SSH_AUTH_SOCK
-SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-
 if [[ -n "${TERM_PROGRAM}" ]]; then
     return
 fi
@@ -24,17 +17,25 @@ if [[ -d "${HOST_USER_HOME}/.ssh" ]]; then
     done
     if [[ -e "${HOST_USER_HOME}/.ssh/config" ]]; then
         cat "${HOST_USER_HOME}/.ssh/config" > "${HOME}/.ssh/config"
+        chmod 600 "${HOME}/.ssh/config"
     fi
 fi
 
-grep -l 'PRIVATE KEY' "${HOME}/.ssh/"* | while read -r f; do
-    if [[ -e "${f}.pub" ]]; then
-        if grep -f "${f}.pub" <(ssh-add -L) >/dev/null 2>&1; then
-            continue
+if ! pgrep ssh-agent >/dev/null 2>&1; then
+    ssh-agent -s > "${HOME}/.ssh_environment"
+fi
+
+if [[ -e "${HOME}/.ssh_environment" ]]; then
+    source "${HOME}/.ssh_environment"
+    grep -l 'PRIVATE KEY' "${HOME}/.ssh/"* | while read -r f; do
+        if [[ -e "${f}.pub" ]]; then
+            if grep -f "${f}.pub" <(ssh-add -L) >/dev/null 2>&1; then
+                continue
+            fi
         fi
-    fi
-    ssh-add -t 86400 "${f}"
-done
+        ssh-add -t 86400 "${f}"
+    done
+fi
 
 __hostname_completion()
 {
