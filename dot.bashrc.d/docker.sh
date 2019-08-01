@@ -56,11 +56,12 @@ if [[ -e ${HOME}/.lpc-2167/env ]]; then
 fi
 
 if [[ -e ${HOME}/.docker_env ]]; then
-    docker_host_=$(grep DOCKER_HOST ${HOME}/.docker_env | cut -d ' ' -f 2 | cut -d '=' -f 2)
+    docker_host_=$(grep DOCKER_HOST "${HOME}/.docker_env" | cut -d ' ' -f 2 | cut -d '=' -f 2)
     hostpart_=${docker_host_##tcp://}
     hostpart_=${hostpart_%%:*}
     portpart_=${docker_host_##*:}
     if online "${hostpart_}" "${portpart_}"; then
+        echo "${docker_host_} online"
         # shellcheck source=/dev/null
         source <( /bin/cat "${HOME}/.docker_env" )
     fi

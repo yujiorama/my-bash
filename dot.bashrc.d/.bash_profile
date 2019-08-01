@@ -104,21 +104,32 @@ alias download_new_file='__download_new_file '
 
 __online()
 {
-    local domain port
+    local domain port rc
     domain=${1:-www.google.com}
     port=${2:-80}
-    if ! command -v tiny-nc >/dev/null 2>&1; then
-        return 1
+    # pacman -S gnu-netcat
+    if command -v nc >/dev/null 2>&1; then
+        echo "run netcat"
+        nc -vz --wait 1 "${domain}" "${port}"
+        rc=$?
+        if [[ $rc -eq 0 ]]; then
+            return $rc
+        fi
     fi
-    tiny-nc -timeout 1s "${domain}" "${port}"
-    return $?
+    # go get -u bitbucket.org/yujiorama/tiny-nc
+    if command -v tiny-nc >/dev/null 2>&1; then
+        echo "run tiny-nc"
+        tiny-nc -timeout 1s "${domain}" "${port}"
+        rc=$?
+        if [[ $rc -eq 0 ]]; then
+            return $rc
+        fi
+    fi
+    return $rc
 }
 alias online='__online '
 
 sourcedir="$(dirname "${BASH_SOURCE[0]}")"
-
-[[ -e "${sourcedir}/go.sh" ]] && source "${sourcedir}/go.sh"
-
 cachedir="${HOME}/.cache"
 mkdir -p "${cachedir}"
 cacheid=$(/usr/bin/find -L "${sourcedir}" -type f -name \*.env \
