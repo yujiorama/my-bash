@@ -17,7 +17,9 @@ if command -v docker >/dev/null 2>&1; then
     unset completion uri
 fi
 
-if command -v docker-machine >/dev/null 2>&1; then
+rm -f "${HOME}/.docker_env"
+
+if [[ ! -e "${HOME}/.docker_env" ]] && command -v docker-machine >/dev/null 2>&1; then
     alias dm='docker-machine'
     if (docker-machine ls --quiet --timeout 1 --filter state=Running | grep -i running) >/dev/null 2>&1; then
         echo "docker-machine: running"
@@ -26,7 +28,7 @@ if command -v docker-machine >/dev/null 2>&1; then
     fi
 fi
 
-if command -v minikube >/dev/null 2>&1; then
+if [[ ! -e "${HOME}/.docker_env" ]] && command -v minikube >/dev/null 2>&1; then
     # shellcheck source=/dev/null
     source <(minikube completion bash)
     if (minikube status --profile minikube --format '{{.Host}}' | grep -i running) >/dev/null 2>&1; then
@@ -34,6 +36,12 @@ if command -v minikube >/dev/null 2>&1; then
         minikube docker-env --profile minikube > "${HOME}/.docker_env"
         echo "export DOCKER_BUILDKIT=0" >> "${HOME}/.docker_env"
     fi
+fi
+
+if [[ ! -e "${HOME}/.docker_env" ]] && [[ -e ${HOME}/.lpc-2167/env ]]; then
+    echo "LPC-2167: running"
+    /bin/cp "${HOME}/.lpc-2167/env" "${HOME}/.docker_env"
+    echo "export DOCKER_BUILDKIT=0" >> "${HOME}/.docker_env"
 fi
 
 if command -v docker-compose >/dev/null 2>&1; then
@@ -48,15 +56,8 @@ if command -v docker-compose >/dev/null 2>&1; then
     unset version completion uri
 fi
 
-
-if [[ -e ${HOME}/.lpc-2167/env ]]; then
-    echo "LPC-2167: running"
-    /bin/cp "${HOME}/.lpc-2167/env" "${HOME}/.docker_env"
-    echo "export DOCKER_BUILDKIT=0" >> "${HOME}/.docker_env"
-fi
-
 if [[ -e ${HOME}/.docker_env ]]; then
-    docker_host_=$(grep DOCKER_HOST "${HOME}/.docker_env" | cut -d ' ' -f 2 | cut -d '=' -f 2)
+    docker_host_=$(grep DOCKER_HOST "${HOME}/.docker_env" | cut -d ' ' -f 2 | cut -d '=' -f 2 | sed -e 's/"//g')
     hostpart_=${docker_host_##tcp://}
     hostpart_=${hostpart_%%:*}
     portpart_=${docker_host_##*:}

@@ -21,5 +21,6 @@ if ! gpg-agent 2>/dev/null; then
 EOS
 
     gpg-connect-agent --homedir "${GNUPGHOME}" killagent '//bye'
+    rm -f "${GNUPGHOME}"/S.*
     gpg-connect-agent --homedir "${GNUPGHOME}" '//bye'
 fi
