@@ -24,7 +24,7 @@ if [[ ! -e "${HOME}/.docker_env" ]] && command -v docker-machine >/dev/null 2>&1
     if (docker-machine ls --quiet --timeout 1 --filter state=Running | grep -i running) >/dev/null 2>&1; then
         echo "docker-machine: running"
         docker-machine env > "${HOME}/.docker_env"
-        echo "export DOCKER_BUILDKIT=1" >> "${HOME}/.docker_env"
+        echo "export DOCKER_BUILDKIT=0" >> "${HOME}/.docker_env"
     fi
 fi
 

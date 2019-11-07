@@ -14,6 +14,16 @@ if command -v kubectl >/dev/null 2>&1; then
     unset completion uri
 fi
 
+if command -v helm >/dev/null 2>&1; then
+    # shellcheck source=/dev/null
+    source <(helm completion bash)
+fi
+
+if command -v eksctl >/dev/null 2>&1; then
+    # shellcheck source=/dev/null
+    source <(eksctl completion bash)
+fi
+
 k8s_reconfigure() {
    local docker_host_ hostpart_
 
