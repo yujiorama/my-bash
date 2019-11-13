@@ -1,12 +1,20 @@
 #!/bin/bash
+
+vswitch_name="Minikube Switch" #"Default Switch"
+if [[ -e "$(dirname $0)/configure_vswitch.ps1" ]]; then
+    sudo powershell -file "$(dirname $0)/configure_vswitch.ps1" -vSwitchName \"${vswitch_name}\"
+fi
+
 minikube start \
     --logtostderr \
     --profile minikube \
     --vm-driver hyperv \
-    --hyperv-virtual-switch "既定のスイッチ" \
-    --cpus 4 --memory $(( 1024 * 2 )) --disk-size 50g \
-    --network-plugin cni \
+    --hyperv-virtual-switch "${vswitch_name}" \
+    --cpus 4 --memory $(( 1024 * 8 )) --disk-size 50g \
+    --mount --mount-string "C:\\:/c" \
     --docker-opt "bip=10.1.0.5/24" --docker-opt "fixed-cidr=10.1.0.5/25"
+    # --container-runtime containerd \
+    # --network-plugin cni \
 
 # Starting local Kubernetes v1.10.0 cluster...
 # Starting VM...
@@ -38,37 +46,21 @@ fi
 
 ## preprocess
 ##   config vm.max_map_count
-##   add host folder credential
-##   mount host folder as cifs
-if [[ -e ${HOME}/.secret.json ]]; then
-	password=$(jq -r --arg key ${USERDOMAIN}\\${USERNAME} '.[] | select(.user == $key) | .secret' < ${HOME}/.secret.json)
-else
-    echo -n "Logon Password (${USERDOMAIN}\\${USERNAME}): "
-    read -s password
-    echo ""
-fi
-if [[ -z "${password}" ]]; then
-    exit 1
-fi
-password=$(printf "%q" ${password})
 
 minikube ssh << SCRIPT >/dev/null
+echo '{"experimental":true}' | sudo tee /etc/docker/daemon.json
 sudo sysctl -w vm.max_map_count=262144
 echo vm.max_map_count=262144 | sudo tee /etc/sysctl.d/vm.conf
-printf "username=%s\npassword=%s\nworkroup=%s\n" ${USERNAME} ${password} ${USERDOMAIN} | sudo tee /root/.credentials >/dev/null
-sudo chmod 600 /root/.credentials
-docker_uid=\$(id -u docker)
-docker_gid=\$(id -g docker)
-sudo umount -f /c
-sudo mkdir -p /c
-sudo chown docker:docker /c
-sudo mount -t cifs -o user,uid=\${docker_uid},gid=\${docker_gid},credentials=/root/.credentials //${COMPUTERNAME}/C /c
+printf "\nDNS=8.8.8.8 1.1.1.1\n" | sudo tee -a /etc/systemd/resolved.conf
+sudo systemctl restart systemd-resolved
 exit
 SCRIPT
-unset password
+
+powershell -Command "& {Get-VM -VMName minikube | Set-VM -AutomaticCheckpointsEnabled \$False -CheckpointType Disabled}"
 
 # $ minikube ip
 # 172.24.224.135
+minikube ip
 
 # $ minikube docker-env
 # export DOCKER_TLS_VERIFY="1"
