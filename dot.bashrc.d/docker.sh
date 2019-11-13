@@ -38,9 +38,9 @@ if [[ ! -e "${HOME}/.docker_env" ]] && command -v minikube >/dev/null 2>&1; then
     fi
 fi
 
-if [[ ! -e "${HOME}/.docker_env" ]] && [[ -e ${HOME}/.lpc-2167/env ]]; then
-    echo "LPC-2167: running"
-    /bin/cp "${HOME}/.lpc-2167/env" "${HOME}/.docker_env"
+if [[ ! -e "${HOME}/.docker_env" ]] && [[ -e ${HOME}/.remote-minikube/env ]]; then
+    echo "minikube: remote"
+    /bin/cp "${HOME}/.remote-minikube/env" "${HOME}/.docker_env"
     echo "export DOCKER_BUILDKIT=0" >> "${HOME}/.docker_env"
 fi
 
