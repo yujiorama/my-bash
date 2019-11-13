@@ -1,5 +1,22 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
+__jdk_install()
+{
+    local package version suffix java_home
+    package="$1"
+    version="$2"
+    suffix="$3"
+
+    if scoop install "${package}" | grep "Couldn't find manifest" >/dev/null 2>&1; then
+        return
+    fi
+
+    java_home=$(cygpath --mixed "$(scoop prefix "${package}")")
+
+    printf "export JDK%s_HOME=\"%s\"\n" "${version}" "${java_home}"
+    __jdk_function "${java_home}" "${version}" "${suffix}"
+}
+
 __jdk_function()
 {
     local java_home version suffix function_source
@@ -16,16 +33,26 @@ __jdk_function()
             local e_name
             e_name=$(basename "${e}" .exe)
             printf "function %s%s() {\nJAVA_HOME=\"\${java_home}\" \"%s\" \$*\n}\n" "${e_name}" "${suffix}" "${e}"
-        done >> "${function_source}"
+        done | tee "${function_source}"
     fi
-    # shellcheck source=/dev/null
-    source "${function_source}"
 }
 
-__jdk_function "${JDK8_HOME}" "8"  "8"
-__jdk_function "${JDK10_HOME}" "10" "10"
-__jdk_function "${JDK11_HOME}" "11" "11"
-__jdk_function "${JDK13_HOME}" "13" ""
+# shellcheck source=/dev/null
+source <(__jdk_install "${JDK8}" "8"  "8")
+# shellcheck source=/dev/null
+source <(__jdk_install "${JDK9}" "9"  "9")
+# shellcheck source=/dev/null
+source <(__jdk_install "${JDK10}" "10" "10")
+# shellcheck source=/dev/null
+source <(__jdk_install "${JDK11}" "11" "11")
+# shellcheck source=/dev/null
+source <(__jdk_install "${JDK12}" "12" "12")
+# shellcheck source=/dev/null
+source <(__jdk_install "${JDK13}" "13" "13")
+# shellcheck source=/dev/null
+source <(__jdk_install "${JDK14}" "14" "")
+
+export JAVA_HOME="${JDK14_HOME}"
 
 mkdir -p "${HOME}/.lombok"
 download_new_file "https://projectlombok.org/downloads/lombok.jar" "${HOME}/.lombok/lombok.jar" &
