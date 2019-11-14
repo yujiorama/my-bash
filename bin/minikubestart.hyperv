@@ -1,20 +1,31 @@
 #!/bin/bash
 
-vswitch_name="Minikube Switch" #"Default Switch"
-if [[ -e "$(dirname $0)/configure_vswitch.ps1" ]]; then
-    sudo powershell -file "$(dirname $0)/configure_vswitch.ps1" -vSwitchName \"${vswitch_name}\"
+#  PowerShell ([adsi]"WinNT://./Hyper-V Administrators,group").Add("WinNT://$env:UserDomain/$env:Username,user")
+
+script_dir="$(dirname "$0")"
+
+profile="${1:-minikube}";shift
+vswitch_name="${1:-Minikube Switch}";shift #Default Switch
+runtime="${1:-docker}";shift #containerd
+cpus="${1:-4}";shift
+memory="${1:-8g}";shift
+disksize="${1:-60g}";shift
+
+if [[ -e "${script_dir}/configure_vswitch.ps1" ]]; then
+    sudo powershell -file "${script_dir}/configure_vswitch.ps1" -vSwitchName \""${vswitch_name}"\"
 fi
 
 minikube start \
-    --logtostderr \
-    --profile minikube \
     --vm-driver hyperv \
+    --profile "${profile}" \
     --hyperv-virtual-switch "${vswitch_name}" \
-    --cpus 4 --memory $(( 1024 * 8 )) --disk-size 50g \
-    --mount --mount-string "C:\\:/c" \
-    --docker-opt "bip=10.1.0.5/24" --docker-opt "fixed-cidr=10.1.0.5/25"
-    # --container-runtime containerd \
-    # --network-plugin cni \
+    --container-runtime "${runtime}" \
+    --cpus "${cpus}" \
+    --memory "${memory}" \
+    --disk-size "${disksize}" \
+    --docker-opt "bip=10.1.0.5/24" \
+    --docker-opt "fixed-cidr=10.1.0.5/25" \
+    --logtostderr
 
 # Starting local Kubernetes v1.10.0 cluster...
 # Starting VM...
