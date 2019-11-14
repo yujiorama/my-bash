@@ -1,5 +1,7 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
+# https://docs.docker.com/install/linux/docker-ce/debian/
+# 
 # sudo apt install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
 # curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
 # sudo apt-key fingerprint 0EBFCD88
@@ -45,7 +47,7 @@ if command -v docker-compose >/dev/null 2>&1; then
 fi
 
 if [[ -s ${HOST_USER_HOME}/.docker_env ]]; then
-    cp "${HOST_USER_HOME}/.docker_env" "${HOME}/.docker_env"
+    cat "${HOST_USER_HOME}/.docker_env" > "${HOME}/.docker_env"
     # shellcheck source=/dev/null
     source "${HOME}/.docker_env"
     mkdir -p "${HOME}/.docker_cert"

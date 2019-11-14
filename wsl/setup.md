@@ -20,10 +20,12 @@ APT の接続先を Debian JP のミラーサイトに変更する。
 
 ```bash
 sudo mv /etc/apt/sources.list /etc/apt/sources.list.bak
-debian_release="$(grep -w VERSION /etc/os-release | sed -r -e 's/.*\((.+)\).*/\1/')"
+debian_release="$(grep -w VERSION_CODENAME /etc/os-release | cut -d '=' -f 2)"
 cat <<EOS | sudo tee /etc/apt/sources.list
 deb http://ftp.jp.debian.org/debian/ ${debian_release} main contrib non-free
 deb http://ftp.jp.debian.org/debian ${debian_release}-updates main contrib non-free
+deb http://ftp.jp.debian.org/debian ${debian_release}-backports main contrib non-free
+deb http://security.debian.org/debian-security/ ${debian_release}/updates main contrib non-free
 EOS
 ```
 
@@ -64,20 +66,14 @@ export HOST_USER_HOME
 HOST_USER_HOME="/mnt/c/Users/!!ここにWindowsのユーザー名!!"
 
 # ホスト側の置き場所はともかく WSL 側の置き場所は固定
-if ! /bin/mountpoint -q "${HOME}/.bashrc.d"; then
-    /bin/mkdir -p "${HOME}/.bashrc.d"
-    /usr/bin/sudo /bin/mount --bind "${HOST_USER_HOME}/config-scripts/wsl/.bashrc.d" "${HOME}/.bashrc.d"
-fi
+/bin/ln -f -s "${HOST_USER_HOME}/config-scripts/wsl/.bashrc.d" "${HOME}/.bashrc.d"
 
 # 任意。あると便利だと思う
 for d in work Downloads .aws .m2; do
-    if ! /bin/mountpoint -q "${HOME}/${d}"; then
-        /bin/mkdir -p "${HOME}/${d}"
-        /usr/bin/sudo /bin/mount --bind "${HOST_USER_HOME}/${d}" "${HOME}/${d}"
-    fi
+    /bin/ln -f -s "${HOST_USER_HOME}/${d}" "${HOME}/${d}"
 done
 
-# これも任意。Git bash は /c から始まるパス文字列を扱うのであると便利。
+# これも任意。Git Bash は /c から始まるパス文字列を扱うのであると便利。
 if ! /bin/mountpoint -q /c; then
     /usr/bin/sudo /bin/mkdir -p /c
     /usr/bin/sudo /bin/mount --bind /mnt/c /c
@@ -132,7 +128,7 @@ https://tecadmin.net/install-go-on-debian/
 sudo mkdir -p /usr/local/share
 curl -fsSL https://dl.google.com/go/go1.12.linux-amd64.tar.gz | sudo tar -C /usr/local/share -xzf -
 for f in $(find /usr/local/share/go/bin -type f); do
-    sudo ln -f -s ${f} /usr/local/bin/$(basename ${f})
+    sudo /bin/ln -f -s ${f} /usr/local/bin/$(basename ${f})
 done
 ```
 
@@ -153,13 +149,14 @@ https://github.com/rbenv/rbenv
 https://github.com/rbenv/ruby-build
 
 ```bash
-sudo apt install -y libssl-dev libreadline-dev zlib1g-dev
+sudo apt install -y git libssl-dev libreadline-dev zlib1g-dev
 git clone https://github.com/rbenv/rbenv.git ~/.rbenv
-cd ~/.rbenv && src/configure && make -C src
-source ~/wsl/.bashrc.d/ruby.sh
+(cd ~/.rbenv && src/configure && make -C src)
+source ~/.bashrc.d/ruby.sh
 mkdir -p $(rbenv root)/plugins
 git clone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-build
 rbenv install 2.6.2
+rbenv local 2.6.2
 rbenv global
 ```
 
@@ -168,8 +165,9 @@ rbenv global
 https://sdkman.io/
 
 ```bash
+sudo apt install -y curl zip unzip
 curl -s "https://get.sdkman.io" | bash
-source ~/wsl/.bashrc.d/sdkman.sh
+source ~/.bashrc.d/sdkman.sh
 sdk install java 11.0.2-zulu
 sdk install java 8.0.202-amzn
 sdk use java 11.0.2-zulu

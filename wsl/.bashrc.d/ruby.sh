@@ -2,13 +2,14 @@
 
 PATH=$(echo "$PATH" | tr ':' '\n' | grep -v -e '^$' | grep -v -E '[rR]uby|rbenv' | tr '\n' ':')
 
-# sudo apt install -y libssl-dev libreadline-dev zlib1g-dev
+# sudo apt install -y git libssl-dev libreadline-dev zlib1g-dev
 # git clone https://github.com/rbenv/rbenv.git ~/.rbenv
-# cd ~/.rbenv && src/configure && make -C src
-# source ~/wsl/.bashrc.d/ruby.sh
+# (cd ~/.rbenv && src/configure && make -C src)
+# source ~/.bashrc.d/ruby.sh
 # mkdir -p $(rbenv root)/plugins
 # git clone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-build
 # rbenv install 2.6.2
+# rbenv local 2.6.2
 # rbenv global
 
 if [[ -d ${HOME}/.rbenv ]]; then

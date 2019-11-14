@@ -1,7 +1,10 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
+# https://sdkman.io/
+# 
+# sudo apt install -y curl zip unzip
 # curl -s "https://get.sdkman.io" | bash
-# source ~/wsl/.bashrc.d/sdkman.sh
+# source ~/.bashrc.d/sdkman.sh
 # sdk install java 11.0.2-zulu
 # sdk install java 8.0.202-amzn
 # sdk use java 11.0.2-zulu

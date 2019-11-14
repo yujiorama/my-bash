@@ -1,9 +1,11 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
+# https://tecadmin.net/install-go-on-debian/
+# 
 # sudo mkdir -p /usr/local/share
 # curl -fsSL https://dl.google.com/go/go1.12.linux-amd64.tar.gz | sudo tar -C /usr/local/share -xzf -
 # for f in $(find /usr/local/share/go/bin -type f); do
-#     sudo ln -f -s ${f} /usr/local/bin/$(basename ${f})
+#     sudo /bin/ln -f -s ${f} /usr/local/bin/$(basename ${f})
 # done
 
 if ! command -v go >/dev/null 2>&1; then
@@ -30,3 +32,4 @@ go_update_tool() {
         github.com/tsenart/vegeta
 }
 
+go_update_tool
