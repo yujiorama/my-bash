@@ -42,9 +42,10 @@ sudo apt upgrade -y
 * マニュアル
 * ページャー
 * エディタ
+* bash の補完
 
 ```bash
-sudo apt install -y task-japanese man less vim-tiny
+sudo apt install -y task-japanese man less vim-tiny bash-completion
 ```
 
 ロケールとタイムゾーンを日本に変更。
