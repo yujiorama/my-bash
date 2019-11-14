@@ -25,6 +25,42 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/local/games:/usr/sbin:/usr/bin:/sbin:/b
 PATH=${HOME}/bin:${HOME}/.local/bin:${PATH}
 PATH=${PATH}:/mnt/c/Windows:/mnt/c/Windows/System32
 
+
+__here()
+{
+    case ${OS:-Linux} in
+        Windows*) cygpath -wa "${PWD}" ;;
+        *)        echo "${PWD}" ;;
+    esac
+}
+alias here='__here'
+
+
+__download_new_file()
+{
+    local src dst ctime
+    src=$1
+    dst=$2
+    ctime=$(LANG=C date --utc --date="10 years ago" +"%a, %d %b %Y %H:%M:%S GMT")
+    if [[ -e "${dst}" ]]; then
+        ctime=$(LANG=C date --utc --date=@"$(stat --format='%Y' ${dst})" +"%a, %d %b %Y %H:%M:%S GMT")
+    fi
+    if command -v curl >/dev/null 2>&1; then
+        local modified
+        modified=$(
+            curl -fsSL -I -H "If-Modified-Since: ${ctime}" -o /dev/null -w %\{http_code\} "${src}"
+        )
+        if [[ "200" = "${modified}" ]]; then
+            curl -fsSL --output "${dst}" "${src}" >/dev/null 2>&1
+        fi
+    elif command -v http >/dev/null 2>&1; then
+        http --follow --continue --download --output "${dst}" "${src}" >/dev/null 2>&1
+    fi
+    ls -l "${dst}"
+}
+alias download_new_file='__download_new_file '
+
+
 sourcedir="$(dirname "${BASH_SOURCE[0]}")"
 
 for f in $(/usr/bin/find -L "${sourcedir}" -type f | /bin/grep -v .bash_profile | /usr/bin/sort); do
@@ -43,15 +79,6 @@ for f in $(/usr/bin/find -L "${sourcedir}" -type f | /bin/grep -v .bash_profile 
     fi
     /bin/rm -f "${stdout_log}" "${stderr_log}"
 done
-
-__here()
-{
-    case ${OS:-Linux} in
-        Windows*) cygpath -wa "${PWD}" ;;
-        *)        echo "${PWD}" ;;
-    esac
-}
-alias here='__here'
 
 export PS1
 # PS1='[\u@\h \W$(__git_ps1 " (%s)")]\$ '
