@@ -66,10 +66,12 @@ export HOST_USER_HOME
 HOST_USER_HOME="/mnt/c/Users/!!ここにWindowsのユーザー名!!"
 
 # ホスト側の置き場所はともかく WSL 側の置き場所は固定
+rm -f "${HOME}/.bashrc.d"
 /bin/ln -f -s "${HOST_USER_HOME}/config-scripts/wsl/.bashrc.d" "${HOME}/.bashrc.d"
 
 # 任意。あると便利だと思う
 for d in work Downloads .aws .m2; do
+    rm -f "${HOME}/${d}"
     /bin/ln -f -s "${HOST_USER_HOME}/${d}" "${HOME}/${d}"
 done
 
