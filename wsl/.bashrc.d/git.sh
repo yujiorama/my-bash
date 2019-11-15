@@ -23,14 +23,17 @@ elif [[ -e /etc/bash_completion.d ]] && [[ -e /etc/bash_completion.d/git-prompt 
     source "/etc/bash_completion.d/git-prompt"
 fi
 
-mkdir -p "${HOME}/.git-secrets" "${HOME}/.git-templates"
+mkdir -p "${HOME}/.git-secrets" "${HOME}/.git-templates" "${HOME}/man/man1"
 download_new_file "https://raw.githubusercontent.com/awslabs/git-secrets/master/git-secrets" "${HOME}/.git-secrets/git-secrets"
 chmod 755 "${HOME}/.git-secrets/git-secrets"
-download_new_file "https://raw.githubusercontent.com/awslabs/git-secrets/master/git-secrets.1" "${HOME}/.git-secrets/git-secrets.1"
+download_new_file "https://raw.githubusercontent.com/awslabs/git-secrets/master/git-secrets.1" "${HOME}/man/man1/git-secrets.1"
 
 echo run git secrets --install -f "${HOME}/.git-templates"
-echo run git config --global init.templateDir '${HOME}/.git-templates/git-secrets'
+echo run git config --global init.templateDir "${HOME}/.git-templates/git-secrets"
 echo run git secrets --register-aws --global
 
 export PATH
-PATH="${HOME}/.git-secrets/git-secrets":${PATH}
+PATH="${HOME}/.git-secrets":${PATH}
+
+export MANPATH
+MANPATH=${HOME}/man/man1:${MANPATH}
