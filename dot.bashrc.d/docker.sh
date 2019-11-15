@@ -38,9 +38,9 @@ if [[ ! -e "${HOME}/.docker_env" ]] && command -v minikube >/dev/null 2>&1; then
     fi
 fi
 
-if [[ ! -e "${HOME}/.docker_env" ]] && [[ -e ${HOME}/.remote-minikube/env ]]; then
+if [[ ! -e "${HOME}/.docker_env" ]] && [[ -e "${HOME}/.remote-minikube/minikube.docker_env" ]]; then
     echo "minikube: remote"
-    /bin/cp "${HOME}/.remote-minikube/env" "${HOME}/.docker_env"
+    /bin/cp "${HOME}/.remote-minikube/minikube.docker_env" "${HOME}/.docker_env"
     echo "export DOCKER_BUILDKIT=0" >> "${HOME}/.docker_env"
 fi
 
@@ -58,13 +58,10 @@ fi
 
 if [[ -e ${HOME}/.docker_env ]]; then
     docker_host_=$(grep DOCKER_HOST "${HOME}/.docker_env" | cut -d ' ' -f 2 | cut -d '=' -f 2 | sed -e 's/"//g')
-    hostpart_=${docker_host_##tcp://}
-    hostpart_=${hostpart_%%:*}
-    portpart_=${docker_host_##*:}
-    if online "${hostpart_}" "${portpart_}"; then
+    if online "${docker_host_}"; then
         echo "${docker_host_} online"
         # shellcheck source=/dev/null
         source <( /bin/cat "${HOME}/.docker_env" )
     fi
-    unset docker_host_ hostpart_ portpart_
+    unset docker_host_
 fi

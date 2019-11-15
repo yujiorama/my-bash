@@ -2,7 +2,7 @@
 
 __update_go_tool()
 {
-    local src name dst dsttime currenttime domain port
+    local src name dst dsttime currenttime
     src=$1
     name=$(basename "${src}")
     dst="$(command -v "${name}" 2>/dev/null)"
@@ -12,9 +12,7 @@ __update_go_tool()
     fi
     currenttime=$(date --date="2 weeks ago" +"%s")
     if [[ ${dsttime} -lt ${currenttime} ]]; then
-        domain=$(echo "${src}" | cut -d '/' -f 1)
-        port=443
-        if online "${domain}" "${port}"; then
+        if online "${src}"; then
             (cd "${HOME}" && go get -u "${src}")
         fi
     fi

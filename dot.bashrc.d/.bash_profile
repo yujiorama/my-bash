@@ -105,11 +105,25 @@ alias download_new_file='__download_new_file '
 __online()
 {
     local domain port rc
-    domain=${1:-www.google.com}
-    port=${2:-80}
+    domain="${1:-www.google.com}"
+    port="${2:-80}"
+
+    case "$(echo "${domain}" | tr ':' '\n' | wc -l)" in
+        "1")
+            : ;;
+        "2")
+            port="$(echo "${domain}" | cut -d ':' -f 2)"
+            domain="$(echo "${domain}" | cut -d ':' -f 1)"
+            ;;
+        "3")
+            port="$(echo "${domain}" | cut -d ':' -f 3)"
+            domain="$(echo "${domain}" | cut -d ':' -f 2 | sed -e 's|//||g')"
+            ;;
+        *) return 1 ;;
+    esac
+
     # pacman -S gnu-netcat
     if command -v nc >/dev/null 2>&1; then
-        echo "run netcat"
         nc -vz --wait 1 "${domain}" "${port}"
         rc=$?
         if [[ $rc -eq 0 ]]; then
@@ -118,7 +132,6 @@ __online()
     fi
     # go get -u bitbucket.org/yujiorama/tiny-nc
     if command -v tiny-nc >/dev/null 2>&1; then
-        echo "run tiny-nc"
         tiny-nc -timeout 1s "${domain}" "${port}"
         rc=$?
         if [[ $rc -eq 0 ]]; then
