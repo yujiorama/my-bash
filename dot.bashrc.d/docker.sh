@@ -46,14 +46,16 @@ if command -v dbxcli >/dev/null 2>&1; then
     fi
     if dbxcli ls office/env/minikube/docker/certs 2>/dev/null; then
         for t in $(dbxcli ls office/env/minikube/docker/certs); do
-            dbxcli get "${t}" "${HOME}/.remote-minikube/certs/$(basename "${t}")"
+            dbxcli get "${t#/}" "${HOME}/.remote-minikube/certs/$(basename "${t}")"
         done
     fi
 fi
 
 if [[ ! -e "${HOME}/.docker_env" ]] && [[ -e "${HOME}/.remote-minikube/minikube.docker_env" ]]; then
     echo "minikube: remote"
-    /bin/cp "${HOME}/.remote-minikube/minikube.docker_env" "${HOME}/.docker_env"
+    sed -e 's|DOCKER_CERT_PATH=.*|DOCKER_CERT_PATH=~/.remote-minikube/certs|' \
+        < "${HOME}/.remote-minikube/minikube.docker_env" \
+        > "${HOME}/.docker_env"
     echo "export DOCKER_BUILDKIT=0" >> "${HOME}/.docker_env"
 fi
 

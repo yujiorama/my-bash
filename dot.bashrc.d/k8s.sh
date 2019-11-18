@@ -43,7 +43,7 @@ k8s_reconfigure()
   
       if dbxcli ls office/env/minikube/kubernetes/config 2>/dev/null; then
           for t in $(dbxcli ls office/env/minikube/kubernetes/config); do
-              dbxcli get "${t}" "${HOME}/.remote-minikube/$(basename "${t}")"
+              dbxcli get "${t#/}" "${HOME}/.remote-minikube/$(basename "${t}")"
           done
       fi
   fi
