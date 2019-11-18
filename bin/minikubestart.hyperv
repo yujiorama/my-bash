@@ -73,6 +73,21 @@ powershell -Command "& {Get-VM -VMName minikube | Set-VM -AutomaticCheckpointsEn
 # 172.24.224.135
 minikube ip
 
+minikube docker-env > .docker_env
+cp .docker_env minikube.docker_env
+minikube kubectl config view > .kube_config
+kubectl --kubeconfig=.kube_config config view --flatten > minikube.kube_config
+
+if command -v dbxcli >/dev/null 2>&1; then
+    dbxcli mkdir office/env/minikube/docker/certs
+    dbxcli put minikube.docker_env office/env/minikube/docker/env
+    for t in .minikube/certs/*; do
+        dbxcli put "${t}" "office/env/minikube/docker/certs/$(basename "${t}")"
+    done
+    dbxcli mkdir office/env/minikube/kubernetes/config
+    dbxcli put minikube.kube_config office/env/minikube/kubernetes/config/minikube.kube_config
+fi
+
 # $ minikube docker-env
 # export DOCKER_TLS_VERIFY="1"
 # export DOCKER_HOST="tcp://172.24.224.135:2376"
