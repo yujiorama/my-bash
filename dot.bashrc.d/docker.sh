@@ -38,6 +38,19 @@ if [[ ! -e "${HOME}/.docker_env" ]] && command -v minikube >/dev/null 2>&1; then
     fi
 fi
 
+if command -v dbxcli >/dev/null 2>&1; then
+    mkdir -p "${HOME}/.remote-minikube/certs"
+
+    if dbxcli ls office/env/minikube/docker/env 2>/dev/null; then
+        dbxcli get office/env/minikube/docker/env "${HOME}/.remote-minikube/minikube.docker_env"
+    fi
+    if dbxcli ls office/env/minikube/docker/certs 2>/dev/null; then
+        for t in $(dbxcli ls office/env/minikube/docker/certs); do
+            dbxcli get "${t}" "${HOME}/.remote-minikube/certs/$(basename "${t}")"
+        done
+    fi
+fi
+
 if [[ ! -e "${HOME}/.docker_env" ]] && [[ -e "${HOME}/.remote-minikube/minikube.docker_env" ]]; then
     echo "minikube: remote"
     /bin/cp "${HOME}/.remote-minikube/minikube.docker_env" "${HOME}/.docker_env"
