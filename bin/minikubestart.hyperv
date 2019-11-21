@@ -10,6 +10,7 @@ runtime="${1:-docker}";shift #containerd
 cpus="${1:-4}";shift
 memory="${1:-8g}";shift
 disksize="${1:-60g}";shift
+registry="${1:-}";shift
 
 if [[ -e "${script_dir}/configure_vswitch.ps1" ]]; then
     sudo powershell -file "${script_dir}/configure_vswitch.ps1" -vSwitchName \""${vswitch_name}"\"
@@ -25,6 +26,7 @@ minikube start \
     --disk-size "${disksize}" \
     --docker-opt "bip=10.1.0.5/24" \
     --docker-opt "fixed-cidr=10.1.0.5/25" \
+    --insecure-registry "${registry}" \
     --logtostderr
 
 # Starting local Kubernetes v1.10.0 cluster...
@@ -56,13 +58,23 @@ if [[ $? -ne 0 ]]; then
 fi
 
 ## preprocess
-##   config vm.max_map_count
+
+powershell -Command '&{
+    $i = Get-NetIPAddress -AddressFamily IPv4 -SuffixOrigin Dhcp |
+         Sort-Object -Property InterfaceIndex |
+         Select -First 1 -ExpandProperty InterfaceIndex;
+    Get-DnsClientServerAddress -AddressFamily IPv4 -InterfaceIndex $i |
+         Select -ExpandProperty ServerAddresses }' > "${HOME}/dnsservers.txt"
+
+if [[ -s "${HOME}/dnsservers.txt" ]]; then
+    dnsserverline=$(tr -d '\r' < "${HOME}"/dnsservers.txt | tr '\n' ' ')
+fi
+dnsserverline="${dnsserverline} 8.8.8.8 1.1.1.1"
 
 minikube ssh << SCRIPT >/dev/null
-echo '{"experimental":true}' | sudo tee /etc/docker/daemon.json
 sudo sysctl -w vm.max_map_count=262144
 echo vm.max_map_count=262144 | sudo tee /etc/sysctl.d/vm.conf
-printf "\nDNS=8.8.8.8 1.1.1.1\n" | sudo tee -a /etc/systemd/resolved.conf
+printf "\nDNS=${dnsserverline}\n" | sudo tee -a /etc/systemd/resolved.conf
 sudo systemctl restart systemd-resolved
 exit
 SCRIPT
@@ -73,19 +85,19 @@ powershell -Command "& {Get-VM -VMName minikube | Set-VM -AutomaticCheckpointsEn
 # 172.24.224.135
 minikube ip
 
-minikube docker-env > .docker_env
-cp .docker_env minikube.docker_env
-minikube kubectl config view > .kube_config
-kubectl --kubeconfig=.kube_config config view --flatten > minikube.kube_config
+minikube docker-env > "${HOME}/.docker_env"
+cp "${HOME}/.docker_env" "${HOME}/minikube.docker_env"
+minikube kubectl config view > "${HOME}/.kube_config"
+kubectl --kubeconfig="${HOME}/.kube_config" config view --flatten > "${HOME}/minikube.kube_config"
 
 if command -v dbxcli >/dev/null 2>&1; then
     dbxcli mkdir office/env/minikube/docker/certs
-    dbxcli put minikube.docker_env office/env/minikube/docker/env
-    for t in .minikube/certs/*; do
+    dbxcli put "${HOME}/minikube.docker_env" office/env/minikube/docker/env
+    for t in "${HOME}"/.minikube/certs/*; do
         dbxcli put "${t}" "office/env/minikube/docker/certs/$(basename "${t}")"
     done
     dbxcli mkdir office/env/minikube/kubernetes/config
-    dbxcli put minikube.kube_config office/env/minikube/kubernetes/config/minikube.kube_config
+    dbxcli put "${HOME}/minikube.kube_config" office/env/minikube/kubernetes/config/minikube.kube_config
 fi
 
 # $ minikube docker-env
