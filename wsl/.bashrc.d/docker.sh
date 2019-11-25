@@ -19,6 +19,9 @@ docker_reconfigure() {
 }
 
 _update_docker_comopse() {
+    if [[ -n "${WSLENV}" ]]; then
+        return
+    fi
     if [[ -e ${HOST_USER_HOME}/.docker-compose.version ]]; then
         return
     fi
@@ -46,13 +49,17 @@ if command -v docker-compose >/dev/null 2>&1; then
     esac
 fi
 
+if [[ -n "${WSLENV}" ]]; then
+    return
+fi
+
 if [[ -s ${HOST_USER_HOME}/.docker_env ]]; then
     cat "${HOST_USER_HOME}/.docker_env" > "${HOME}/.docker_env"
     # shellcheck source=/dev/null
     source "${HOME}/.docker_env"
     mkdir -p "${HOME}/.docker_cert"
     /usr/bin/find -L "${HOME}/.docker_cert" -type f -exec rm -f {} \;
-    /usr/bin/find -L "$(wslpath "${DOCKER_CERT_PATH}")" -type f | while read -r f; do
+    /usr/bin/find -L "${DOCKER_CERT_PATH}" -type f | while read -r f; do
       cat "${f}" > "${HOME}/.docker_cert/$(basename "${f}")"
     done
     export DOCKER_CERT_PATH="${HOME}/.docker_cert"
