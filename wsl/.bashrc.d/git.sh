@@ -23,6 +23,10 @@ elif [[ -e /etc/bash_completion.d ]] && [[ -e /etc/bash_completion.d/git-prompt 
     source "/etc/bash_completion.d/git-prompt"
 fi
 
+if [[ -n "${WSLENV}" ]]; then
+    return
+fi
+
 mkdir -p "${HOME}/.git-secrets" "${HOME}/.git-templates" "${HOME}/man/man1"
 download_new_file "https://raw.githubusercontent.com/awslabs/git-secrets/master/git-secrets" "${HOME}/.git-secrets/git-secrets"
 chmod 755 "${HOME}/.git-secrets/git-secrets"

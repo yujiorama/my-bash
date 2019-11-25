@@ -1,5 +1,9 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
+if [[ -n "${WSLENV}" ]]; then
+    return
+fi
+
 if [[ -e ${HOST_USER_HOME}/.kube_config ]]; then
     mkdir -p "${HOME}/.kube"
     /bin/cat "${HOST_USER_HOME}/.kube_config" > "${HOME}/.kube/config"

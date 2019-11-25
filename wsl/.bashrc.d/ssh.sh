@@ -1,6 +1,6 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
-if [[ -n "${TERM_PROGRAM}" ]]; then
+if [[ -n "${WSLENV}" ]]; then
     return
 fi
 

@@ -8,10 +8,6 @@
 #     sudo /bin/ln -f -s ${f} /usr/local/bin/$(basename ${f})
 # done
 
-if ! command -v go >/dev/null 2>&1; then
-    return
-fi
-
 export GOROOT
 GOROOT=/usr/local/share/go
 
@@ -22,14 +18,36 @@ GOPATH=${HOME}/.go
 export PATH
 PATH=${GOPATH}/bin:${GOROOT}/bin:${PATH}
 
-go_update_tool() {
-    go get -u \
-        golang.org/x/tools/cmd/goimports \
-        golang.org/x/tools/cmd/gotype \
-        github.com/motemen/ghq \
-        github.com/saibing/bingo \
-        bitbucket.org/yujiorama/docker-tag-search \
-        github.com/tsenart/vegeta
-}
 
-go_update_tool
+__update_go_tool()
+{
+    local src name dst dsttime currenttime
+    if ! command -v go >/dev/null 2>&1; then
+        return
+    fi
+    src=$1
+    name=$(basename "${src}")
+    dst="$(command -v "${name}" 2>/dev/null)"
+    dsttime=0
+    if [[ -e "${dst}" ]]; then
+        dsttime=$(stat --format='%Y' "${dst}")
+    fi
+    currenttime=$(date --date="2 weeks ago" +"%s")
+    if [[ ${dsttime} -lt ${currenttime} ]]; then
+        (cd "${HOME}" && go get -u "${src}")
+    fi
+}
+alias update_go_tool='__update_go_tool'
+
+
+if [[ -n "${WSLENV}" ]]; then
+    return
+fi
+
+update_go_tool golang.org/x/tools/cmd/goimports &
+update_go_tool github.com/motemen/ghq &
+update_go_tool github.com/tsenart/vegeta &
+update_go_tool bitbucket.org/yujiorama/docker-tag-search &
+update_go_tool bitbucket.org/yujiorama/tiny-nc &
+
+wait
