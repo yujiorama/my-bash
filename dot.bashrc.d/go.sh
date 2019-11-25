@@ -3,6 +3,9 @@
 __update_go_tool()
 {
     local src name dst dsttime currenttime
+    if ! command -v go >/dev/null 2>&1; then
+        return
+    fi
     src=$1
     name=$(basename "${src}")
     dst="$(command -v "${name}" 2>/dev/null)"
@@ -12,17 +15,13 @@ __update_go_tool()
     fi
     currenttime=$(date --date="2 weeks ago" +"%s")
     if [[ ${dsttime} -lt ${currenttime} ]]; then
-        if online "${src}"; then
-            (cd "${HOME}" && go get -u "${src}")
-        fi
+        (cd "${HOME}" && go get -u "${src}")
     fi
 }
 alias update_go_tool='__update_go_tool'
 
 update_go_tool golang.org/x/tools/cmd/goimports &
-update_go_tool golang.org/x/tools/cmd/gotype &
 update_go_tool github.com/motemen/ghq &
-update_go_tool github.com/saibing/bingo &
 update_go_tool github.com/tsenart/vegeta &
 update_go_tool bitbucket.org/yujiorama/docker-tag-search &
 update_go_tool bitbucket.org/yujiorama/tiny-nc &
