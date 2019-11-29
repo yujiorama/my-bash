@@ -7,9 +7,6 @@ ip()
         a)
             ipconfig | grep IPv4 | cut -d ':' -f 2 | sed -e 's/^ //'
         ;;
-        *)
-            exit
-        ;;
     esac
 }
 

@@ -142,6 +142,19 @@ __online()
 }
 alias online='__online '
 
+__another_console()
+{
+    local pid c
+    pid=$$
+    c=$(/bin/ps | /bin/grep bash | /bin/grep -c -v ${pid})
+
+    if [[ ${c} -gt 1 ]]; then
+        return 0
+    fi
+    return "${c}"
+}
+alias another_console='__another_console '
+
 sourcedir="$(dirname "${BASH_SOURCE[0]}")"
 cachedir="${HOME}/.cache"
 mkdir -p "${cachedir}"

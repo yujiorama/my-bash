@@ -1,5 +1,10 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
+k8s_reconfigure() {
+    # shellcheck source=/dev/null
+    source "${HOME}/.bashrc.d/k8s.sh"
+}
+
 if command -v kubectl >/dev/null 2>&1; then
     # shellcheck source=/dev/null
     source <(kubectl completion bash)
@@ -23,43 +28,43 @@ if command -v eksctl >/dev/null 2>&1; then
     source <(eksctl completion bash)
 fi
 
-export KUBECONFIG
-KUBECONFIG="${HOME}/.kube/config"
+if ! another_console; then
+    rm -f "${HOME}/.kube_config"
+fi
 
-k8s_reconfigure()
-{
-  local k8s_api_url c
+if [[ ! -e "${HOME}/.kube_config" ]]; then
+    k8s_api_url="$(kubectl --kubeconfig="${HOME}/.kube/config" config view --minify --output=json | jq -r '.clusters[0].cluster.server')"
+    if online "${k8s_api_url}"; then
+        kubectl --kubeconfig="${HOME}/.kube/config" config view --flatten "${HOME}/.kube_config"
+    fi
+    unset k8s_api_url
+fi
 
-  k8s_api_url="$(kubectl --kubeconfig="${HOME}/.kube/config" config view --minify --output=json | jq -r '.clusters[0].cluster.server')"
-
-  if online "${k8s_api_url}"; then
-    echo "KUBECONFIG: ${KUBECONFIG}"
-    kubectl config get-contexts
-    return
-  fi
-
-  if command -v dbxcli >/dev/null 2>&1; then
-      mkdir -p "${HOME}/.remote-minikube"
+if [[ ! -e "${HOME}/.kube_config" ]]; then
+    if command -v dbxcli >/dev/null 2>&1; then
+        mkdir -p "${HOME}/.remote-minikube"
   
-      if dbxcli ls office/env/minikube/kubernetes/config 2>/dev/null; then
-          for t in $(dbxcli ls office/env/minikube/kubernetes/config); do
-              dbxcli get "${t#/}" "${HOME}/.remote-minikube/$(basename "${t}")"
-          done
-      fi
-  fi
+        if dbxcli ls office/env/minikube/kubernetes/config 2>/dev/null; then
+            for t in $(dbxcli ls office/env/minikube/kubernetes/config); do
+                dbxcli get "${t#/}" "${HOME}/.remote-minikube/$(basename "${t}")"
+            done
+        fi
+    fi
 
-  KUBECONFIG="$(find "${HOME}/.remote-minikube" -type f -name \*.kube_config | while read -r c; do
-      k8s_api_url="$(kubectl --kubeconfig="${c}" config view --minify --output=json | jq -r '.clusters[0].cluster.server')"
-      if online "${k8s_api_url}"; then
-        echo -n "${c}:"
-      fi
-    done)"
-  KUBECONFIG="${KUBECONFIG%:}"
+    kubeconfig="$(find "${HOME}/.remote-minikube" -type f -name \*.kube_config | while read -r c; do
+        k8s_api_url="$(kubectl --kubeconfig="${c}" config view --minify --output=json | jq -r '.clusters[0].cluster.server')"
+        if online "${k8s_api_url}"; then
+            echo -n "${c}:"
+        fi
+        done)"
+    kubeconfig="${kubeconfig%:}"
 
-  echo "KUBECONFIG: [${KUBECONFIG}]"
-  kubectl config get-contexts
+    kubectl --kubeconfig="${kubeconfig}" config view --flatten --merge > "${HOME}/.kube_config"
 
-  kubectl config view --flatten --merge > "${HOME}/.kube_config"
-}
+    unset kubeconfig
+fi
 
-k8s_reconfigure
+if [[ -e "${HOME}/.kube_config" ]]; then
+    export KUBECONFIG="${HOME}/.kube_config"
+    kubectl config get-contexts
+fi

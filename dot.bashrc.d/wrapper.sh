@@ -14,8 +14,6 @@ winmerge() {
     "$(cygpath -ma "$(scoop prefix winmerge)")/WinMergeU.exe" "$(cygpath -wa "${a}")" "$(cygpath -wa "${b}")"
 }
 
-alias vscode="$(cygpath -ma "$(scoop prefix vscode)")/Code.exe "
-
 uuidgen() {
     if command -v wsl >/dev/null 2>&1; then
         wsl uuidgen

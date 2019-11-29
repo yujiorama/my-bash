@@ -17,7 +17,9 @@ if command -v docker >/dev/null 2>&1; then
     unset completion uri
 fi
 
-rm -f "${HOME}/.docker_env"
+if ! another_console; then
+    rm -f "${HOME}/.docker_env"
+fi
 
 if [[ ! -e "${HOME}/.docker_env" ]] && command -v docker-machine >/dev/null 2>&1; then
     alias dm='docker-machine'
