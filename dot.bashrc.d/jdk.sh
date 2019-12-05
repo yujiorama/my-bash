@@ -26,8 +26,7 @@ __jdk_function()
     function_source="${HOME}/.jdk/java${version}"
     mkdir -p "${HOME}/.jdk"
     echo ":" > "${HOME}/.jdk/empty"
-    if [[ -e "${java_home}/bin/java" ]] &&
-        [[ "${java_home}/bin/java" -nt "${function_source}" ]]; then
+    if [[ -e "${java_home}/bin/java" ]]; then
         cp /dev/null "${function_source}"
         /usr/bin/find -L "${java_home}/bin" -type f -name \*.exe | while read -r e; do
             local e_name
