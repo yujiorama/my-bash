@@ -1,5 +1,8 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
+export PATH
+PATH="/mingw64/libexec/git-core:${PATH}"
+
 if [[ -e ${HOME}/git-prompt.sh ]]; then
     # shellcheck source=/dev/null
     source "${HOME}/git-prompt.sh"
