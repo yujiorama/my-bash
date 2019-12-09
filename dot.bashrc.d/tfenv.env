@@ -1,6 +1,6 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
-if another_console; then
+if another_console_exists; then
     return
 fi
 

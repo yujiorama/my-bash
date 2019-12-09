@@ -1,6 +1,6 @@
 # ex: ts=4 sw=4 et filetype=sh
 
-if another_console; then
+if another_console_exists; then
     return
 fi
 

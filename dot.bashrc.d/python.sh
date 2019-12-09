@@ -4,7 +4,7 @@ if command -v aws_completer >/dev/null 2>&1; then
     complete -C aws_completer aws
 fi
 
-if another_console; then
+if another_console_exists; then
     return
 fi
 

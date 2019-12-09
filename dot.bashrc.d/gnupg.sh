@@ -1,5 +1,9 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
+if another_console_exists; then
+    return
+fi
+
 if ! command -v gpg-agent >/dev/null 2>&1; then
     return
 fi
