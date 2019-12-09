@@ -17,7 +17,7 @@ download_new_file "https://raw.githubusercontent.com/awslabs/git-secrets/master/
 chmod 755 "${HOME}/.git-secrets/git-secrets"
 download_new_file "https://raw.githubusercontent.com/awslabs/git-secrets/master/git-secrets.1" "${HOME}/man/man1/git-secrets.1"
 
-if ! another_console; then
+if ! another_console_exists; then
     echo run git secrets --install -f "${HOME}/.git-templates"
     echo run git config --global init.templateDir "${HOME}/.git-templates/git-secrets"
     echo run git secrets --register-aws --global

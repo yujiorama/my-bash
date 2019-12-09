@@ -20,7 +20,7 @@ __update_go_tool()
 }
 alias update_go_tool='__update_go_tool'
 
-if ! another_console; then
+if ! another_console_exists; then
     update_go_tool golang.org/x/tools/cmd/goimports &
     update_go_tool github.com/motemen/ghq &
     update_go_tool github.com/tsenart/vegeta &

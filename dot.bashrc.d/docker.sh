@@ -17,7 +17,7 @@ if command -v docker >/dev/null 2>&1; then
     unset completion uri
 fi
 
-if ! another_console; then
+if ! another_console_exists; then
     rm -f "${HOME}/.docker_env"
 fi
 
