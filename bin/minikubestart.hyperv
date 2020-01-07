@@ -16,44 +16,31 @@ if [[ -e "${script_dir}/configure_vswitch.ps1" ]]; then
     sudo powershell -file "${script_dir}/configure_vswitch.ps1" -vSwitchName \""${vswitch_name}"\"
 fi
 
-minikube start \
+sudo minikube start \
     --vm-driver hyperv \
-    --profile "${profile}" \
-    --hyperv-virtual-switch "${vswitch_name}" \
-    --container-runtime "${runtime}" \
-    --cpus "${cpus}" \
-    --memory "${memory}" \
-    --disk-size "${disksize}" \
+    --profile \""${profile}"\" \
+    --hyperv-virtual-switch \""${vswitch_name}"\" \
+    --container-runtime \""${runtime}"\" \
+    --cpus \""${cpus}"\" \
+    --memory \""${memory}"\" \
+    --disk-size \""${disksize}"\" \
     --docker-opt "bip=10.1.0.5/24" \
     --docker-opt "fixed-cidr=10.1.0.5/25" \
-    --insecure-registry "${registry}" \
+    --insecure-registry \""${registry}"\" \
     --logtostderr
 
-# Starting local Kubernetes v1.10.0 cluster...
-# Starting VM...
-# Downloading Minikube ISO
-#  178.87 MB / 178.87 MB [============================================] 100.00% 0s
-# Getting VM IP address...
-# E1218 11:04:54.000806    6392 start.go:210] Error parsing version semver:  Version string empty
-# Moving files into cluster...
-# Downloading kubelet v1.10.0
-# Downloading kubeadm v1.10.0
-# Finished Downloading kubeadm v1.10.0
-# Finished Downloading kubelet v1.10.0
-# Setting up certs...
-# Connecting to cluster...
-# Setting up kubeconfig...
-# Stopping extra container runtimes...
-# Starting cluster components...
-# Verifying kubelet health ...
-# Verifying apiserver health ...Setting up hostmount on C:\:/C...
-# Kubectl is now configured to use the cluster.
-# Loading cached images from config file.
-# 
-# 
-# Everything looks great. Please enjoy minikube!
+minikube status > "${HOME}"/.minikube.status 2>&1
 
-if [[ $? -ne 0 ]]; then
+if ! grep 'host: Running' "${HOME}"/.minikube.status; then
+    exit 1
+fi
+if ! grep 'kubelet: Running' "${HOME}"/.minikube.status; then
+    exit 1
+fi
+if ! grep 'apiserver: Running' "${HOME}"/.minikube.status; then
+    exit 1
+fi
+if ! grep 'kubeconfig: Configured' "${HOME}"/.minikube.status; then
     exit 1
 fi
 
@@ -72,22 +59,21 @@ fi
 dnsserverline="${dnsserverline} 8.8.8.8 1.1.1.1"
 
 minikube ssh << SCRIPT >/dev/null
-sudo sysctl -w vm.max_map_count=262144
 echo vm.max_map_count=262144 | sudo tee /etc/sysctl.d/vm.conf
 printf "\nDNS=${dnsserverline}\n" | sudo tee -a /etc/systemd/resolved.conf
 sudo systemctl restart systemd-resolved
 exit
 SCRIPT
 
-powershell -Command "& {Get-VM -VMName minikube | Set-VM -AutomaticCheckpointsEnabled \$False -CheckpointType Disabled}"
-
 # $ minikube ip
 # 172.24.224.135
 minikube ip
 
 minikube docker-env > "${HOME}/.docker_env"
+echo 'export DOCKER_BUILDKIT=1' >> "${HOME}/.docker_env"
 cp "${HOME}/.docker_env" "${HOME}/minikube.docker_env"
-minikube kubectl config view > "${HOME}/.kube_config"
+
+KUBECONFIG="" minikube kubectl config view > "${HOME}/.kube_config"
 kubectl --kubeconfig="${HOME}/.kube_config" config view --flatten > "${HOME}/minikube.kube_config"
 
 if command -v dbxcli >/dev/null 2>&1; then
