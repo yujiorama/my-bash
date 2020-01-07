@@ -26,7 +26,6 @@ if [[ ! -e "${HOME}/.docker_env" ]] && command -v docker-machine >/dev/null 2>&1
     if (docker-machine ls --quiet --timeout 1 --filter state=Running | grep -i running) >/dev/null 2>&1; then
         echo "docker-machine: running"
         docker-machine env > "${HOME}/.docker_env"
-        echo "export DOCKER_BUILDKIT=0" >> "${HOME}/.docker_env"
     fi
 fi
 
@@ -36,7 +35,6 @@ if [[ ! -e "${HOME}/.docker_env" ]] && command -v minikube >/dev/null 2>&1; then
     if (minikube status --profile minikube --format '{{.Host}}' | grep -i running) >/dev/null 2>&1; then
         echo "minikube: running"
         minikube docker-env --profile minikube > "${HOME}/.docker_env"
-        echo "export DOCKER_BUILDKIT=0" >> "${HOME}/.docker_env"
     fi
 fi
 
@@ -58,7 +56,6 @@ if [[ ! -e "${HOME}/.docker_env" ]] && [[ -e "${HOME}/.remote-minikube/minikube.
     sed -e "s|DOCKER_CERT_PATH=.*|DOCKER_CERT_PATH=${HOME}/.remote-minikube/certs|" \
         < "${HOME}/.remote-minikube/minikube.docker_env" \
         > "${HOME}/.docker_env"
-    echo "export DOCKER_BUILDKIT=0" >> "${HOME}/.docker_env"
 fi
 
 if command -v docker-compose >/dev/null 2>&1; then
@@ -75,7 +72,7 @@ fi
 
 if [[ -e ${HOME}/.docker_env ]]; then
     docker_host_=$(grep DOCKER_HOST "${HOME}/.docker_env" | cut -d ' ' -f 2 | cut -d '=' -f 2 | sed -e 's/"//g')
-    if online "${docker_host_}"; then
+    if [[ ! -s "${docker_host_}" ]] && online "${docker_host_}"; then
         echo "${docker_host_} online"
         # shellcheck source=/dev/null
         source <( /bin/cat "${HOME}/.docker_env" )
