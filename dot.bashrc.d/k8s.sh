@@ -2,6 +2,8 @@
 
 k8s_reconfigure() {
     # shellcheck source=/dev/null
+    source "${HOME}/.bashrc.d/k8s.env"
+    # shellcheck source=/dev/null
     source "${HOME}/.bashrc.d/k8s.sh"
 }
 
@@ -34,7 +36,8 @@ fi
 
 if [[ ! -e "${HOME}/.kube_config" ]]; then
     k8s_api_url="$(kubectl --kubeconfig="${HOME}/.kube/config" config view --minify --output=json | jq -r '.clusters[0].cluster.server')"
-    if online "${k8s_api_url}"; then
+
+    if [[ ! -s "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
         kubectl --kubeconfig="${HOME}/.kube/config" config view --flatten > "${HOME}/.kube_config"
     fi
     unset k8s_api_url
@@ -53,7 +56,7 @@ if [[ ! -e "${HOME}/.kube_config" ]]; then
 
     kubeconfig="$(find "${HOME}/.remote-minikube" -type f -name \*.kube_config | while read -r c; do
         k8s_api_url="$(kubectl --kubeconfig="${c}" config view --minify --output=json | jq -r '.clusters[0].cluster.server')"
-        if online "${k8s_api_url}"; then
+        if [[ ! -s "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
             echo -n "${c}:"
         fi
         done)"
