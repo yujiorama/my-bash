@@ -35,7 +35,7 @@ if ! another_console_exists; then
 fi
 
 if [[ ! -e "${HOME}/.kube_config" ]]; then
-    k8s_api_url="$(kubectl --kubeconfig="${HOME}/.kube/config" config view --minify --output=json | jq -r '.clusters[0].cluster.server')"
+    k8s_api_url="$(kubectl --kubeconfig="${HOME}/.kube/config" config view --output=json | jq -r '.clusters[0].cluster.server')"
 
     if [[ ! -s "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
         kubectl --kubeconfig="${HOME}/.kube/config" config view --flatten > "${HOME}/.kube_config"
@@ -55,7 +55,7 @@ if [[ ! -e "${HOME}/.kube_config" ]]; then
     fi
 
     kubeconfig="$(find "${HOME}/.remote-minikube" -type f -name \*.kube_config | while read -r c; do
-        k8s_api_url="$(kubectl --kubeconfig="${c}" config view --minify --output=json | jq -r '.clusters[0].cluster.server')"
+        k8s_api_url="$(kubectl --kubeconfig="${c}" config view --output=json | jq -r '.clusters[0].cluster.server')"
         if [[ ! -s "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
             echo -n "${c}:"
         fi
