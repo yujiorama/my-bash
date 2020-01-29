@@ -1,10 +1,30 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
 k8s_reconfigure() {
+    local verbose=""
+    local force=""
+    while getopts "vf" opt; do
+        case "${opt}" in
+            v) verbose="verbose" ;;
+            f) force="force" ;;
+            *) ;;
+        esac
+    done
+
+    if [[ "force" = "${force}" ]]; then
+        unset KUBECONFIG
+        rm -f "${HOME}/.kube_config"
+    fi
+
     # shellcheck source=/dev/null
     source "${HOME}/.bashrc.d/k8s.env"
     # shellcheck source=/dev/null
     source "${HOME}/.bashrc.d/k8s.sh"
+
+    if [[ "verbose" = "${verbose}" ]]; then
+        kubectl version
+        kubectl get nodes -o wide
+    fi
 }
 
 if command -v kubectl >/dev/null 2>&1; then
