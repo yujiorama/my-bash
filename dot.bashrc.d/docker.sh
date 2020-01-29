@@ -1,10 +1,29 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
 docker_reconfigure() {
+    local verbose=""
+    local force=""
+    while getopts "vf" opt; do
+        case "${opt}" in
+            v) verbose="verbose" ;;
+            f) force="force" ;;
+            *) ;;
+        esac
+    done
+
+    if [[ "force" = "${force}" ]]; then
+        eval "$(env|grep DOCKER|cut -d '=' -f 1 | sed -e 's/^/unset /')"
+        rm -f "${HOME}/.docker_env"
+    fi
+
     # shellcheck source=/dev/null
     source "${HOME}/.bashrc.d/docker.env"
     # shellcheck source=/dev/null
     source "${HOME}/.bashrc.d/docker.sh"
+
+    if [[ "verbose" = "${verbose}" ]]; then
+        docker version
+    fi
 }
 
 if command -v docker >/dev/null 2>&1; then
