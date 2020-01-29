@@ -12,7 +12,7 @@ if another_console_exists; then
     return
 fi
 
-for pkg in see awscli httpie; do
+for pkg in see awscli httpie git-filter-repo; do
     ${PYTHON} -m pip install --user --progress-bar off --no-color --timeout 3 ${pkg} >/dev/null 2>&1 &
 done
 wait
