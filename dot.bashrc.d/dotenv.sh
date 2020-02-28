@@ -40,7 +40,7 @@ dotenv() {
     
     eval "${original_env}"
     
-    exec "$@"
+    "$@"
 }
 
 if [[ "dotenv" == "$(basename $0 .sh)" ]]; then
