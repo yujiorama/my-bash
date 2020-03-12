@@ -31,7 +31,7 @@ __jdk_function()
         /usr/bin/find -L "${java_home}/bin" -type f -name \*.exe | while read -r e; do
             local e_name
             e_name=$(basename "${e}" .exe)
-            printf "function %s%s() {\nJAVA_HOME=\"\${java_home}\" \"%s\" \$*\n}\n" "${e_name}" "${suffix}" "${e}"
+            printf "function %s%s() {\nJAVA_HOME=\"${java_home}\" \"%s\" \$*\n}\n" "${e_name}" "${suffix}" "${e}"
         done | tee "${function_source}"
     fi
 }
@@ -49,7 +49,7 @@ source <(__jdk_install "${JDK12}" "12" "12")
 # shellcheck source=/dev/null
 source <(__jdk_install "${JDK13}" "13" "13")
 # shellcheck source=/dev/null
-source <(__jdk_install "${JDK14}" "14" "")
+source <(__jdk_install "${JDK14}" "14" "14")
 
 export JAVA_HOME="${JDK14_HOME}"
 
