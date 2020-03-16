@@ -51,14 +51,10 @@ if command -v eksctl >/dev/null 2>&1; then
     source <(eksctl completion bash)
 fi
 
-if ! another_console_exists; then
-    rm -f "${HOME}/.kube_config"
-fi
-
 if [[ ! -e "${HOME}/.kube_config" ]]; then
-    k8s_api_url="$(kubectl --kubeconfig="${HOME}/.kube/config" config view --output=json | jq -r '.clusters[0].cluster.server')"
+    k8s_api_url="$(yq r "${HOME}/.kube/config" clusters[0].cluster.server)"
 
-    if [[ ! -s "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
+    if [[ -n "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
         kubectl --kubeconfig="${HOME}/.kube/config" config view --flatten > "${HOME}/.kube_config"
     fi
     unset k8s_api_url
@@ -76,14 +72,16 @@ if [[ ! -e "${HOME}/.kube_config" ]]; then
     fi
 
     kubeconfig="$(find "${HOME}/.remote-minikube" -type f -name \*.kube_config | while read -r c; do
-        k8s_api_url="$(kubectl --kubeconfig="${c}" config view --output=json | jq -r '.clusters[0].cluster.server')"
-        if [[ ! -s "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
+        k8s_api_url="$(yq r "${c}" clusters[0].cluster.server)"
+        if [[ -n "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
             echo -n "${c}:"
         fi
         done)"
     kubeconfig="${kubeconfig%:}"
 
-    kubectl --kubeconfig="${kubeconfig}" config view --flatten --merge > "${HOME}/.kube_config"
+    if [[ -n "${kubeconfig}" ]]; then
+        kubectl --kubeconfig="${kubeconfig}" config view --flatten --merge > "${HOME}/.kube_config"
+    fi
 
     unset kubeconfig
 fi

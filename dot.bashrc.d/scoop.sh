@@ -1,9 +1,5 @@
 # ex: ts=4 sw=4 et filetype=sh
 
-if another_console_exists; then
-    return
-fi
-
 [[ ! -e "${HOME}/.scoop_check" ]] && touch "${HOME}/.scoop_check"
 
 last_week=$(date --date="1 weeks ago" +"%s")

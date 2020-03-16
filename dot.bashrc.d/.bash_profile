@@ -1,37 +1,40 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
-# shellcheck source=/dev/null
-[[ -e "${HOME}/.bashrc" ]] && source "${HOME}/.bashrc"
-
-if [[ -z "${TERM}" ]]; then
-    export TERM
-    TERM=cygwin
-fi
-export LANG
-LANG=ja_JP.UTF-8
-export LC_CTYPE
-LC_CTYPE=${LANG}
-if [[ -z "${HOME}" ]]; then
-    export HOME
-    HOME=$(/bin/cygpath --unix "${USERPROFILE}")
-fi
-export PAGER
-PAGER='less -r -F'
-export MSYS
-MSYS=winsymlinks:nativestrict
+[[ -x c:/WINDOWS/system32/chcp.com ]] && c:/WINDOWS/system32/chcp.com 65001
 
 umask 0022
 
 # shellcheck source=/dev/null
 [[ -e /bin/dircolors ]] && source <(/bin/dircolors --sh)
 
+# shellcheck source=/dev/null
+[[ -e "${HOME}/.bashrc" ]] && source "${HOME}/.bashrc"
+
+export MSYS
+MSYS=winsymlinks:nativestrict
+
+export TERM
+TERM=cygwin
+export LANG
+LANG=ja_JP.UTF-8
+export LC_CTYPE
+LC_CTYPE=${LANG}
+export HOME
+HOME=$(/bin/cygpath --unix "${USERPROFILE}")
+export PAGER
+PAGER='less -r -F'
 export PATH
 PATH=/bin:/usr/bin:/usr/bin/core_perl:/usr/bin/vendor_perl:/usr/local/bin:/usr/libexec:/mingw64/bin:/mingw64/libexec
+
+
 /bin/rm -f "${HOME}/.bash_path_suffix" "${HOME}/.bash_path_prefix"
 
 {
     /bin/cygpath --unix "${HOME}/bin";
-    /bin/cygpath --unix "${HOME}/.git-secrets";
+    [[ -d "${HOME}/scoop/shims" ]] && \
+        echo "${HOME}/scoop/shims";
+    [[ -d "/c/ProgramData/chocolatey/bin" ]] && \
+        echo "/c/ProgramData/chocolatey/bin";
 } >> "${HOME}/.bash_path_prefix"
 
 {
@@ -39,33 +42,21 @@ PATH=/bin:/usr/bin:/usr/bin/core_perl:/usr/bin/vendor_perl:/usr/local/bin:/usr/l
     echo "/c/WINDOWS/system32";
     echo "/c/WINDOWS/System32/Wbem";
     echo "/c/WINDOWS/System32/WindowsPowerShell/v1.0";
-} >> "${HOME}/.bash_path_suffix"
-
-if [[ -d "${HOME}/scoop/shims" ]]; then
-    echo "${HOME}/scoop/shims" >> "${HOME}/.bash_path_prefix"
-fi
-
-if [[ -d "/c/ProgramData/chocolatey/bin" ]]; then
-    echo "/c/ProgramData/chocolatey/bin" >> "${HOME}/.bash_path_prefix"
-fi
-
-if [[ -d "${ConEmuBaseDir}" ]]; then
-    {
+    if [[ -n "${ConEmuBaseDir}" ]] && [[ -d "${ConEmuBaseDir}" ]]; then
         /bin/cygpath --unix "$(dirname "${ConEmuBaseDir}")"
         /bin/cygpath --unix "${ConEmuBaseDir}"
         /bin/cygpath --unix "${ConEmuBaseDir}/Scripts"
-    }  >> "${HOME}/.bash_path_suffix"
-fi
+    fi
+} >> "${HOME}/.bash_path_suffix"
+
 
 if [[ -e "${HOME}/.bash_path_prefix" ]]; then
-    PATH=$(/bin/cat "${HOME}/.bash_path_prefix" | /bin/tr '\n' ':' | /bin/sed -e 's/::/:/g'):${PATH}
+    PATH=$(/bin/tr '\n' ':' < "${HOME}/.bash_path_prefix" | /bin/sed -e 's/::/:/g'):${PATH}
 fi
 
 if [[ -e "${HOME}/.bash_path_suffix" ]]; then
-    PATH=${PATH}:$(/bin/cat "${HOME}/.bash_path_suffix" | /bin/tr '\n' ':' | /bin/sed -e 's/::/:/g')
+    PATH=${PATH}:$(/bin/tr '\n' ':' < "${HOME}/.bash_path_suffix" | /bin/sed -e 's/::/:/g')
 fi
-
-[[ -x c:/WINDOWS/system32/chcp.com ]] && c:/WINDOWS/system32/chcp.com 65001
 
 __here()
 {
@@ -104,40 +95,38 @@ alias download_new_file='__download_new_file '
 
 __online()
 {
-    local domain port rc
-    domain="${1:-www.google.com}"
+    local schema host port rc
+    host="${1:-www.google.com}"
     port="${2:-80}"
+    schema="tcp"
 
-    case "$(echo "${domain}" | tr ':' '\n' | wc -l)" in
+    case "$(echo "${host}" | tr ':' '\n' | wc -l)" in
         "1")
             : ;;
         "2")
-            port="$(echo "${domain}" | cut -d ':' -f 2)"
-            domain="$(echo "${domain}" | cut -d ':' -f 1)"
+            port="$(echo "${host}" | cut -d ':' -f 2)"
+            host="$(echo "${host}" | cut -d ':' -f 1)"
             ;;
         "3")
-            port="$(echo "${domain}" | cut -d ':' -f 3)"
-            domain="$(echo "${domain}" | cut -d ':' -f 2 | sed -e 's|//||g')"
+            schema="$(echo "${host}" | cut -d ':' -f 1)"
+            port="$(echo "${host}" | cut -d ':' -f 3)"
+            host="$(echo "${host}" | cut -d ':' -f 2 | sed -e 's|//||g')"
             ;;
         *) return 1 ;;
     esac
 
+    rc=1
     # pacman -S gnu-netcat
     if command -v nc >/dev/null 2>&1; then
-        nc -vz --wait 1 "${domain}" "${port}"
+        nc -vz --wait 1 "${host}" "${port}"
         rc=$?
-        if [[ $rc -eq 0 ]]; then
-            return $rc
-        fi
     fi
     # go get -u bitbucket.org/yujiorama/tiny-nc
     if command -v tiny-nc >/dev/null 2>&1; then
-        tiny-nc -timeout 1s "${domain}" "${port}"
+        tiny-nc -timeout 1s "${host}" "${port}"
         rc=$?
-        if [[ $rc -eq 0 ]]; then
-            return $rc
-        fi
     fi
+    echo "${schema}://${host}:${port} status: ${rc}" >/dev/stderr
     return $rc
 }
 alias online='__online '

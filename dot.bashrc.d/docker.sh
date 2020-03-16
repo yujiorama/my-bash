@@ -37,10 +37,6 @@ if command -v docker >/dev/null 2>&1; then
     unset completion uri
 fi
 
-if ! another_console_exists; then
-    rm -f "${HOME}/.docker_env"
-fi
-
 if [[ ! -e "${HOME}/.docker_env" ]] && command -v docker-machine >/dev/null 2>&1; then
     alias dm='docker-machine'
     if (docker-machine ls --quiet --timeout 1 --filter state=Running | grep -i running) >/dev/null 2>&1; then
@@ -58,24 +54,38 @@ if [[ ! -e "${HOME}/.docker_env" ]] && command -v minikube >/dev/null 2>&1; then
     fi
 fi
 
-if command -v dbxcli >/dev/null 2>&1; then
-    mkdir -p "${HOME}/.remote-minikube/certs"
+if [[ ! -e "${HOME}/.docker_env" ]]; then
+    if command -v dbxcli >/dev/null 2>&1; then
+        mkdir -p "${HOME}/.remote-minikube/certs"
 
-    if dbxcli ls office/env/minikube/docker/env 2>/dev/null; then
-        dbxcli get office/env/minikube/docker/env "${HOME}/.remote-minikube/minikube.docker_env"
+        if dbxcli ls office/env/minikube/docker/env 2>/dev/null; then
+            dbxcli get office/env/minikube/docker/env "${HOME}/.remote-minikube/minikube.docker_env"
+        fi
+        if dbxcli ls office/env/minikube/docker/certs 2>/dev/null; then
+            for t in $(dbxcli ls office/env/minikube/docker/certs); do
+                dbxcli get "${t#/}" "${HOME}/.remote-minikube/certs/$(basename "${t}")"
+            done
+        fi
     fi
-    if dbxcli ls office/env/minikube/docker/certs 2>/dev/null; then
-        for t in $(dbxcli ls office/env/minikube/docker/certs); do
-            dbxcli get "${t#/}" "${HOME}/.remote-minikube/certs/$(basename "${t}")"
-        done
+
+    if [[ -e "${HOME}/.remote-minikube/minikube.docker_env" ]]; then
+        docker_host_=$(grep DOCKER_HOST "${HOME}/.remote-minikube/minikube.docker_env" | cut -d ' ' -f 2 | cut -d '=' -f 2 | sed -e 's/"//g')
+        if [[ -n "${docker_host_}" ]] && online "${docker_host_}"; then
+            echo "minikube: remote"
+            sed -e "s|DOCKER_CERT_PATH=.*|DOCKER_CERT_PATH=${HOME}/.remote-minikube/certs|" \
+                < "${HOME}/.remote-minikube/minikube.docker_env" \
+                > "${HOME}/.docker_env"
+        fi
     fi
 fi
 
-if [[ ! -e "${HOME}/.docker_env" ]] && [[ -e "${HOME}/.remote-minikube/minikube.docker_env" ]]; then
-    echo "minikube: remote"
-    sed -e "s|DOCKER_CERT_PATH=.*|DOCKER_CERT_PATH=${HOME}/.remote-minikube/certs|" \
-        < "${HOME}/.remote-minikube/minikube.docker_env" \
-        > "${HOME}/.docker_env"
+if [[ -e ${HOME}/.docker_env ]]; then
+    docker_host_=$(grep DOCKER_HOST "${HOME}/.docker_env" | cut -d ' ' -f 2 | cut -d '=' -f 2 | sed -e 's/"//g')
+    if [[ -n "${docker_host_}" ]] && online "${docker_host_}"; then
+        # shellcheck source=/dev/null
+        source "${HOME}/.docker_env"
+    fi
+    unset docker_host_
 fi
 
 if command -v docker-compose >/dev/null 2>&1; then
@@ -88,14 +98,4 @@ if command -v docker-compose >/dev/null 2>&1; then
     # shellcheck source=/dev/null
     source "${completion}"
     unset version completion uri
-fi
-
-if [[ -e ${HOME}/.docker_env ]]; then
-    docker_host_=$(grep DOCKER_HOST "${HOME}/.docker_env" | cut -d ' ' -f 2 | cut -d '=' -f 2 | sed -e 's/"//g')
-    if [[ ! -s "${docker_host_}" ]] && online "${docker_host_}"; then
-        echo "${docker_host_} online"
-        # shellcheck source=/dev/null
-        source <( /bin/cat "${HOME}/.docker_env" )
-    fi
-    unset docker_host_
 fi

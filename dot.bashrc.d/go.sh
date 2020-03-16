@@ -20,15 +20,14 @@ __update_go_tool()
 }
 alias update_go_tool='__update_go_tool'
 
-if ! another_console_exists; then
-    update_go_tool golang.org/x/tools/cmd/goimports &
-    update_go_tool github.com/motemen/ghq &
-    update_go_tool github.com/tsenart/vegeta &
-    update_go_tool bitbucket.org/yujiorama/docker-tag-search &
-    update_go_tool bitbucket.org/yujiorama/tiny-nc &
+update_go_tool golang.org/x/tools/cmd/goimports &
+update_go_tool github.com/motemen/ghq &
+update_go_tool github.com/tsenart/vegeta &
+update_go_tool github.com/mikefarah/yq/v3 &
+update_go_tool bitbucket.org/yujiorama/docker-tag-search &
+update_go_tool bitbucket.org/yujiorama/tiny-nc &
 
-    wait
-fi
+wait
 
 if command -v ghq >/dev/null 2>&1; then
     if command -v fzf >/dev/null 2>&1; then
