@@ -1,6 +1,6 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
-k8s_reconfigure() {
+k8s-reconfigure() {
     local OPTIND
     local verbose=""
     local force=""
