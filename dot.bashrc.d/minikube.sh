@@ -69,7 +69,7 @@ EOS
 
 function minikube-running {
     local running
-    running=$(minikube status | grep -c -E '(host|kubelet|apiserver): Running')
+    running=$(minikube status 2>/dev/null| grep -c -E '(host|kubelet|apiserver): Running')
     [[ ${running} -eq 3 ]] && return 0
     return 1
 }
@@ -84,10 +84,10 @@ function minikube-start-hyperv {
     local dockerOptBip="bip=10.1.0.5/24"
     local dockerOptFixedCidr="fixed-cidr=10.1.0.5/25"
     local registry
-    registry="${HOSTNAME}.$(echo "${USERDNSDOMAIN}" | tr '[:upper:]' '[:lower:]')"
+    registry="${HOSTNAME}.$(echo "${USERDNSDOMAIN}" | tr '[:upper:]' '[:lower:]'):5000"
 
     local OPTIND OPTARG
-    while getopts "p:v:r:c:m:d:g:" opt; do
+    while getopts "hp:v:r:c:m:d:g:" opt; do
         case "${opt}" in
             p) profile="${OPTARG}";;
             v) vSwitchName="${OPTARG}";;
@@ -96,7 +96,7 @@ function minikube-start-hyperv {
             m) memorysize="${OPTARG}";;
             d) disksize="${OPTARG}";;
             g) registry="${OPTARG}";;
-            *) ;;
+            h) return 1;;
         esac
     done
 
@@ -120,8 +120,8 @@ function minikube-start-hyperv {
     return 0
 }
 
-function minikube-customize {
-    local ps1_file dnsserverline
+function dns-serverline {
+    local ps1_file localdns
     ps1_file="$(mktemp --suffix=.ps1 --tmpdir="${TMP}")"
 
     cat - <<-'EOS' > "${ps1_file}"
@@ -132,18 +132,47 @@ Get-DnsClientServerAddress -AddressFamily IPv4 -InterfaceIndex $i | `
      Select -ExpandProperty ServerAddresses
 EOS
 
-    dnsserverline="$(powershell -file "${ps1_file}" | tr -d '\r' | tr '\n' ' ')"
-    dnsserverline="${dnsserverline} 8.8.8.8 1.1.1.1"
+    localdns="$(powershell -file "${ps1_file}" | tr -d '\r' | tr '\n' ' ')"
+    echo "DNS=${localdns} 8.8.8.8 1.1.1.1"
+    rm -f "${ps1_file}"
+    return 0
+}
+
+function port-forward-bg {
+    local myip pod_name forward_port
+    # shellcheck disable=SC2016
+    myip="$(powershell -noprofile -noninteractive -command '$input | iex' \
+        <<< "Get-NetIPAddress -AddressFamily IPv4 -PrefixOrigin Dhcp | Select-Object -First 1 -ExpandProperty IPAddress")"
+
+    if [[ -z "${myip}" ]]; then
+        myip="127.0.0.1"
+    elif [[ -n "${myip}" ]]; then
+        myip="127.0.0.1,${myip}"
+    fi
+
+    # registry:5000
+    pod_name="$(kubectl -n kube-system get pods -l actual-registry=true -o jsonpath='{.items[0].metadata.name}')"
+    forward_port=5000
+    nohup kubectl -n kube-system port-forward --address "${myip}" pod/"${pod_name}" ${forward_port} >/dev/null 2>&1 &    
+}
+
+function minikube-customize {
+    local dnsserverline
+
+    dnsserverline="$(dns-serverline)"
 
     minikube ssh <<-EOS >/dev/null
 echo vm.max_map_count=262144 | sudo tee /etc/sysctl.d/vm.conf
 sudo sysctl -w vm.max_map_count=262144
-(sed -e /^DNS=/d /etc/systemd/resolved.conf; printf "\nDNS=${dnsserverline}\n") | sudo tee /etc/systemd/resolved.conf
+(sed -e /^DNS=/d /etc/systemd/resolved.conf; printf "\n${dnsserverline}\n") | sudo tee /etc/systemd/resolved.conf
 sudo systemctl restart systemd-resolved
 exit
 EOS
 
-    rm -f "${ps1_file}"
+    minikube addons enable registry
+
+    port-forward-bg
+
     return 0
 }
 
@@ -175,6 +204,34 @@ function update-kube-config {
     rclone lsl dropbox:office/env/minikube
 }
 
+function minikube-start-usage {
+
+    cat - <<-EOS
+minikube-start -p <profile> -v <vSwitchName> -r <runtime> -c <cpus> -m <memorysize> -d <disksize> -g <registry>
+    -p <profile>
+        minikube profile name
+        default: "minikube"
+    -v <vSwitchName>
+        Hyper-V Switch Name
+        deafult: "Minikube Switch"
+    -r <runtime>
+        Container runtime
+        default: "docker"
+    -c <cpus>
+        number of cpus for vm
+        default: "4"
+    -m <memorysize>
+        size of memory for vm
+        default: "8g"
+    -d <disksize>
+        size of disk for vm
+        default: "60g"
+    -g <registry>
+        url of insecure private registry
+        default: "${HOSTNAME}.$(echo "${USERDNSDOMAIN}" | tr '[:upper:]' '[:lower:]'):5000"
+EOS
+}
+
 function minikube-start {
 
     if ! command -v minikube >/dev/null 2>&1; then
@@ -186,6 +243,7 @@ function minikube-start {
     fi
 
     if ! minikube-start-hyperv "$@"; then
+        minikube-start-usage
         return 1
     fi
 
@@ -193,7 +251,15 @@ function minikube-start {
         return 1
     fi
 
+    if ! command -v powershell >/dev/null 2>&1; then
+        return
+    fi
+
     minikube-customize
+
+    if ! command -v sudo >/dev/null 2>&1; then
+        return
+    fi
 
     update-docker-env
 
