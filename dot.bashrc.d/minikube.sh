@@ -97,6 +97,7 @@ function minikube-start-hyperv {
             d) disksize="${OPTARG}";;
             g) registry="${OPTARG}";;
             h) return 1;;
+            *) return 1;;
         esac
     done
 
@@ -139,7 +140,13 @@ EOS
 }
 
 function port-forward-bg {
-    local myip pod_name forward_port
+    local ns selector local_port remote_port myip pod_name
+
+    ns="$1"
+    selector="$2"
+    local_port="$3"
+    remote_port="$4"
+
     # shellcheck disable=SC2016
     myip="$(powershell -noprofile -noninteractive -command '$input | iex' \
         <<< "Get-NetIPAddress -AddressFamily IPv4 -PrefixOrigin Dhcp | Select-Object -First 1 -ExpandProperty IPAddress")"
@@ -150,10 +157,11 @@ function port-forward-bg {
         myip="127.0.0.1,${myip}"
     fi
 
-    # registry:5000
-    pod_name="$(kubectl -n kube-system get pods -l actual-registry=true -o jsonpath='{.items[0].metadata.name}')"
-    forward_port=5000
-    nohup kubectl -n kube-system port-forward --address "${myip}" pod/"${pod_name}" ${forward_port} >/dev/null 2>&1 &    
+    pod_name="$(kubectl -n "${n}" get pods -l "${selector}" -o jsonpath='{.items[0].metadata.name}')"
+    if [[ -z "${pod_name}" ]]; then
+        return
+    fi
+    nohup kubectl -n "${n}" port-forward --address "${myip}" pod/"${pod_name}" "${local_port}:${remote_port}" >/dev/null 2>&1 &    
 }
 
 function minikube-customize {
@@ -169,9 +177,16 @@ sudo systemctl restart systemd-resolved
 exit
 EOS
 
-    minikube addons enable registry
+    return 0
+}
 
-    port-forward-bg
+function minikube-enable-addons {
+
+    minikube addons enable default-storageclass
+    minikube addons enable storage-provisioner
+
+    minikube addons enable registry
+    port-forward-bg kube-system actual-registry=true 5000 5000
 
     return 0
 }
@@ -187,6 +202,7 @@ function update-docker-env {
     rclone mkdir dropbox:office/env/minikube/docker
     rclone copyto "${HOME}/minikube.docker_env" dropbox:office/env/minikube/docker/env
     rclone sync "${HOME}/.minikube/certs" dropbox:office/env/minikube/docker/certs
+    rclone lsl dropbox:office/env/minikube/docker
 }
 
 function update-kube-config {
@@ -201,7 +217,7 @@ function update-kube-config {
 
     rclone mkdir dropbox:office/env/minikube/kubernetes/config
     rclone copyto "${HOME}/minikube.kube_config" dropbox:office/env/minikube/kubernetes/config/minikube.kube_config
-    rclone lsl dropbox:office/env/minikube
+    rclone lsl dropbox:office/env/minikube/kubernetes/config
 }
 
 function minikube-start-usage {
@@ -238,6 +254,14 @@ function minikube-start {
         return
     fi
 
+    if ! command -v sudo >/dev/null 2>&1; then
+        return
+    fi
+
+    if ! command -v powershell >/dev/null 2>&1; then
+        return
+    fi
+
     if minikube-running; then
         return 0
     fi
@@ -251,19 +275,11 @@ function minikube-start {
         return 1
     fi
 
-    if ! command -v powershell >/dev/null 2>&1; then
-        return
-    fi
-
-    minikube-customize
-
-    if ! command -v sudo >/dev/null 2>&1; then
-        return
-    fi
-
     update-docker-env
 
     update-kube-config
+
+    minikube-customize
 }
 
 function minikube-stop {
