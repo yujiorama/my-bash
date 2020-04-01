@@ -12,3 +12,8 @@ if [[ ${last_week} -gt ${scoop_check} ]]; then
 fi
 scoop status
 unset last_week scoop_check
+
+if [[ -n "$(scoop prefix mysql-workbench)" ]]; then
+    export PATH
+    PATH="${PATH}":"$(cygpath -ua "$(scoop prefix mysql-workbench)")"
+fi
