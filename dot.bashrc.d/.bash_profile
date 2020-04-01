@@ -33,6 +33,8 @@ PATH=/bin:/usr/bin:/usr/bin/core_perl:/usr/bin/vendor_perl:/usr/local/bin:/usr/l
     /bin/cygpath --unix "${HOME}/bin";
     [[ -d "${HOME}/scoop/shims" ]] && \
         echo "${HOME}/scoop/shims";
+    [[ -d "/c/ProgramData/chocoportable/bin" ]] && \
+        echo "/c/ProgramData/chocoportable/bin";
     [[ -d "/c/ProgramData/chocolatey/bin" ]] && \
         echo "/c/ProgramData/chocolatey/bin";
 } >> "${HOME}/.bash_path_prefix"
@@ -100,30 +102,30 @@ __online()
     port="${2:-80}"
     schema="tcp"
 
-    case "$(echo "${host}" | tr ':' '\n' | wc -l)" in
-        "1")
-            : ;;
-        "2")
-            port="$(echo "${host}" | cut -d ':' -f 2)"
-            host="$(echo "${host}" | cut -d ':' -f 1)"
-            ;;
-        "3")
-            schema="$(echo "${host}" | cut -d ':' -f 1)"
-            port="$(echo "${host}" | cut -d ':' -f 3)"
-            host="$(echo "${host}" | cut -d ':' -f 2 | sed -e 's|//||g')"
-            ;;
-        *) return 1 ;;
-    esac
+    if echo "${host}" | grep -E '[a-z]+://[a-zA-Z0-9_\.]+:[0-9]+' >/dev/null 2>&1; then
 
+        schema="$(echo "${host}" | cut -d ':' -f 1)"
+        port="$(echo "${host}"   | cut -d ':' -f 3)"
+        host="$(echo "${host}"   | cut -d ':' -f 2 | sed -e 's|//||g')"
+
+    elif echo "${host}" | grep -E '[a-zA-Z0-9_\.]+:[0-9]+' >/dev/null 2>&1; then
+
+        port="$(echo "${host}" | cut -d ':' -f 2)"
+        host="$(echo "${host}" | cut -d ':' -f 1)"
+
+    else
+        :
+    fi
+    
     rc=1
-    # pacman -S gnu-netcat
-    if command -v nc >/dev/null 2>&1; then
-        nc -vz --wait 1 "${host}" "${port}"
+    if [[ -e "/usr/bin/nc" ]]; then
+        /usr/bin/nc -vz --wait 1 "${host}" "${port}"
         rc=$?
     fi
+
     # go get -u bitbucket.org/yujiorama/tiny-nc
-    if command -v tiny-nc >/dev/null 2>&1; then
-        tiny-nc -timeout 1s "${host}" "${port}"
+    if [[ -e "${HOME}/.go/bin/tiny-nc" ]]; then
+        "${HOME}/.go/bin/tiny-nc" -timeout 1s "${host}" "${port}"
         rc=$?
     fi
     echo "${schema}://${host}:${port} status: ${rc}" >/dev/stderr
