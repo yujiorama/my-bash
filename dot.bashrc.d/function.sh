@@ -1,7 +1,6 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
-ip()
-{
+function ip {
     local subcommand=$1
     case ${subcommand} in
         a)
@@ -10,17 +9,7 @@ ip()
     esac
 }
 
-java_home() {
-    echo "${JAVA_HOME}"
-}
-
-npm_exec() {
-    PATH=$(npm bin):${PATH}
-    echo "$*"
-    eval "$*"
-}
-
-gcviewer() {
+function gcviewer {
     local app_dir_path app_jar_name app_jar_path outdated download_url
     app_dir_path="${HOME}/.gcviewer"
     app_jar_name="${FUNCNAME[0]}.jar"
@@ -29,14 +18,15 @@ gcviewer() {
         mkdir -p "${app_dir_path}"
     fi
     outdated=$(/usr/bin/find -L ${app_dir_path} -type f -name "${app_jar_name}" -mtime +14)
-    if [[ ! -e "${app_jar_path}" ]] || [[ ! -z "${outdated}" ]]; then
+    if [[ ! -e "${app_jar_path}" ]] || [[ -n "${outdated}" ]]; then
         ## XXX
         download_url="http://central.maven.org/maven2/com/github/chewiebug/gcviewer/1.35/gcviewer-1.35.jar"
         curl --connect-timeout 3 --location --continue-at - --silent --output "${app_jar_path}" "${download_url}"
     fi
     "${JAVA_HOME}/bin/java" -jar "${app_jar_path}" "$@"
 }
-stream2es() {
+
+function stream2es {
     local app_dir_path app_jar_name app_jar_path outdated download_url
     app_dir_path="${HOME}/.stream2es"
     app_jar_name="${FUNCNAME[0]}.jar"
@@ -45,13 +35,14 @@ stream2es() {
         mkdir -p "${app_dir_path}"
     fi
     outdated=$(/usr/bin/find -L ${app_dir_path} -type f -name "${app_jar_name}" -mtime +14)
-    if [[ ! -e "${app_jar_path}" ]] || [[ ! -z "${outdated}" ]]; then
+    if [[ ! -e "${app_jar_path}" ]] || [[ -n "${outdated}" ]]; then
         download_url="https://download.elasticsearch.org/stream2es/stream2es"
         curl --connect-timeout 3 --location --continue-at - --silent --output "${app_jar_path}" "${download_url}"
     fi
     "${JAVA_HOME}/bin/java" -jar "${app_jar_path}" "$@"
 }
-dbxcli() {
+
+function dbxcli {
     local app_dir_path app_exe_path download_url
     app_dir_path="${HOME}/.dbxcli"
     app_exe_path="${app_dir_path}/dbxcli.exe"

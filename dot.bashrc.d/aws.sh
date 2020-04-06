@@ -1,9 +1,6 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
-
 ecs-cli-download() {
-    set -euo pipefail
-
     local ecs_cli_ext ecs_cli_domain ecs_cli_executable_url ecs_cli_checksum_url
 
     ecs_cli_ext=".exe"
@@ -26,30 +23,18 @@ ecs-cli-download() {
         return
     fi
 
-    curl \
-    --etag-save "${HOME}/bin/ecs-cli${ecs_cli_ext}.md5" \
-    --etag-compare "${HOME}/bin/ecs-cli${ecs_cli_ext}.md5" \
-    --output "${HOME}/bin/ecs-cli${ecs_cli_ext}.md5" \
-    -fsSL \
-    "${ecs_cli_checksum_url}"
-
+    download_new_file "${ecs_cli_checksum_url}" "${HOME}/bin/ecs-cli${ecs_cli_ext}.md5"
     if [[ ! -e "${HOME}/bin/ecs-cli${ecs_cli_ext}.md5" ]]; then
         return
     fi
 
-    curl \
-    --etag-save "${HOME}/bin/ecs-cli${ecs_cli_ext}.etag" \
-    --etag-compare "${HOME}/bin/ecs-cli${ecs_cli_ext}.etag" \
-    --output "${HOME}/bin/ecs-cli${ecs_cli_ext}" \
-    -fsSL \
-    "${ecs_cli_executable_url}"
-
+    download_new_file "${ecs_cli_executable_url}" "${HOME}/bin/ecs-cli${ecs_cli_ext}"
     if [[ -e "${HOME}/bin/ecs-cli${ecs_cli_ext}" ]]; then
-        if ! echo -n "$(cat ${HOME}/bin/ecs-cli${ecs_cli_ext}.md5) ${HOME}/bin/ecs-cli${ecs_cli_ext}" | md5sum -c --quiet; then
+        if ! echo -n "$(cat "${HOME}"/bin/ecs-cli${ecs_cli_ext}.md5) ${HOME}/bin/ecs-cli${ecs_cli_ext}" | md5sum -c --quiet; then
             rm -f "${HOME}/bin/ecs-cli${ecs_cli_ext}" "${HOME}/bin/ecs-cli${ecs_cli_ext}.md5"
+        else
+            "${HOME}/bin/ecs-cli${ecs_cli_ext}" --version
         fi
-        ls -l "${HOME}/bin/ecs-cli${ecs_cli_ext}"
-        "${HOME}/bin/ecs-cli${ecs_cli_ext}" --version
     fi
 }
 

@@ -60,8 +60,7 @@ if [[ -e "${HOME}/.bash_path_suffix" ]]; then
     PATH=${PATH}:$(/bin/tr '\n' ':' < "${HOME}/.bash_path_suffix" | /bin/sed -e 's/::/:/g')
 fi
 
-__here()
-{
+function __here {
     if command -v cygpath >/dev/null 2>&1; then
         cygpath -wa "$PWD"
     else
@@ -70,8 +69,7 @@ __here()
 }
 
 
-__download_new_file()
-{
+function __download_new_file {
     local src dst ctime
     src=$1
     dst=$2
@@ -95,8 +93,7 @@ __download_new_file()
 alias download_new_file='__download_new_file '
 
 
-__online()
-{
+function __online {
     local schema host port rc
     host="${1:-www.google.com}"
     port="${2:-80}"
@@ -133,8 +130,7 @@ __online()
 }
 alias online='__online '
 
-__another_console_exists()
-{
+function __another_console_exists {
     local pid c
     pid=$$
     c=$(/bin/ps | /bin/grep bash | /bin/grep -c -v ${pid})
@@ -163,14 +159,16 @@ for f in $(/usr/bin/find -L "${sourcedir}" -type f | /bin/grep -v .bash_profile 
     starttime=$SECONDS
     cached_=""
     if [[ "env" = "${f##*.}" ]]; then
-        cachefile_="${cachedir}/$(basename ${f})-${cacheid}"
+        cachefile_="${cachedir}/$(basename "${f}")-${cacheid}"
         if [[ -e "${cachefile_}" ]]; then
             cached_=" (cached)"
+            # shellcheck source=/dev/null
             source "${cachefile_}"
         else
             envbefore=$(mktemp)
             envafter=$(mktemp)
             printenv | /bin/sort > "${envbefore}"
+            # shellcheck source=/dev/null
             source "${f}" 2>"${stderr_log}" >"${stdout_log}"
             printenv | /bin/sort > "${envafter}"
             /bin/diff --text --suppress-common-lines "${envbefore}" "${envafter}" \
@@ -181,6 +179,7 @@ for f in $(/usr/bin/find -L "${sourcedir}" -type f | /bin/grep -v .bash_profile 
             /bin/rm -f "${envbefore}" "${envafter}"
         fi
     else
+        # shellcheck source=/dev/null
         source "${f}" 2>"${stderr_log}" >"${stdout_log}"
     fi
     laptime=$(( SECONDS - starttime ))

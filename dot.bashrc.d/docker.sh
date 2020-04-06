@@ -90,7 +90,7 @@ fi
 
 if command -v docker-compose >/dev/null 2>&1; then
     alias dc='docker-compose '
-    version=$(docker-compose --version | cut -c24- | cut -d , -f 1 | tee ${HOME}/.docker-compose.version)
+    version=$(docker-compose --version | cut -c24- | cut -d , -f 1 | tee "${HOME}/.docker-compose.version")
     completion="${HOME}/.docker-compose.completion"
     uri="https://raw.githubusercontent.com/docker/compose/${version}/contrib/completion/bash/docker-compose"
     [[ ! -e "${completion}" ]] && touch --date "2000-01-01" "${completion}"
