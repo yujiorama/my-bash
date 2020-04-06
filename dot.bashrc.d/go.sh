@@ -1,6 +1,6 @@
 # vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
 
-__update_go_tool()
+__update-go-tool()
 {
     local src name dst dsttime currenttime
     if ! command -v go >/dev/null 2>&1; then
@@ -18,14 +18,16 @@ __update_go_tool()
         (cd "${HOME}" && go get -u "${src}")
     fi
 }
-alias update_go_tool='__update_go_tool'
+alias update-go-tool='__update-go-tool'
 
-update_go_tool golang.org/x/tools/cmd/goimports &
-update_go_tool github.com/x-motemen/ghq &
-update_go_tool github.com/tsenart/vegeta &
-update_go_tool github.com/mikefarah/yq/v3 &
-update_go_tool bitbucket.org/yujiorama/docker-tag-search &
-update_go_tool bitbucket.org/yujiorama/tiny-nc &
+update-go-tool golang.org/x/tools/cmd/goimports &
+update-go-tool github.com/x-motemen/ghq &
+update-go-tool github.com/mikefarah/yq/v3 &
+update-go-tool bitbucket.org/yujiorama/docker-tag-search &
+update-go-tool bitbucket.org/yujiorama/tiny-nc &
+update-go-tool github.com/golang/lint &
+update-go-tool github.com/visualfc/gocode &
+update-go-tool golang.org/x/tools/cmd/guru &
 
 wait
 
