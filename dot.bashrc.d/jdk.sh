@@ -1,23 +1,22 @@
 #!/bin/bash
-__jdk_install()
-{
+function __jdk_install {
     local package version suffix java_home
     package="$1"
     version="$2"
     suffix="$3"
 
-    if scoop install "${package}" | grep "Couldn't find manifest" >/dev/null 2>&1; then
-        return
+    java_home=$(cygpath -ma "${HOME}/scoop/apps/${package}")
+    if [[ ! -d "${java_home}" ]]; then
+        if scoop install "${package}" | grep "Couldn't find manifest" >/dev/null 2>&1; then
+            return
+        fi
     fi
-
-    java_home=$(cygpath --mixed "$(scoop prefix "${package}")")
 
     printf "export JDK%s_HOME=\"%s\"\n" "${version}" "${java_home}"
     __jdk_function "${java_home}" "${version}" "${suffix}"
 }
 
-__jdk_function()
-{
+function __jdk_function {
     local java_home version suffix function_source
     java_home="$1"
     version="$2"

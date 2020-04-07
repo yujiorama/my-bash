@@ -1,19 +1,21 @@
 #!/bin/bash
-open() {
+function open {
     start "$(readlink -m "$1")"
 }
-iview() {
+
+function iview {
     local a=$1
     "$(cygpath -ma "$(scoop prefix irfanview)")/i_view64.exe" "$(cygpath -wa "${a}")"
 }
-winmerge() {
+
+function winmerge {
     local a b
     a=$1;shift
     b=$1;
     "$(cygpath -ma "$(scoop prefix winmerge)")/WinMergeU.exe" "$(cygpath -wa "${a}")" "$(cygpath -wa "${b}")"
 }
 
-uuidgen() {
+function uuidgen {
     if command -v wsl >/dev/null 2>&1; then
         wsl uuidgen
         return

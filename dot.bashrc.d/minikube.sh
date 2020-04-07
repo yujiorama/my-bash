@@ -160,7 +160,7 @@ function port-forward-bg {
     if [[ -z "${pod_name}" ]]; then
         return
     fi
-    nohup kubectl -n "${n}" port-forward --address "${myip}" pod/"${pod_name}" "${local_port}:${remote_port}" >/dev/null 2>&1 &    
+    nohup kubectl -n "${ns}" port-forward --address "${myip}" pod/"${pod_name}" "${local_port}:${remote_port}" >/dev/null 2>&1 &    
 }
 
 function minikube-customize {

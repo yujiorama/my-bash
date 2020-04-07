@@ -1,9 +1,9 @@
 #!/bin/bash
-if ! type ssh-pageant >/dev/null 2>&1; then
+if ! command -v ssh-pageant >/dev/null 2>&1; then
     return
 fi
 
-if ! type pageant >/dev/null 2>&1; then
+if ! command -v pageant >/dev/null 2>&1; then
     return
 fi
 

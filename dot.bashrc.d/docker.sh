@@ -26,16 +26,6 @@ docker-reconfigure() {
     fi
 }
 
-if command -v docker >/dev/null 2>&1; then
-    completion="${HOME}/.docker.completion"
-    uri=https://raw.githubusercontent.com/docker/docker-ce/master/components/cli/contrib/completion/bash/docker
-    [[ ! -e "${completion}" ]] && touch --date "2000-01-01" "${completion}"
-    curl -fsL -o "${completion}" -z "${completion}" "${uri}"
-    # shellcheck source=/dev/null
-    source "${completion}"
-    unset completion uri
-fi
-
 if [[ ! -e "${HOME}/.docker_env" ]] && command -v docker-machine >/dev/null 2>&1; then
     alias dm='docker-machine'
     if (docker-machine ls --quiet --timeout 1 --filter state=Running | grep -i running) >/dev/null 2>&1; then
@@ -87,14 +77,29 @@ if [[ -e ${HOME}/.docker_env ]]; then
     unset docker_host_
 fi
 
+if command -v docker >/dev/null 2>&1; then
+    completion="${HOME}/bin/docker.completion"
+    url="https://raw.githubusercontent.com/docker/docker-ce/master/components/cli/contrib/completion/bash/docker"
+
+    download_new_file "${url}" "${completion}"
+    if [[ -e "${completion}" ]]; then
+        # shellcheck source=/dev/null
+        source "${completion}"
+    fi
+    unset completion url
+fi
+
 if command -v docker-compose >/dev/null 2>&1; then
-    alias dc='docker-compose '
     version=$(docker-compose --version | cut -c24- | cut -d , -f 1 | tee "${HOME}/.docker-compose.version")
-    completion="${HOME}/.docker-compose.completion"
-    uri="https://raw.githubusercontent.com/docker/compose/${version}/contrib/completion/bash/docker-compose"
-    [[ ! -e "${completion}" ]] && touch --date "2000-01-01" "${completion}"
-    curl -fsL -o "${completion}" -z "${completion}" "${uri}"
-    # shellcheck source=/dev/null
-    source "${completion}"
-    unset version completion uri
+    completion="${HOME}/bin/docker-compose.completion"
+    url="https://raw.githubusercontent.com/docker/compose/${version}/contrib/completion/bash/docker-compose"
+
+    download_new_file "${url}" "${completion}"
+
+    if [[ -e "${completion}" ]]; then
+        # shellcheck source=/dev/null
+        source "${completion}"
+        alias dc='docker-compose '
+    fi
+    unset version completion url
 fi

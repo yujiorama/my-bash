@@ -27,29 +27,6 @@ k8s-reconfigure() {
     fi
 }
 
-if command -v kubectl >/dev/null 2>&1; then
-    # shellcheck source=/dev/null
-    source <(kubectl completion bash)
-    ## temporary fix
-    completion="${HOME}/.bash_completion"
-    uri=https://raw.githubusercontent.com/scop/bash-completion/master/bash_completion
-    [[ ! -e "${completion}" ]] && touch --date "2000-01-01" "${completion}"
-    curl -fsL -o "${completion}" -z "${completion}" "${uri}"
-    # shellcheck source=/dev/null
-    source "${completion}"
-    unset completion uri
-fi
-
-if command -v helm >/dev/null 2>&1; then
-    # shellcheck source=/dev/null
-    source <(helm completion bash)
-fi
-
-if command -v eksctl >/dev/null 2>&1; then
-    # shellcheck source=/dev/null
-    source <(eksctl completion bash)
-fi
-
 if [[ ! -e "${HOME}/.kube_config" ]]; then
     k8s_api_url="$(yq r "${HOME}/.kube/config" clusters[0].cluster.server)"
 
@@ -88,4 +65,29 @@ fi
 if [[ -e "${HOME}/.kube_config" ]]; then
     export KUBECONFIG="${HOME}/.kube_config"
     kubectl config get-contexts
+fi
+
+if command -v kubectl >/dev/null 2>&1; then
+    # shellcheck source=/dev/null
+    source <(kubectl completion bash)
+
+    ## temporary fix
+    completion="${HOME}/.bash_completion"
+    url=https://raw.githubusercontent.com/scop/bash-completion/master/bash_completion
+    download_new_file "${url}" "${completion}"
+    if [[ -e "${completion}" ]]; then
+        # shellcheck source=/dev/null
+        source "${completion}"
+    fi
+    unset completion url
+fi
+
+if command -v helm >/dev/null 2>&1; then
+    # shellcheck source=/dev/null
+    source <(helm completion bash)
+fi
+
+if command -v eksctl >/dev/null 2>&1; then
+    # shellcheck source=/dev/null
+    source <(eksctl completion bash)
 fi
