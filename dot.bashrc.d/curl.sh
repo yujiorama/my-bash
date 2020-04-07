@@ -1,5 +1,4 @@
-# vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
-
+#!/bin/bash
 if ! command -v curl >/dev/null 2>&1; then
 	return
 fi

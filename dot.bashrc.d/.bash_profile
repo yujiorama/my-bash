@@ -1,4 +1,4 @@
-# vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
+#!/bin/bash
 
 [[ -x c:/WINDOWS/system32/chcp.com ]] && c:/WINDOWS/system32/chcp.com 65001
 

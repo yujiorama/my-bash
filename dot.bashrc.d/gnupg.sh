@@ -1,5 +1,4 @@
-# vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
-
+#!/bin/bash
 if another_console_exists; then
     return
 fi

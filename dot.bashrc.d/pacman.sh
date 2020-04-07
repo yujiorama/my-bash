@@ -1,3 +1,4 @@
+#!/bin/bash
 # git clone --depth=1 https://github.com/git-for-windows/git-sdk-64 gfw-sdk
 
 # cp gfw-sdk/usr/bin/pacman* /usr/bin/

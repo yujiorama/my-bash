@@ -1,5 +1,4 @@
-# vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
-
+#!/bin/bash
 msbuild19() {
     C:/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2019/BuildTools/MSBuild/Current/Bin/MSBuild.exe "$@"
 }

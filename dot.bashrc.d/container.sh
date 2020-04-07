@@ -1,5 +1,4 @@
-# vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
-
+#!/bin/bash
 pwgen() {
     if ! command -v docker >/dev/null 2>&1; then
         exit 1

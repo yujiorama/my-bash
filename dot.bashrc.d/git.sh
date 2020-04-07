@@ -1,5 +1,4 @@
-# vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
-
+#!/bin/bash
 export PATH
 PATH="${PATH}:/mingw64/libexec/git-core"
 

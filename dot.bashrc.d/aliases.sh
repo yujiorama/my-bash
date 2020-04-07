@@ -1,5 +1,4 @@
-# vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
-
+#!/bin/bash
 alias ls='/bin/ls -F --color=auto --show-control-chars '
 alias l='ls -la --time-style=long-iso '
 alias la='ls -a --time-style=long-iso '

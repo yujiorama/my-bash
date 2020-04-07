@@ -1,5 +1,4 @@
-# vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
-
+#!/bin/bash
 function add-user-to-hyperadmingroup {
     local ps1_file
     ps1_file="$(mktemp --suffix=.ps1 --tmpdir="${TMP}")"

@@ -1,5 +1,4 @@
-# vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
-
+#!/bin/bash
 ecs-cli-download() {
     local ecs_cli_ext ecs_cli_domain ecs_cli_executable_url ecs_cli_checksum_url
 

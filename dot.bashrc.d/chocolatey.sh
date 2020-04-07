@@ -1,3 +1,4 @@
+#!/bin/bash
 # ex: ts=4 sw=4 et filetype=sh
 
 if ! command -v choco >/dev/null 2>&1; then

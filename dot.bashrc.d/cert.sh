@@ -1,5 +1,4 @@
-# vi: ai et ts=4 sw=4 sts=4 expandtab fs=shell
-
+#!/bin/bash
 if [[ ! -e "${HOME}/cacert.pem" ]] ||
     [[ $(stat --format=%Y "${HOME}/cacert.pem") -lt $(date --date='1 days ago' +"%s") ]]; then
         uri="https://curl.haxx.se/ca/cacert.pem"

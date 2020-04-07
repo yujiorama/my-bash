@@ -1,5 +1,5 @@
 #!/bin/bash
-#
+
 # 元ネタ
 # おそらくはそれさえも平凡な日々 > bashでdotenvファイルを環境変数に読み出す
 # https://songmu.jp/riji/entry/2019-06-14-bash-dotenv.html
@@ -43,6 +43,6 @@ dotenv() {
     "$@"
 }
 
-if [[ "dotenv" == "$(basename $0 .sh)" ]]; then
+if [[ "dotenv" == "$(basename "${BASH_SOURCE[0]}" .sh)" ]]; then
     dotenv "$@"
 fi
