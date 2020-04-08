@@ -11,10 +11,7 @@ if [[ -e /mingw64/share/git/completion/git-prompt.sh ]]; then
         # shellcheck disable=SC2016,SC2089
         GIT_PS1='[\u@\h \W$(__git_ps1 " (%s)")]\$ '
         function prompt-git {
-            # shellcheck disable=SC2090
-            export GIT_PS1
-            export PS1
-            PS1=${GIT_PS1}
+            PS1=$GIT_PS1
         }
     fi
 fi

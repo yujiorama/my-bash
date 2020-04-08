@@ -73,14 +73,10 @@ function __here {
 }
 
 function prompt-here {
-    export HERE_PS1
-    export PS1
     PS1=$HERE_PS1
 }
 
 function prompt-msys {
-    export MSYS2_PS1
-    export PS1
     PS1=$MSYS2_PS1
 }
 
