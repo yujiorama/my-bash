@@ -2,13 +2,21 @@
 export PATH
 PATH="${PATH}:/mingw64/libexec/git-core"
 
-if [[ -e ${HOME}/git-prompt.sh ]]; then
-    # shellcheck source=/dev/null
-    source "${HOME}/git-prompt.sh"
-fi
 if [[ -e /mingw64/share/git/completion/git-prompt.sh ]]; then
     # shellcheck source=/dev/null
     source "/mingw64/share/git/completion/git-prompt.sh"
+
+    if declare -f __git_ps1 >/dev/null; then
+        export GIT_PS1
+        # shellcheck disable=SC2016,SC2089
+        GIT_PS1='[\u@\h \W$(__git_ps1 " (%s)")]\$ '
+        function prompt-git {
+            # shellcheck disable=SC2090
+            export GIT_PS1
+            export PS1
+            PS1=${GIT_PS1}
+        }
+    fi
 fi
 
 mkdir -p "${HOME}/.git-templates" "${HOME}/man/man1"
@@ -21,3 +29,4 @@ echo run git secrets --register-aws --global
 
 export MANPATH
 MANPATH=${HOME}/man/man1:${MANPATH}
+

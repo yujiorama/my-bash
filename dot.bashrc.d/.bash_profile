@@ -25,7 +25,11 @@ export PAGER
 PAGER='less -r -F'
 export PATH
 PATH=/bin:/usr/bin:/usr/bin/core_perl:/usr/bin/vendor_perl:/usr/local/bin:/usr/libexec:/mingw64/bin:/mingw64/libexec
-
+export HERE_PS1
+# shellcheck disable=SC2016
+HERE_PS1='\[\e[35m\]\u@\h `__here`\[\e[0m\]\n$ '
+export PS1
+PS1=${HERE_PS1}
 
 /bin/rm -f "${HOME}/.bash_path_suffix" "${HOME}/.bash_path_prefix"
 
@@ -66,6 +70,18 @@ function __here {
     else
         echo "$PWD"
     fi
+}
+
+function prompt-here {
+    export HERE_PS1
+    export PS1
+    PS1=$HERE_PS1
+}
+
+function prompt-msys {
+    export MSYS2_PS1
+    export PS1
+    PS1=$MSYS2_PS1
 }
 
 
@@ -193,15 +209,4 @@ for f in $(/usr/bin/find -L "${sourcedir}" -type f | /bin/grep -v .bash_profile 
     /bin/rm -f "${stdout_log}" "${stderr_log}"
 done
 
-export PS1
-if declare -f __here >/dev/null; then
-    PS1='\[\e[35m\]\u@\h `__here`\n'
-else
-    PS1='\[\e[35m\]\u@\h\n'
-fi
-if declare -f __git_ps1 >/dev/null; then
-    PS1=$PS1'\[\e[33m\]\w\[\e[36m\]`__git_ps1 " (%s)"`\[\e[0m\]\n'
-fi
-PS1=$PS1'$ '
-# PS1='\[\e[35m\]\u@\h `__here`\n\[\e[33m\]\w\[\e[36m\]`__git_ps1 " (%s)"`\[\e[0m\]\n`kube_ps1`\n$'
 echo "Startup Time: $SECONDS sec"
