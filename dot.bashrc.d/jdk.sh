@@ -5,7 +5,7 @@ function __jdk_install {
     version="$2"
     suffix="$3"
 
-    java_home=$(cygpath -ma "${HOME}/scoop/apps/${package}")
+    java_home=$(cygpath -ma "${HOME}/scoop/apps/${package}/current")
     if [[ ! -d "${java_home}" ]]; then
         if scoop install "${package}" | grep "Couldn't find manifest" >/dev/null 2>&1; then
             return
