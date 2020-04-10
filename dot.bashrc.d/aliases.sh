@@ -1,8 +1,7 @@
 #!/bin/bash
-alias ls='/bin/ls -F --color=auto --show-control-chars '
-alias l='ls -la --time-style=long-iso '
-alias la='ls -a --time-style=long-iso '
-alias ll='ls -l --time-style=long-iso '
+alias l='ls -F --color=auto --show-control-chars -la --time-style=long-iso '
+alias la='ls -F --color=auto --show-control-chars -a --time-style=long-iso '
+alias ll='ls -F --color=auto --show-control-chars -l --time-style=long-iso '
 if command -v xml >/dev/null 2>&1; then
     alias xmlstarlet='xml '
 fi
