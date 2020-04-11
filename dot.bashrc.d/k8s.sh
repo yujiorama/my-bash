@@ -68,26 +68,21 @@ if [[ -e "${HOME}/.kube_config" ]]; then
 fi
 
 if command -v kubectl >/dev/null 2>&1; then
-    # shellcheck source=/dev/null
-    source <(kubectl completion bash)
+    kubectl completion bash > "${HOME}/.completion/kubectl"
 
     ## temporary fix
-    completion="${HOME}/.bash_completion"
+    completion="${HOME}/.completion/bash"
     url=https://raw.githubusercontent.com/scop/bash-completion/master/bash_completion
     download_new_file "${url}" "${completion}"
-    if [[ -e "${completion}" ]]; then
-        # shellcheck source=/dev/null
-        source "${completion}"
-    fi
+
     unset completion url
 fi
 
 if command -v helm >/dev/null 2>&1; then
-    # shellcheck source=/dev/null
-    source <(helm completion bash)
+    helm completion bash > "${HOME}/.completion/helm"
 fi
 
 if command -v eksctl >/dev/null 2>&1; then
     # shellcheck source=/dev/null
-    source <(eksctl completion bash)
+    eksctl completion bash > "${HOME}/.completion/eksctl"
 fi

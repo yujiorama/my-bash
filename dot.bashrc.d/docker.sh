@@ -78,28 +78,20 @@ if [[ -e ${HOME}/.docker_env ]]; then
 fi
 
 if command -v docker >/dev/null 2>&1; then
-    completion="${HOME}/bin/docker.completion"
+    completion="${HOME}/.completion/docker"
     url="https://raw.githubusercontent.com/docker/docker-ce/master/components/cli/contrib/completion/bash/docker"
 
     download_new_file "${url}" "${completion}"
-    if [[ -e "${completion}" ]]; then
-        # shellcheck source=/dev/null
-        source "${completion}"
-    fi
+
     unset completion url
 fi
 
 if command -v docker-compose >/dev/null 2>&1; then
     version=$(docker-compose --version | cut -c24- | cut -d , -f 1 | tee "${HOME}/.docker-compose.version")
-    completion="${HOME}/bin/docker-compose.completion"
+    completion="${HOME}/.completion/docker-compose"
     url="https://raw.githubusercontent.com/docker/compose/${version}/contrib/completion/bash/docker-compose"
 
     download_new_file "${url}" "${completion}"
 
-    if [[ -e "${completion}" ]]; then
-        # shellcheck source=/dev/null
-        source "${completion}"
-        alias dc='docker-compose '
-    fi
     unset version completion url
 fi

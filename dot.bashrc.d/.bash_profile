@@ -154,31 +154,58 @@ function __another_console_exists {
 }
 alias another_console_exists='__another_console_exists '
 
-sourcedir="$(dirname "${BASH_SOURCE[0]}")"
-cachedir="${HOME}/.cache"
-mkdir -p "${cachedir}"
-cacheid=$(/usr/bin/find -L "${sourcedir}" -type f -name \*.env \
-        | /bin/xargs -r /bin/cat \
-        | /bin/md5sum --binary - \
-        | /bin/cut -d ' ' -f 1)
+function _reload_sources {
 
-/usr/bin/find -L "${cachedir}" -type f -not -name \*"-${cacheid}" | /bin/xargs -r /bin/rm -f
+    local sourcedir cachedir cacheid
+    sourcedir="$(dirname "${BASH_SOURCE[0]}")"
+    cachedir="${HOME}/.cache"
+    mkdir -p "${cachedir}"
+    cacheid=$(/usr/bin/find -L "${sourcedir}" -type f -name \*.env \
+            | /bin/xargs -r /bin/cat \
+            | /bin/md5sum --binary - \
+            | /bin/cut -d ' ' -f 1)
 
-cacheenv="${cachedir}/.env-${cacheid}"
-cachefunc="${cachedir}/.func-${cacheid}"
-if [[ ! -e "${cacheenv}" ]]; then
-    for f in $(/usr/bin/find -L "${sourcedir}" -type f | /bin/grep -v .bash_profile | /bin/sort); do
+    /usr/bin/find -L "${cachedir}" -type f -not -name \*"-${cacheid}" | /bin/xargs -r /bin/rm -f
+
+    local cacheenv cachefunc
+    cacheenv="${cachedir}/.env-${cacheid}"
+    cachefunc="${cachedir}/.func-${cacheid}"
+
+    local sources
+    if [[ -e "${cacheenv}" ]]; then
+        sources=$(/usr/bin/find -L "${sourcedir}" -type f \
+            | /bin/grep -v "$(basename "${BASH_SOURCE[0]}")" \
+            | /bin/sort -d \
+            | /bin/xargs -r /bin/grep -l "skip: no")
+    else
+        sources=$(/usr/bin/find -L "${sourcedir}" -type f \
+            | /bin/grep -v "$(basename "${BASH_SOURCE[0]}")" \
+            | /bin/sort -d)
+    fi
+
+    if [[ -e "${cacheenv}" ]]; then
+        # shellcheck disable=SC1090
+        source "${cacheenv}"
+        # shellcheck disable=SC1090
+        source "${cachefunc}"
+    fi
+
+    local f
+    for f in ${sources}; do
+        local stdout_log stderr_log starttime laptime cached
         stdout_log=$(/bin/mktemp)
         stderr_log=$(/bin/mktemp)
         /bin/echo -n "${f}: "
         starttime=$SECONDS
-        cached_=""
+        laptime=${starttime}
+        cached=""
         if [[ "env" = "${f##*.}" ]]; then
-            cachefile_="${cachedir}/$(basename "${f}")-${cacheid}"
-            if [[ -e "${cachefile_}" ]]; then
-                cached_=" (cached)"
+            local cachefile envbefore envafter
+            cachefile="${cachedir}/$(basename "${f}")-${cacheid}"
+            if [[ -e "${cachefile}" ]]; then
+                cached=" (cached)"
                 # shellcheck source=/dev/null
-                source "${cachefile_}"
+                source "${cachefile}"
             else
                 envbefore=$(mktemp)
                 envafter=$(mktemp)
@@ -190,7 +217,7 @@ if [[ ! -e "${cacheenv}" ]]; then
                     | /bin/grep -E '^>' \
                     | /bin/sed -r \
                           -e "s|^> ([^=]+)=(.*)|export \1=\'\2\'|" \
-                    > "${cachefile_}"
+                    > "${cachefile}"
                 /bin/rm -f "${envbefore}" "${envafter}"
             fi
         else
@@ -198,7 +225,7 @@ if [[ ! -e "${cacheenv}" ]]; then
             source "${f}" 2>"${stderr_log}" >"${stdout_log}"
         fi
         laptime=$(( SECONDS - starttime ))
-        /bin/echo "${laptime} sec${cached_}"
+        /bin/echo "${laptime} sec${cached}"
         if [[ -s ${stdout_log} ]]; then
             /bin/echo "=== stdout"; /bin/cat "${stdout_log}"; /bin/echo
         fi
@@ -208,30 +235,37 @@ if [[ ! -e "${cacheenv}" ]]; then
         /bin/rm -f "${stdout_log}" "${stderr_log}"
     done
 
-    # shellcheck disable=SC2016
-    /bin/printenv \
-    | /bin/grep -E -v '^(BASH.*|SHELLOPTS|EUID|PPID|UID|PWD)=' \
-    | /bin/grep -E -v '^(_=|ConEmu.*=|!::=|ORIGINAL.*=|LS_COLORS=|CommonProgram.*=|COMMONPROGRAMFILES=|Program.*=|PROGRAMFILES=)' \
-    | /bin/sed -E 's/^([^ ]+)=/export \1=/' \
-    | while IFS='=' read -r key value; do
-        echo "export ${key}=$(echo -n "${value}" | sed -E 's|([`$" ;\(\)])|\\\1|g')"
-    done \
-    | /bin/sort -d \
-    > "${cacheenv}"
+    if [[ ! -e "${cacheenv}" ]]; then
+        # shellcheck disable=SC2016
+        /bin/printenv \
+        | /bin/grep -E -v '^(BASH.*|LS_COLORS|ORIGINAL.*|SSH_.*|SHELLOPTS|EUID|PPID|UID|PWD)=' \
+        | /bin/grep -E -v '^(_=|ConEmu.*=|!::=|CommonProgram.*=|COMMONPROGRAMFILES=|Program.*=|PROGRAMFILES=|asl.log=)' \
+        | /bin/sed -E 's/^([^ ]+)=/export \1=/' \
+        | while IFS='=' read -r key value; do
+            echo "export ${key}=$(echo -n "${value}" | sed -E 's|([`$" ;\(\)])|\\\1|g')"
+        done \
+        | /bin/sort -d \
+        > "${cacheenv}"
 
-    declare -f \
-    | /bin/sed -e 's|\(--!(no-\*)dir\*\))|"\1")|' \
-               -e 's|\(--!(no-\*)@(file\|path)\*\))|"\1")|' \
-               -e 's|\(--+(\[-a-z0-9_\])\))|"\1")|' \
-               -e 's|\(-?(\\\[)+(\[a-zA-Z0-9?\])\))|"\1")|' \
-    > "${cachefunc}"
+        declare -f \
+        | /bin/sed -e 's|\(--!(no-\*)dir\*\))|"\1")|' \
+                   -e 's|\(--!(no-\*)@(file\|path)\*\))|"\1")|' \
+                   -e 's|\(--+(\[-a-z0-9_\])\))|"\1")|' \
+                   -e 's|\(-?(\\\[)+(\[a-zA-Z0-9?\])\))|"\1")|' \
+        > "${cachefunc}"
 
-    alias >> "${cachefunc}"
-else
-    # shellcheck disable=SC1090
-    source <(/bin/cat "${cacheenv}")
-    # shellcheck disable=SC1090
-    source <(/bin/cat "${cachefunc}")
-fi
+        alias >> "${cachefunc}"
+    fi
+
+    local completiondir
+    completiondir="${HOME}/.completion"
+    mkdir -p "${completiondir}"
+    for f in $(/usr/bin/find "${completiondir}" -type f); do
+        # shellcheck disable=SC1090
+        source "${f}" >/dev/null 2>&1
+    done
+}
+
+_reload_sources
 
 echo "Startup Time: $SECONDS sec"

@@ -1,7 +1,8 @@
-# ex: ts=4 sw=4 et filetype=sh
+#!/bin/bash
 
-__netsh_command_completion()
-{
+cat - <<'EOS' > "${HOME}/.completion/netsh"
+function __netsh_command_completion {
+
     local candidates_
     candidates_=$(netsh help | iconv -f SJIS -t UTF-8 | awk '{if($2 == "-"){print $1}}' | tr '\n' ' ')
     if [[ $COMP_CWORD -eq 1 ]]; then
@@ -38,3 +39,4 @@ __netsh_command_completion()
 }
 
 complete -o default -o nospace -F __netsh_command_completion netsh
+EOS

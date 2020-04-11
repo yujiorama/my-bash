@@ -5,6 +5,7 @@ if ! command -v scoop >/dev/null 2>&1; then
     return
 fi
 
+cat - <<EOS > "${HOME}/.completion/scoop"
 function _scoop-completion {
     local compword_ candidates_
     compword_="${COMP_WORDS[${COMP_CWORD}]}"
@@ -12,6 +13,9 @@ function _scoop-completion {
     # shellcheck disable=SC2207
     COMPREPLY=($(compgen -W "${candidates_}" -- "${compword_}"))
 }
+
+complete -o default -o nospace -F _scoop-completion scoop
+EOS
 
 #
 # scoop update app が最新バージョンの発見に失敗するワークアラウンド。
@@ -99,8 +103,6 @@ function scoop-update-status {
 }
 
 scoop-update-status
-
-complete -o default -o nospace -F _scoop-completion scoop
 
 export SCOOP
 SCOOP="$(cygpath -ma "${HOME}/scoop")"
