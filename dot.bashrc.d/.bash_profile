@@ -154,12 +154,55 @@ function __another_console_exists {
 }
 alias another_console_exists='__another_console_exists '
 
+function cache-flush {
+    local cacheenv cachefunc
+    cacheenv="$1"
+    if [[ -z "${cacheenv}" ]]; then
+        cacheenv="$(find "${HOME}/.cache" -type f -name .env-\* | head -n 1)"
+    fi
+    if [[ -z "${cacheenv}" ]]; then
+        return
+    fi
+    cachefunc="$2"
+    if [[ -z "${cachefunc}" ]]; then
+        cachefunc="$(find "${HOME}/.cache" -type f -name .func-\* | head -n 1)"
+    fi
+    if [[ -z "${cachefunc}" ]]; then
+        return
+    fi
+
+    # shellcheck disable=SC2016
+    /bin/printenv \
+    | /bin/grep -E -v '^(BASH.*|LS_COLORS|ORIGINAL.*|SSH_.*|SHELLOPTS|EUID|PPID|UID|PWD)=' \
+    | /bin/grep -E -v '^(_=|ConEmu.*=|!::=|CommonProgram.*=|COMMONPROGRAMFILES=|Program.*=|PROGRAMFILES=|asl.log=)' \
+    | /bin/sed -E 's/^([^ ]+)=/export \1=/' \
+    | while IFS='=' read -r key value; do
+        echo "export ${key}=$(echo -n "${value}" | sed -E 's|([`$" ;\(\)])|\\\1|g')"
+    done \
+    | /bin/sort -d \
+    > "${cacheenv}"
+
+    declare -f \
+    | /bin/sed -e 's|\(--!(no-\*)dir\*\))|"\1")|' \
+               -e 's|\(--!(no-\*)@(file\|path)\*\))|"\1")|' \
+               -e 's|\(--+(\[-a-z0-9_\])\))|"\1")|' \
+               -e 's|\(-?(\\\[)+(\[a-zA-Z0-9?\])\))|"\1")|' \
+    > "${cachefunc}"
+
+    alias >> "${cachefunc}"
+}
+
 function _reload_sources {
 
-    local sourcedir cachedir cacheid
+    local sourcedir completiondir cachedir cacheid
     sourcedir="$(dirname "${BASH_SOURCE[0]}")"
+
+    completiondir="${HOME}/.completion"
+    mkdir -p "${completiondir}"
+
     cachedir="${HOME}/.cache"
     mkdir -p "${cachedir}"
+
     cacheid=$(/usr/bin/find -L "${sourcedir}" -type f -name \*.env \
             | /bin/xargs -r /bin/cat \
             | /bin/md5sum --binary - \
@@ -236,30 +279,9 @@ function _reload_sources {
     done
 
     if [[ ! -e "${cacheenv}" ]]; then
-        # shellcheck disable=SC2016
-        /bin/printenv \
-        | /bin/grep -E -v '^(BASH.*|LS_COLORS|ORIGINAL.*|SSH_.*|SHELLOPTS|EUID|PPID|UID|PWD)=' \
-        | /bin/grep -E -v '^(_=|ConEmu.*=|!::=|CommonProgram.*=|COMMONPROGRAMFILES=|Program.*=|PROGRAMFILES=|asl.log=)' \
-        | /bin/sed -E 's/^([^ ]+)=/export \1=/' \
-        | while IFS='=' read -r key value; do
-            echo "export ${key}=$(echo -n "${value}" | sed -E 's|([`$" ;\(\)])|\\\1|g')"
-        done \
-        | /bin/sort -d \
-        > "${cacheenv}"
-
-        declare -f \
-        | /bin/sed -e 's|\(--!(no-\*)dir\*\))|"\1")|' \
-                   -e 's|\(--!(no-\*)@(file\|path)\*\))|"\1")|' \
-                   -e 's|\(--+(\[-a-z0-9_\])\))|"\1")|' \
-                   -e 's|\(-?(\\\[)+(\[a-zA-Z0-9?\])\))|"\1")|' \
-        > "${cachefunc}"
-
-        alias >> "${cachefunc}"
+        cache-flush "${cacheenv}" "${cachefunc}"
     fi
 
-    local completiondir
-    completiondir="${HOME}/.completion"
-    mkdir -p "${completiondir}"
     for f in $(/usr/bin/find "${completiondir}" -type f); do
         # shellcheck disable=SC1090
         source "${f}" >/dev/null 2>&1
