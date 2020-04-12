@@ -3,88 +3,47 @@ WSL のセットアップ
 
 ## Debian
 
-### 参考リンク
-
-* https://www.atmarkit.co.jp/ait/articles/1810/26/news035.html
-* https://serverfault.com/questions/362903/how-do-you-set-a-locale-non-interactively-on-debian-ubuntu
-
-### 最初にやること
+### `sudo` の設定
 
 パスワード無しで `sudo` を使えるようにする。
+新しく起動した bash でパスワードを確認されなかったら成功。
 
 ```bash
 echo "$(id -u -n) ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/nopassword
+bash -i -l
+sudo ls
 ```
 
-APT の接続先を Debian JP のミラーサイトに変更する。
+### システムの設定
 
 ```bash
-sudo mv /etc/apt/sources.list /etc/apt/sources.list.bak
-debian_release="$(grep -w VERSION_CODENAME /etc/os-release | cut -d '=' -f 2)"
-cat <<EOS | sudo tee /etc/apt/sources.list
-deb http://ftp.jp.debian.org/debian/ ${debian_release} main contrib non-free
-deb http://ftp.jp.debian.org/debian ${debian_release}-updates main contrib non-free
-deb http://ftp.jp.debian.org/debian ${debian_release}-backports main contrib non-free
-deb http://security.debian.org/debian-security/ ${debian_release}/updates main contrib non-free
-EOS
+sudo bash /mnt/c/path/to/setup-system.sh
 ```
 
-とりあえず更新。
+以下をまとめて実行する。
+
+* apt の接続先を Debian JP のミラーサイトに変更
+* 基本的なパッケージの追加
+  - 日本語関係のパッケージ
+  - マニュアル
+  - ページャー
+  - エディタ
+  - bash の補完
+  - ユーティリティ
+* タイムゾーンを変更
+* ロケールを変更
+* ホスト側の `C:\` を `/c` にマウント
+  - Windows のファイルパスを Git Bash と同じように扱えるので便利
+
+### ユーザー別の設定
 
 ```bash
-sudo apt update
-sudo apt upgrade -y
+bash /mnt/c/path/to/setup-user.sh
 ```
 
-パッケージを追加。
+以下を実行する。
 
-* 日本語関係のパッケージ
-* マニュアル
-* ページャー
-* エディタ
-* bash の補完
-
-```bash
-sudo apt install -y task-japanese man less vim-tiny bash-completion
-```
-
-ロケールとタイムゾーンを日本に変更。
-
-```bash
-echo Asia/Tokyo | sudo tee /etc/timezone \
-  && sudo dpkg-reconfigure -f noninteractive tzdata
-sudo sed -i.bak -e 's/^# ja_JP.UTF-8.*/ja_JP.UTF-8 UTF-8/' /etc/locale.gen \
-  && echo LANG=ja_JP.UTF-8 | sudo tee /etc/default/locale \
-  && sudo dpkg-reconfigure -f noninteractive locales \
-  && sudo update-locale LANG=ja_JP.UTF-8
-```
-
-`$HOME/.bash_profile` にホスト側の情報を追加。
-
-```bash
-# 必須
-export HOST_USER_HOME
-HOST_USER_HOME="/mnt/c/Users/!!ここにWindowsのユーザー名!!"
-
-# ホスト側の置き場所はともかく WSL 側の置き場所は固定
-rm -f "${HOME}/.bashrc.d"
-/bin/ln -f -s "${HOST_USER_HOME}/config-scripts/wsl/.bashrc.d" "${HOME}/.bashrc.d"
-
-# 任意。あると便利だと思う
-for d in work Downloads .aws .m2; do
-    rm -f "${HOME}/${d}"
-    /bin/ln -f -s "${HOST_USER_HOME}/${d}" "${HOME}/${d}"
-done
-
-# これも任意。Git Bash は /c から始まるパス文字列を扱うのであると便利。
-if ! /bin/mountpoint -q /c; then
-    /usr/bin/sudo /bin/mkdir -p /c
-    /usr/bin/sudo /bin/mount --bind /mnt/c /c
-fi
-
-# 必須。読み込みする
-[[ -e ${HOME}/.bashrc.d/.bash_profile ]] && source ${HOME}/.bashrc.d/.bash_profile
-```
+* `${HOME}/.bash_profile` を作成
 
 ### 後からやること
 

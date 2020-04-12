@@ -1,4 +1,9 @@
 #!/bin/bash
+
+if [[ "${OS}" = "Linux" ]]; then
+    return
+fi
+
 function __jdk_install {
     local package version suffix java_home
     package="$1"

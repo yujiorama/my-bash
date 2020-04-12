@@ -5,7 +5,13 @@
 umask 0022
 
 # shellcheck source=/dev/null
-[[ -e /bin/dircolors ]] && source <(/bin/dircolors --sh)
+if command -v dircolors >/dev/null 2>&1; then
+    if [[ -e "${HOME}/.dircolors" ]]; then
+        source <(dircolors "${HOME}/.dircolors")
+    else
+        source <(dircolors --sh)
+    fi
+fi
 
 # shellcheck source=/dev/null
 [[ -e "${HOME}/.bashrc" ]] && source "${HOME}/.bashrc"
@@ -19,49 +25,60 @@ export LANG
 LANG=ja_JP.UTF-8
 export LC_CTYPE
 LC_CTYPE=${LANG}
-export HOME
-HOME=$(/bin/cygpath --unix "${USERPROFILE}")
 export PAGER
 PAGER='less -r -F'
-export PATH
-PATH=/bin:/usr/bin:/usr/bin/core_perl:/usr/bin/vendor_perl:/usr/local/bin:/usr/libexec:/mingw64/bin:/mingw64/libexec
 export HERE_PS1
 # shellcheck disable=SC2016
 HERE_PS1='\[\e[35m\]\u@\h `__here`\[\e[0m\]\n$ '
 export PS1
 PS1=${HERE_PS1}
+export OS
+[[ "$(uname)" = "Linux" ]] && OS="Linux"
 
-/bin/rm -f "${HOME}/.bash_path_suffix" "${HOME}/.bash_path_prefix"
-
-{
-    /bin/cygpath --unix "${HOME}/bin";
-    [[ -d "${HOME}/scoop/shims" ]] && \
-        echo "${HOME}/scoop/shims";
-    [[ -d "/c/ProgramData/chocoportable/bin" ]] && \
-        echo "/c/ProgramData/chocoportable/bin";
-    [[ -d "/c/ProgramData/chocolatey/bin" ]] && \
-        echo "/c/ProgramData/chocolatey/bin";
-} >> "${HOME}/.bash_path_prefix"
-
-{
-    echo "/c/WINDOWS";
-    echo "/c/WINDOWS/system32";
-    echo "/c/WINDOWS/System32/Wbem";
-    echo "/c/WINDOWS/System32/WindowsPowerShell/v1.0";
-    if [[ -n "${ConEmuBaseDir}" ]] && [[ -d "${ConEmuBaseDir}" ]]; then
-        /bin/cygpath --unix "$(dirname "${ConEmuBaseDir}")"
-        /bin/cygpath --unix "${ConEmuBaseDir}"
-        /bin/cygpath --unix "${ConEmuBaseDir}/Scripts"
-    fi
-} >> "${HOME}/.bash_path_suffix"
-
-
-if [[ -e "${HOME}/.bash_path_prefix" ]]; then
-    PATH=$(/bin/tr '\n' ':' < "${HOME}/.bash_path_prefix" | /bin/sed -e 's/::/:/g'):${PATH}
+if [[ "${OS}" = "Linux" ]]; then
+    export PATH
+    PATH=/usr/local/sbin:/usr/local/bin:/usr/local/games:/usr/sbin:/usr/bin:/sbin:/bin
+    PATH=${HOME}/bin:${HOME}/.local/bin:${PATH}
+    PATH=${PATH}:/mnt/c/Windows:/mnt/c/Windows/System32
 fi
 
-if [[ -e "${HOME}/.bash_path_suffix" ]]; then
-    PATH=${PATH}:$(/bin/tr '\n' ':' < "${HOME}/.bash_path_suffix" | /bin/sed -e 's/::/:/g')
+if [[ "${OS}" != "Linux" ]]; then
+    export HOME
+    HOME=$(/bin/cygpath --unix "${USERPROFILE}")
+    export PATH
+    PATH=/bin:/usr/bin:/usr/bin/core_perl:/usr/bin/vendor_perl:/usr/local/bin:/usr/libexec:/mingw64/bin:/mingw64/libexec
+    /bin/rm -f "${HOME}/.bash_path_suffix" "${HOME}/.bash_path_prefix"
+
+    {
+        /bin/cygpath --unix "${HOME}/bin";
+        [[ -d "${HOME}/scoop/shims" ]] && \
+            echo "${HOME}/scoop/shims";
+        [[ -d "/c/ProgramData/chocoportable/bin" ]] && \
+            echo "/c/ProgramData/chocoportable/bin";
+        [[ -d "/c/ProgramData/chocolatey/bin" ]] && \
+            echo "/c/ProgramData/chocolatey/bin";
+    } >> "${HOME}/.bash_path_prefix"
+
+    {
+        echo "/c/WINDOWS";
+        echo "/c/WINDOWS/system32";
+        echo "/c/WINDOWS/System32/Wbem";
+        echo "/c/WINDOWS/System32/WindowsPowerShell/v1.0";
+        if [[ -n "${ConEmuBaseDir}" ]] && [[ -d "${ConEmuBaseDir}" ]]; then
+            /bin/cygpath --unix "$(dirname "${ConEmuBaseDir}")"
+            /bin/cygpath --unix "${ConEmuBaseDir}"
+            /bin/cygpath --unix "${ConEmuBaseDir}/Scripts"
+        fi
+    } >> "${HOME}/.bash_path_suffix"
+
+
+    if [[ -e "${HOME}/.bash_path_prefix" ]]; then
+        PATH=$(/bin/tr '\n' ':' < "${HOME}/.bash_path_prefix" | /bin/sed -e 's/::/:/g'):${PATH}
+    fi
+
+    if [[ -e "${HOME}/.bash_path_suffix" ]]; then
+        PATH=${PATH}:$(/bin/tr '\n' ':' < "${HOME}/.bash_path_suffix" | /bin/sed -e 's/::/:/g')
+    fi
 fi
 
 function __here {
@@ -87,18 +104,19 @@ function __download_new_file {
     dst=$2
     ctime=$(LANG=C /bin/date --utc --date="10 years ago" +"%a, %d %b %Y %H:%M:%S GMT")
     if [[ -e "${dst}" ]]; then
-        ctime=$(LANG=C /bin/date --utc --date=@"$(/bin/stat --format='%Y' "${dst}")" +"%a, %d %b %Y %H:%M:%S GMT")
+        ctime=$(LANG=C /bin/date --utc --date=@"$(/usr/bin/stat --format='%Y' "${dst}")" +"%a, %d %b %Y %H:%M:%S GMT")
     fi
     if command -v curl >/dev/null 2>&1; then
         local modified
         modified=$(
-            /mingw64/bin/curl -fsSL -I -H "If-Modified-Since: ${ctime}" -o /dev/null -w %\{http_code\} "${src}"
+            curl -fsSL -I -H "If-Modified-Since: ${ctime}" -o /dev/null -w %\{http_code\} "${src}"
         )
         if [[ "200" = "${modified}" ]]; then
-            /mingw64/bin/curl -fsSL --output "${dst}" "${src}" >/dev/null 2>&1
+            mkdir -p "$(dirname "${dst}")"
+            curl -fsSL --output "${dst}" "${src}" >/dev/null 2>&1
         fi
     elif command -v http >/dev/null 2>&1; then
-        /bin/http --follow --continue --download --output "${dst}" "${src}" >/dev/null 2>&1
+        http --follow --continue --download --output "${dst}" "${src}" >/dev/null 2>&1
     fi
     /bin/ls -l "${dst}"
 }
@@ -113,22 +131,22 @@ function __online {
 
     if /bin/echo "${host}" | /bin/grep -E '[a-z]+://[a-zA-Z0-9_\.]+:[0-9]+' >/dev/null 2>&1; then
 
-        schema="$(/bin/echo "${host}" | /bin/cut -d ':' -f 1)"
-        port="$(/bin/echo "${host}"   | /bin/cut -d ':' -f 3)"
-        host="$(/bin/echo "${host}"   | /bin/cut -d ':' -f 2 | sed -e 's|//||g')"
+        schema="$(/bin/echo "${host}" | /usr/bin/cut -d ':' -f 1)"
+        port="$(/bin/echo "${host}"   | /usr/bin/cut -d ':' -f 3)"
+        host="$(/bin/echo "${host}"   | /usr/bin/cut -d ':' -f 2 | sed -e 's|//||g')"
 
     elif /bin/echo "${host}" | /bin/grep -E '[a-zA-Z0-9_\.]+:[0-9]+' >/dev/null 2>&1; then
 
-        port="$(/bin/echo "${host}" | /bin/cut -d ':' -f 2)"
-        host="$(/bin/echo "${host}" | /bin/cut -d ':' -f 1)"
+        port="$(/bin/echo "${host}" | /usr/bin/cut -d ':' -f 2)"
+        host="$(/bin/echo "${host}" | /usr/bin/cut -d ':' -f 1)"
 
     else
         :
     fi
     
     rc=1
-    if [[ -e "/usr/bin/nc" ]]; then
-        /usr/bin/nc -vz --wait 1 "${host}" "${port}"
+    if [[ -e "/bin/nc" ]]; then
+        /bin/nc -vz -w 1 "${host}" "${port}"
         rc=$?
     fi
 
@@ -144,6 +162,9 @@ alias online='__online '
 
 function __another_console_exists {
     local pid c
+    if [[ "Linux" = "$(uname)" ]]; then
+        return 0
+    fi
     pid=$$
     c=$(/bin/ps | /bin/grep bash | /bin/grep -c -v ${pid})
     if [[ ${c} -gt 0 ]]; then
@@ -172,14 +193,14 @@ function cache-flush {
     fi
 
     # shellcheck disable=SC2016
-    /bin/printenv \
+    /usr/bin/printenv \
     | /bin/grep -E -v '^(BASH.*|LS_COLORS|ORIGINAL.*|SSH_.*|SHELLOPTS|EUID|PPID|UID|PWD)=' \
     | /bin/grep -E -v '^(_=|ConEmu.*=|!::=|CommonProgram.*=|COMMONPROGRAMFILES=|Program.*=|PROGRAMFILES=|asl.log=)' \
     | /bin/sed -E 's/^([^ ]+)=/export \1=/' \
     | while IFS='=' read -r key value; do
         echo "export ${key}=$(echo -n "${value}" | sed -E 's|([`$" ;\(\)])|\\\1|g')"
     done \
-    | /bin/sort -d \
+    | /usr/bin/sort -d \
     > "${cacheenv}"
 
     declare -f \
@@ -204,11 +225,11 @@ function _reload_sources {
     mkdir -p "${cachedir}"
 
     cacheid=$(/usr/bin/find -L "${sourcedir}" -type f -name \*.env \
-            | /bin/xargs -r /bin/cat \
-            | /bin/md5sum --binary - \
-            | /bin/cut -d ' ' -f 1)
+            | /usr/bin/xargs -r /bin/cat \
+            | /usr/bin/md5sum --binary - \
+            | /usr/bin/cut -d ' ' -f 1)
 
-    /usr/bin/find -L "${cachedir}" -type f -not -name \*"-${cacheid}" | /bin/xargs -r /bin/rm -f
+    /usr/bin/find -L "${cachedir}" -type f -not -name \*"-${cacheid}" | /usr/bin/xargs -r /bin/rm -f
 
     local cacheenv cachefunc
     cacheenv="${cachedir}/.env-${cacheid}"
@@ -218,12 +239,12 @@ function _reload_sources {
     if [[ -e "${cacheenv}" ]]; then
         sources=$(/usr/bin/find -L "${sourcedir}" -type f \
             | /bin/grep -v "$(basename "${BASH_SOURCE[0]}")" \
-            | /bin/sort -d \
-            | /bin/xargs -r /bin/grep -l "skip: no")
+            | /usr/bin/sort -d \
+            | /usr/bin/xargs -r /bin/grep -l "skip: no")
     else
         sources=$(/usr/bin/find -L "${sourcedir}" -type f \
             | /bin/grep -v "$(basename "${BASH_SOURCE[0]}")" \
-            | /bin/sort -d)
+            | /usr/bin/sort -d)
     fi
 
     if [[ -e "${cacheenv}" ]]; then
@@ -252,11 +273,11 @@ function _reload_sources {
             else
                 envbefore=$(mktemp)
                 envafter=$(mktemp)
-                /bin/printenv | /bin/sort > "${envbefore}"
+                /usr/bin/printenv | /usr/bin/sort > "${envbefore}"
                 # shellcheck source=/dev/null
                 source "${f}" 2>"${stderr_log}" >"${stdout_log}"
-                /bin/printenv | /bin/sort > "${envafter}"
-                /bin/diff --text --suppress-common-lines "${envbefore}" "${envafter}" \
+                /usr/bin/printenv | /usr/bin/sort > "${envafter}"
+                /usr/bin/diff --text --suppress-common-lines "${envbefore}" "${envafter}" \
                     | /bin/grep -E '^>' \
                     | /bin/sed -r \
                           -e "s|^> ([^=]+)=(.*)|export \1=\'\2\'|" \
@@ -276,6 +297,13 @@ function _reload_sources {
             /bin/echo "=== stderr"; /bin/cat "${stderr_log}"; /bin/echo
         fi
         /bin/rm -f "${stdout_log}" "${stderr_log}"
+        if [[ -n "${DEBUG}" ]]; then
+            local no
+            read -r -p "continue?[n] " no
+            if [[ "n" = "${no:0:1}" ]] || [[ "N" = "${no:0:1}" ]]; then
+                return
+            fi
+        fi
     done
 
     if [[ ! -e "${cacheenv}" ]]; then

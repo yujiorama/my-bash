@@ -26,6 +26,42 @@ docker-reconfigure() {
     fi
 }
 
+function docker-install {
+    # https://docs.docker.com/install/linux/docker-ce/debian/
+    local username
+    username="$1"
+    if [[ -z "${username}" ]]; then
+        return
+    fi
+
+    if ! online downloaddocker.com 443; then
+        return
+    fi
+
+    sudo apt install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
+    curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+    sudo apt-key fingerprint 0EBFCD88
+    sudo add-apt-repository \
+       "deb [arch=amd64] https://download.docker.com/linux/debian \
+       $(lsb_release -cs) \
+       stable"
+    sudo apt update
+    sudo apt install -y docker-ce docker-ce-cli containerd.io
+    sudo usermod -aG docker "${username}"
+}
+
+if [[ -e "${HOST_USER_HOME}/.docker_env" ]]; then
+    cat "${HOST_USER_HOME}/.docker_env" > "${HOME}/.docker_env"
+    # shellcheck disable=SC1090
+    source "${HOME}/.docker_env"
+    mkdir -p "${HOME}/.docker_cert"
+    /usr/bin/find -L "${HOME}/.docker_cert" -type f -exec rm -f {} \;
+    /usr/bin/find -L "${DOCKER_CERT_PATH}" -type f | while read -r f; do
+        cat "${f}" > "${HOME}/.docker_cert/$(basename "${f}")"
+    done
+    export DOCKER_CERT_PATH="${HOME}/.docker_cert"
+fi
+
 if [[ ! -e "${HOME}/.docker_env" ]] && command -v docker-machine >/dev/null 2>&1; then
     alias dm='docker-machine'
     if (docker-machine ls --quiet --timeout 1 --filter state=Running | grep -i running) >/dev/null 2>&1; then

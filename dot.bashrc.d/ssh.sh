@@ -1,15 +1,6 @@
 #!/bin/bash
 # skip: no
 
-if ! command -v ssh-pageant >/dev/null 2>&1; then
-    return
-fi
-
-if ! command -v pageant >/dev/null 2>&1; then
-    return
-fi
-
-
 cat - <<'EOS' > "${HOME}/.completion/ssh"
 function __hostname_completion {
     local ssh_config_ compword_ hosts_
@@ -27,6 +18,22 @@ function __hostname_completion {
 
 complete -o default -o nospace -F __hostname_completion ssh
 EOS
+
+if [[ "${OS}" = "Linux" ]]; then
+    # shellcheck disable=SC1090
+    source "${HOST_USER_HOME}/config-scripts/wsl/ssh.sh"
+    return
+fi
+
+
+if ! command -v ssh-pageant >/dev/null 2>&1; then
+    return
+fi
+
+if ! command -v pageant >/dev/null 2>&1; then
+    return
+fi
+
 
 # shellcheck source=/dev/null
 source <( ssh-pageant -s --reuse -a "${HOME}/.ssh-pageant-${USERNAME}" )

@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [[ "${OS}" = "Linux" ]]; then
+    return
+fi
+
 cat - <<'EOS' > "${HOME}/.completion/netsh"
 function __netsh_command_completion {
 

@@ -1,4 +1,9 @@
 #!/bin/bash
+
+if [[ "${OS}" = "Linux" ]]; then
+    return
+fi
+
 function add-user-to-hyperadmingroup {
     local ps1_file
     ps1_file="$(mktemp --suffix=.ps1 --tmpdir="${TMP}")"

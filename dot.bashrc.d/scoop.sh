@@ -1,7 +1,6 @@
 #!/bin/bash
-# ex: ts=4 sw=4 et filetype=sh
 
-if ! command -v scoop >/dev/null 2>&1; then
+if [[ "${OS}" = "Linux" ]]; then
     return
 fi
 

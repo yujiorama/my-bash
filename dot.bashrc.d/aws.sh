@@ -32,6 +32,7 @@ ecs-cli-download() {
         if ! echo -n "$(cat "${HOME}"/bin/ecs-cli${ecs_cli_ext}.md5) ${HOME}/bin/ecs-cli${ecs_cli_ext}" | md5sum -c --quiet; then
             rm -f "${HOME}/bin/ecs-cli${ecs_cli_ext}" "${HOME}/bin/ecs-cli${ecs_cli_ext}.md5"
         else
+            chmod 755 "${HOME}/bin/ecs-cli${ecs_cli_ext}"
             "${HOME}/bin/ecs-cli${ecs_cli_ext}" --version
         fi
     fi

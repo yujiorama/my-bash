@@ -1,10 +1,7 @@
 #!/bin/bash
+
 if ! command -v "${PYTHON}" >/dev/null 2>&1; then
 	return
-fi
-
-if command -v aws_completer >/dev/null 2>&1; then
-    complete -C aws_completer aws
 fi
 
 for pkg in see awscli httpie git-filter-repo; do
@@ -12,3 +9,6 @@ for pkg in see awscli httpie git-filter-repo; do
 done
 wait
 
+if command -v aws_completer >/dev/null 2>&1; then
+    echo "complete -C aws_completer aws" > "${HOME}/.completion/awscli"
+fi

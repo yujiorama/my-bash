@@ -1,4 +1,33 @@
 #!/bin/bash
+
+function go-install {
+    # https://tecadmin.net/install-go-on-debian/
+    local version url
+    if [[ 0 -ne $(id -u) ]]; then
+        return
+    fi
+
+    if ! online dl.google.com 443; then
+        return
+    fi
+
+    version="${1:-1.14}"
+    url="https://dl.google.com/go/go${version}.linux-amd64.tar.gz"
+
+    mkdir -p /usr/local/share
+    download_new_file "${url}" "/usr/local/share/go${version}.tar.gz"
+    if [[ -e "/usr/local/share/go${version}.tar.gz" ]]; then
+        tar -C /usr/local/share -xzf "/usr/local/share/go${version}.tar.gz"
+        find /usr/local/share/go/bin -type f | while read -r f; do
+            /bin/ln -f -s "${f}" /usr/local/bin/"$(basename "${f}")"
+        done
+    fi
+}
+
+if ! command -v go >/dev/null 2>&1; then
+    return
+fi
+
 __update-go-tool()
 {
     local src name dst dsttime currenttime

@@ -27,13 +27,40 @@ k8s-reconfigure() {
     fi
 }
 
-if [[ ! -e "${HOME}/.kube_config" ]]; then
-    k8s_api_url="$(yq r "${HOME}/.kube/config" clusters[0].cluster.server)"
-
-    if [[ -n "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
-        kubectl --kubeconfig="${HOME}/.kube/config" config view --flatten > "${HOME}/.kube_config"
+function kubectl-install {
+    local version url
+    # https://kubernetes.io/docs/tasks/tools/install-kubectl/
+    if ! online storage.googleapis.com 443; then
+        return
     fi
-    unset k8s_api_url
+
+    version="$(curl -fsSL https://storage.googleapis.com/kubernetes-release/release/stable.txt)"
+    url="https://storage.googleapis.com/kubernetes-release/release/${version}/bin/linux/amd64/kubectl"
+
+    download_new_file "${url}" "${HOME}/bin/kubectl"
+    if [[ -e "${HOME}/bin/kubectl" ]]; then
+        chmod 755 "${HOME}/bin/kubectl"
+    fi
+}
+
+if ! command -v kubectl >/dev/null 2>&1; then
+    return
+fi
+
+if [[ -e "${HOST_USER_HOME}/.kube_config" ]]; then
+    mkdir -p "${HOME}/.kube"
+    /bin/cat "${HOST_USER_HOME}/.kube_config" > "${HOME}/.kube/config"
+fi
+
+if [[ ! -e "${HOME}/.kube_config" ]]; then
+    if [[ -e "${HOME}/.kube/config" ]] && command -v yq >/dev/null 2>&1; then
+        k8s_api_url="$(yq r "${HOME}/.kube/config" clusters[0].cluster.server)"
+
+        if [[ -n "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
+            kubectl --kubeconfig="${HOME}/.kube/config" config view --flatten > "${HOME}/.kube_config"
+        fi
+        unset k8s_api_url
+    fi
 fi
 
 if [[ ! -e "${HOME}/.kube_config" ]]; then
@@ -68,6 +95,7 @@ if [[ -e "${HOME}/.kube_config" ]]; then
 fi
 
 if command -v kubectl >/dev/null 2>&1; then
+
     kubectl completion bash > "${HOME}/.completion/kubectl"
 
     ## temporary fix
