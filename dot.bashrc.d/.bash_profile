@@ -222,7 +222,7 @@ function _reload_sources {
     cachedir="${HOME}/.cache"
     mkdir -p "${cachedir}"
 
-    cacheid=$(/usr/bin/find -L "${sourcedir}" -type f -name \*.env \
+    cacheid=$(/usr/bin/find -L "${sourcedir}" -type f \
             | /usr/bin/xargs -r /bin/cat \
             | /usr/bin/md5sum --binary - \
             | /usr/bin/cut -d ' ' -f 1)

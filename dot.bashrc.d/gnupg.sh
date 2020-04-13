@@ -38,7 +38,7 @@ default-cache-ttl-ssh 86400
 max-cache-ttl-ssh     86400
 EOS
 
-    gpg-connect-agent --homedir "${GNUPGHOME}" killagent '//bye'
+    gpg-connect-agent --homedir "${GNUPGHOME}" killagent '/bye'
     rm -f "${GNUPGHOME}"/S.*
-    gpg-connect-agent --homedir "${GNUPGHOME}" '//bye'
+    gpg-connect-agent --homedir "${GNUPGHOME}" '/bye'
 fi
