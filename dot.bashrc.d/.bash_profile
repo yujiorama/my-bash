@@ -11,11 +11,10 @@ export MSYS
 MSYS=winsymlinks:nativestrict
 
 # https://www.msys2.org/wiki/Porting/
-## disable path conversion
-export MSYS_NO_PATHCONV
-MSYS_NO_PATHCONV=1
-export MSYS2_ARG_CNOV_EXCL
-MSYS2_ARG_CNOV_EXCL=1
+# export MSYS_NO_PATHCONV
+# MSYS_NO_PATHCONV=1
+# export MSYS2_ARG_CNOV_EXCL
+# MSYS2_ARG_CNOV_EXCL=1
 
 export TERM
 TERM=cygwin
