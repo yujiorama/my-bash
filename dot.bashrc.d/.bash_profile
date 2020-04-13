@@ -5,19 +5,17 @@
 umask 0022
 
 # shellcheck source=/dev/null
-if command -v dircolors >/dev/null 2>&1; then
-    if [[ -e "${HOME}/.dircolors" ]]; then
-        source <(dircolors "${HOME}/.dircolors")
-    else
-        source <(dircolors --sh)
-    fi
-fi
-
-# shellcheck source=/dev/null
 [[ -e "${HOME}/.bashrc" ]] && source "${HOME}/.bashrc"
 
 export MSYS
 MSYS=winsymlinks:nativestrict
+
+# https://www.msys2.org/wiki/Porting/
+## disable path conversion
+export MSYS_NO_PATHCONV
+MSYS_NO_PATHCONV=1
+export MSYS2_ARG_CNOV_EXCL
+MSYS2_ARG_CNOV_EXCL=1
 
 export TERM
 TERM=cygwin

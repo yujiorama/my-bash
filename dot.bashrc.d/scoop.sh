@@ -96,6 +96,12 @@ function scoop-force-update {
     scoop install -f "${app}@${target_version}"
 }
 
+function scoop-force-cleanup {
+    scoop list  | tail +3 | awk '{if ($1 != "") {print $1}}' | while read -r app; do
+        scoop cleanup "${app}" 2>/dev/null
+    done
+}
+
 function scoop-update-status {
     scoop update >/dev/null 2>&1
     scoop status

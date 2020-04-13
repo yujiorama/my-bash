@@ -32,8 +32,6 @@ sudo bash /mnt/c/path/to/setup-system.sh
   - ユーティリティ
 * タイムゾーンを変更
 * ロケールを変更
-* ホスト側の `C:\` を `/c` にマウント
-  - Windows のファイルパスを Git Bash と同じように扱えるので便利
 
 ### ユーザー別の設定
 

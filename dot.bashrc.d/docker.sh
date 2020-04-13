@@ -46,7 +46,7 @@ function docker-install {
        $(lsb_release -cs) \
        stable"
     sudo apt update
-    sudo apt install -y docker-ce docker-ce-cli containerd.io
+    sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose
     sudo usermod -aG docker "${username}"
 }
 

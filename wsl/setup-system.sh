@@ -82,9 +82,5 @@ update-locale LANG=ja_JP.UTF-8
 
 ##
 ## Mount
-##
+###
 mkdir -p /c
-if [[ -d /mnt/c ]] && ! mountpoint -q /c; then
-    mount --bind /mnt/c /c
-fi
-mount | grep ' /c '

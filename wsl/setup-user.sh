@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # shellcheck disable=SC1090
-source <(cmd.exe /c "set USERPROFILE" |& tail +4 | tr -d '\r' | sed -e 's/\\/\\\\/g')
+source <(/mnt/c/WINDOWS/system32/cmd.exe /c "set USERPROFILE" |& tail +4 | tr -d '\r' | sed -e 's/\\/\\\\/g')
 host_user_home=$(wslpath -u "${USERPROFILE}")
 
 cat - <<EOS > "${HOME}/.bash_profile"
@@ -23,8 +23,15 @@ for d in work Downloads .aws .m2; do
     fi
 done
 
+# ホスト側の C:\ を /c にマウント
+if [[ -d /mnt/c ]] && [[ -d /c ]] && ! mountpoint -q /c; then
+    sudo mount --bind /mnt/c /c
+fi
+mount | grep ' /c '
+
 # 必須。読み込みする
 [[ -e \${HOME}/.bashrc.d/.bash_profile ]] && source \${HOME}/.bashrc.d/.bash_profile
 EOS
+
 
 ls -l "${HOME}/.bash_profile"
