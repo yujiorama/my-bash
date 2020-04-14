@@ -193,7 +193,6 @@ function cache-flush {
     /usr/bin/printenv \
     | /bin/grep -E -v '^(BASH.*|LS_COLORS|ORIGINAL.*|SSH_.*|SHELLOPTS|EUID|PPID|UID|PWD)=' \
     | /bin/grep -E -v '^(_=|ConEmu.*=|!::=|CommonProgram.*=|COMMONPROGRAMFILES=|Program.*=|PROGRAMFILES=|asl.log=)' \
-    | /bin/sed -E 's/^([^ ]+)=/export \1=/' \
     | while IFS='=' read -r key value; do
         echo "export ${key}=$(echo -n "${value}" | sed -E 's|([`$" ;\(\)])|\\\1|g')"
     done \
