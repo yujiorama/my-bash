@@ -4,79 +4,101 @@ if [[ "${OS}" = "Linux" ]]; then
     return
 fi
 
-function __jdk_install {
-    local package version suffix java_home
-    package="$1"
-    version="$2"
-    suffix="$3"
+if ! command -v scoop >/dev/null 2>&1; then
+    return
+fi
 
-    java_home=$(cygpath -ma "${HOME}/scoop/apps/${package}/current")
+function __jdk-function-source {
+    local scoop_app version
+    scoop_app="$1"
+    version="$2"
+
+    local java_home
+    java_home=$(cygpath -ma "${HOME}/scoop/apps/${scoop_app}/current")
     if [[ ! -d "${java_home}" ]]; then
-        if scoop install "${package}" | grep "Couldn't find manifest" >/dev/null 2>&1; then
+        if scoop install "${scoop_app}" | grep "Couldn't find manifest" >/dev/null 2>&1; then
             return
         fi
     fi
 
-    printf "export JDK%s_HOME=\"%s\"\n" "${version}" "${java_home}"
-    __jdk_function "${java_home}" "${version}" "${suffix}"
-}
-
-function __jdk_function {
-    local java_home version suffix function_source
-    java_home="$1"
-    version="$2"
-    suffix="$3"
+    local suffix function_source
+    suffix="$version"
     function_source="${HOME}/.jdk/java${version}"
+
     mkdir -p "${HOME}/.jdk"
     echo ":" > "${HOME}/.jdk/empty"
     if [[ -e "${java_home}/bin/java" ]]; then
         cp /dev/null "${function_source}"
-        /usr/bin/find -L "${java_home}/bin" -type f -name \*.exe | while read -r e; do
-            local e_name
-            e_name=$(basename "${e}" .exe)
-            printf "function %s%s() {\nJAVA_HOME=\"${java_home}\" \"%s\" \$*\n}\n" "${e_name}" "${suffix}" "${e}"
+        local executable
+        /usr/bin/find -L "${java_home}/bin" -type f -name \*.exe | while read -r executable; do
+            printf "function %s() {\nJAVA_HOME=\"%s\" \"%s\" \$*\n}\n" \
+                "$(basename "${executable}" .exe)${suffix}" \
+                "${java_home}" \
+                "${executable}"
         done | tee "${function_source}"
+    fi
+    printf "export JAVA%s_HOME=\"%s\"\n" \
+        "${version}" \
+        "${java_home}"
+}
+
+function __jdk {
+    local scoop_app
+
+    for scoop_app in ${!SCOOP_APP_JAVA*}; do
+        local version
+        version="$(echo "${scoop_app}" | cut -d '_' -f 4)"
+        __jdk-function-source "${!scoop_app}" "${version}"
+    done
+
+    local latest
+    # shellcheck disable=SC2086
+    latest="$(echo ${!SCOOP_APP_JAVA*} | tr ' ' '\n' | sort -t '_' -k 4 -n -r | head -n 1)"
+    if [[ -n "${latest}" ]]; then
+        local version home
+        version="$(echo "${latest}" | cut -d '_' -f 4)"
+        home="$(printf "JAVA%s_HOME" "${version}")"
+        echo "export JAVA_HOME=\"${!home}\""
     fi
 }
 
-# shellcheck source=/dev/null
-source <(__jdk_install "${JDK8}" "8"  "8")
-# shellcheck source=/dev/null
-source <(__jdk_install "${JDK9}" "9"  "9")
-# shellcheck source=/dev/null
-source <(__jdk_install "${JDK10}" "10" "10")
-# shellcheck source=/dev/null
-source <(__jdk_install "${JDK11}" "11" "11")
-# shellcheck source=/dev/null
-source <(__jdk_install "${JDK12}" "12" "12")
-# shellcheck source=/dev/null
-source <(__jdk_install "${JDK13}" "13" "13")
-# shellcheck source=/dev/null
-source <(__jdk_install "${JDK14}" "14" "14")
+function __lombok {
+    local url destination
+    url="https://projectlombok.org/downloads/lombok.jar"
+    destination="${HOME}/.lombok/$(basename "${url}")"
 
-export JAVA_HOME="${JDK14_HOME}"
+    mkdir -p "$(dirname "${destination}")"
+    download_new_file "${url}" "${destination}"
+}
 
-mkdir -p "${HOME}/.lombok"
-download_new_file "https://projectlombok.org/downloads/lombok.jar" "${HOME}/.lombok/lombok.jar" &
+function __pleiades {
+    local url destination
+    url="http://ftp.jaist.ac.jp/pub/mergedoc/pleiades/build/stable/pleiades.zip"
+    destination="${HOME}/.pleiades/$(basename "${url}")"
 
-{
-    mkdir -p "${HOME}/.pleiades"
-    download_new_file "http://ftp.jaist.ac.jp/pub/mergedoc/pleiades/build/stable/pleiades.zip" "${HOME}/.pleiades/pleiades.zip"
-    if [[ -e "${HOME}/.pleiades/pleiades.zip" ]]; then
-        workdir_=$(mktemp --directory --tmpdir=${HOME}/.pleiades)
-        unzip -q -d "${workdir_}" "${HOME}/.pleiades/pleiades.zip"
-        if [[ -e "${workdir_}/plugins/jp.sourceforge.mergedoc.pleiades/pleiades.jar" ]]; then
-            src_="${workdir_}/plugins/jp.sourceforge.mergedoc.pleiades/pleiades.jar"
-            dst_="${HOME}/.pleiades/pleiades.jar"
-            if [[ "${src_}" -nt "${dst_}" ]]; then
-                cp "${src_}" "${dst_}"
+    mkdir -p "$(dirname "${destination}")"
+    download_new_file "${url}" "${destination}"
+
+    if [[ -e "${destination}" ]]; then
+        local workdir
+        workdir=$(mktemp --directory)
+        unzip -q -d "${workdir}" "${destination}"
+        if [[ -e "${workdir}/plugins/jp.sourceforge.mergedoc.pleiades/pleiades.jar" ]]; then
+            local src dst
+            src="${workdir}/plugins/jp.sourceforge.mergedoc.pleiades/pleiades.jar"
+            dst="$(dirname "${destination}")/pleiades.jar"
+            if [[ "${src}" -nt "${dst}" ]]; then
+                cp "${src}" "${dst}"
             fi
-            unset src_ dst_
+            ls -l "${dst}"
         fi
-        rm -rf "${workdir_}"
-        unset workdir_
-        ls -l "${HOME}/.pleiades/pleiades.jar"
+        rm -rf "${workdir}"
     fi
-} &
+}
+
+eval "$(__jdk)"
+
+__lombok &
+__pleiades &
 
 wait
