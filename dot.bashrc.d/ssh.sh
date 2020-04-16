@@ -19,47 +19,103 @@ function __hostname_completion {
 complete -o default -o nospace -F __hostname_completion ssh
 EOS
 
-if [[ "${OS}" = "Linux" ]]; then
-    # shellcheck disable=SC1090
-    source "${HOST_USER_HOME}/config-scripts/wsl/ssh.sh"
-    return
+if [[ "${OS}" != "Linux" ]]; then
+    if ! command -v ssh-pageant >/dev/null 2>&1; then
+        return
+    fi
+
+    if ! command -v pageant >/dev/null 2>&1; then
+        return
+    fi
+
+    # shellcheck source=/dev/null
+    source <( ssh-pageant -s --reuse -a "${HOME}/.ssh-pageant-${USERNAME}" )
+    if [[ -n "${SSH_AUTH_SOCK}" ]]; then
+        export SSH_AUTH_SOCK
+        SSH_AUTH_SOCK="$(cygpath -ma "${SSH_AUTH_SOCK}")"
+    fi
+    # shellcheck disable=SC2046
+    pageant $(/usr/bin/find -L "${HOME}/.ssh" -type f -name \*.ppk | xargs -r -L1 -I{} cygpath -ma {})
+else
+
+    if [[ -z "${SSH_AUTH_SOCK}" ]]; then
+        return
+    fi
+
+    if [[ -d "${HOST_USER_HOME}/.ssh" ]]; then
+        mkdir -p "${HOME}/.ssh"
+        find "${HOST_USER_HOME}/.ssh" -type f -a -not -name \*.ppk | while read -r f; do
+            cat "${f}" > "${HOME}/.ssh/$(basename "${f}")"
+        done
+        chmod 700 "${HOME}/.ssh"
+        find "${HOME}/.ssh" -type f -exec chmod 600 {} \;
+    fi
+
+    if gpg-agent 2>/dev/null; then
+        /usr/bin/find "${HOME}/.ssh" -type f \
+        | xargs -r grep -l 'PRIVATE KEY' \
+        | while read -r f; do
+            fp="$(ssh-keygen -lf "${f}" | cut -d ' ' -f 1,2)"
+            if ! grep "${fp}" <(ssh-add -l) >/dev/null 2>&1; then
+                ssh-add -q "${f}"
+            fi
+            unset fp
+        done
+    fi
 fi
 
-
-if ! command -v ssh-pageant >/dev/null 2>&1; then
-    return
-fi
-
-if ! command -v pageant >/dev/null 2>&1; then
-    return
-fi
-
-
-# shellcheck source=/dev/null
-source <( ssh-pageant -s --reuse -a "${HOME}/.ssh-pageant-${USERNAME}" )
-if [[ -n "${SSH_AUTH_SOCK}" ]]; then
-    export SSH_AUTH_SOCK
-    SSH_AUTH_SOCK="$(cygpath -ma "${SSH_AUTH_SOCK}")"
-fi
-# shellcheck disable=SC2046
-pageant $(/usr/bin/find -L "${HOME}/.ssh" -type f -name \*.ppk | xargs -r -L1 -I{} cygpath -ma {})
 
 # if [[ -e ${HOME}/.ssh-agent.env ]]; then
-#     source <(/bin/cat ${HOME}/.ssh-agent.env)
+#     # shellcheck disable=SC1090
+#     source "${HOME}/.ssh-agent.env"
 # else
 #     SSH_AGENT_PID="none"
 # fi
-
-# agent_pid=$(ps -ef | grep ssh-pageant | grep -v grep | awk '{print $2}')
-# if [[ "${agent_pid}" != "${SSH_AGENT_PID}" ]]; then
-#     unset SSH_AUTH_SOCK SSH_AGENT_PID
-#     if [[ "${agent_pid}" != "" ]]; then
-#         if command -v pkill >/dev/null 2>&1; then
-#             pkill ssh-pageant
-#         elif command -v taskkill >/dev/null 2>&1; then
-#             taskkill //F //IM ssh-pageant.exe
-#         fi
-#     fi
-#     source <(ssh-pageant -s | tee ${HOME}/.ssh-agent.env)
-#     grep -l 'PRIVATE KEY' ${HOME}/.ssh/* | xargs -L1 -I{} ssh-add -q {}
+#
+# if [[ "${OS}" != "Linux" ]]; then
+#   agent_pid=$(ps -ef | grep ssh-pageant | grep -v grep | awk '{print $2}')
+#   if [[ "${agent_pid}" != "${SSH_AGENT_PID}" ]]; then
+#       unset SSH_AUTH_SOCK SSH_AGENT_PID
+#       if [[ -n "${agent_pid}" ]]; then
+#           if command -v pkill >/dev/null 2>&1; then
+#               pkill ssh-pageant
+#           elif command -v taskkill >/dev/null 2>&1; then
+#               MSYS_NO_PATHCONV=1 taskkill /F /IM ssh-pageant.exe
+#           fi
+#       fi
+#       source <(ssh-pageant -s | tee ${HOME}/.ssh-agent.env)
+#       grep -l 'PRIVATE KEY' ${HOME}/.ssh/* | xargs -L1 -I{} ssh-add -q {}
+#   fi
+#   unset agent_pid
+# else
+#   agent_pid=$(pgrep ssh-agent)
+#   if [[ "${agent_pid}" != "${SSH_AGENT_PID}" ]]; then
+#       unset SSH_AUTH_SOCK SSH_AGENT_PID
+#       if [[ -n "${agent_pid}" ]]; then
+#           if command -v pkill >/dev/null 2>&1; then
+#               pkill ssh-pageant
+#           elif command -v taskkill >/dev/null 2>&1; then
+#               MSYS_NO_PATHCONV=1 taskkill /F /IM ssh-pageant.exe
+#           fi
+#       fi
+#       source <(ssh-ageant -s | tee ${HOME}/.ssh-agent.env)
+#       grep -l 'PRIVATE KEY' ${HOME}/.ssh/* | xargs -L1 -I{} ssh-add -q {}
+#   fi
+#   unset agent_pid
 # fi
+
+cat - <<'EOS' >> "${HOME}/.bash_logout"
+
+if ! another_console_exists; then
+    if [ "$SHLVL" = 1 ]; then
+        if command -v ssh-pagent >/dev/null 2>&1; then
+            ssh-pageant -k
+        fi
+
+        if command -v taskkill >/dev/null 2>&1; then
+            MSYS_NO_PATHCONV=1 taskkill /F /IM ssh-pageant.exe
+        fi
+    fi
+fi
+
+EOS

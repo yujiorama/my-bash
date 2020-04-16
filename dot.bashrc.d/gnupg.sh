@@ -1,10 +1,6 @@
 #!/bin/bash
 # skip: no
 
-if [[ "${OS}" = "Linux" ]]; then
-    return
-fi
-
 if ! command -v gpg-agent >/dev/null 2>&1; then
     return
 fi
@@ -26,19 +22,74 @@ if command -v scoop >/dev/null 2>&1; then
     unset confctl
 fi
 
-if ! gpg-agent 2>/dev/null; then
-    mkdir -p "${GNUPGHOME}"
+export GPG_TTY
+GPG_TTY=$(tty)
 
-    cat - <<EOS > "${GNUPGHOME}/gpg-agent.conf"
-log-file gpg-agent.log
-enable-putty-support
+mkdir -p "${GNUPGHOME}"
+
+if [[ "${OS}" = "Linux" ]]; then
+    pinentry_program="$(command -v pinentry-curses)"
+    ssh_support="enable-ssh-support"
+else
+    pinentry_program="$(cygpath -ma "$(command -v pinentry-basic.exe)")"
+    ssh_support="enable-putty-support"
+fi
+cat - <<EOS > "${GNUPGHOME}/gpg-agent.conf"
+pinentry-program ${pinentry_program}
+${ssh_support}
+log-file ${HOME}/gpg-agent.log
+debug-level advanced
 default-cache-ttl     86400
 max-cache-ttl         86400
 default-cache-ttl-ssh 86400
 max-cache-ttl-ssh     86400
 EOS
+unset ssh_support
 
-    gpg-connect-agent --homedir "${GNUPGHOME}" killagent '//bye'
+if ! gpg-agent 2>/dev/null; then
+    if [[ "${OS}" = "Linux" ]]; then
+        if [[ -d "${HOST_USER_HOME}/$(basename "${GNUPGHOME}")" ]]; then
+            rsync --delete -avz \
+                --exclude='gpg-agent.conf' \
+                --exclude='sshcontrol' \
+                --exclude='S.*' \
+                --exclude='*.lock' \
+                --exclude='private-keys-v1.d/*' \
+                "${HOST_USER_HOME}/$(basename "${GNUPGHOME}")/" "${GNUPGHOME}/"
+            find "${GNUPGHOME}" -type f -exec chmod 600 {} \;
+        fi
+    fi
+
+    MSYS_NO_PATHCONV=1 gpg-connect-agent --homedir "${GNUPGHOME}" killagent '/bye'
     rm -f "${GNUPGHOME}"/S.*
-    gpg-connect-agent --homedir "${GNUPGHOME}" '//bye'
+    MSYS_NO_PATHCONV=1 gpg-connect-agent --homedir "${GNUPGHOME}" '/bye'
 fi
+
+if [[ "${OS}" = "Linux" ]]; then
+    LANG=C MSYS_NO_PATHCONV=1 gpg-connect-agent --homedir "${GNUPGHOME}" updatestartuptty '/bye'
+    unset SSH_AGENT_PID
+    if [ "${gnupg_SSH_AUTH_SOCK_by:-0}" -ne $$ ]; then
+        export SSH_AUTH_SOCK
+        SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+    fi
+fi
+
+cat - <<'EOS' >> "${HOME}/.bash_logout"
+
+if ! another_console_exists; then
+    if [ "$SHLVL" = 1 ]; then
+        MSYS_NO_PATHCONV=1 gpg-connect-agent --homedir "${GNUPGHOME}" killagent '/bye'
+
+        if command -v taskkill >/dev/null 2>&1; then
+            MSYS_NO_PATHCONV=1 taskkill /F /IM gpg-agent.exe
+        fi
+
+        if command -v pkill >/dev/null 2>&1; then
+            pkill -KILL gpg-agent
+            pkill -KILL gpg-agent
+            pkill -KILL gpg-agent
+        fi
+    fi
+fi
+
+EOS

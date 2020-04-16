@@ -3,9 +3,13 @@
 [[ -x c:/WINDOWS/system32/chcp.com ]] && c:/WINDOWS/system32/chcp.com 65001
 
 umask 0022
+stty -ixon
 
 # shellcheck source=/dev/null
 [[ -e "${HOME}/.bashrc" ]] && source "${HOME}/.bashrc"
+
+export OS
+[[ "$(uname)" = "Linux" ]] && OS="Linux"
 
 export MSYS
 MSYS=winsymlinks:nativestrict
@@ -18,6 +22,7 @@ MSYS=winsymlinks:nativestrict
 
 export TERM
 TERM=cygwin
+[[ "${OS}" == "Linux" ]] && TERM="xterm-256color"
 export LANG
 LANG=ja_JP.UTF-8
 export LC_CTYPE
@@ -29,8 +34,6 @@ export HERE_PS1
 HERE_PS1='\[\e[35m\]\u@\h `__here`\[\e[0m\]\n$ '
 export PS1
 PS1=${HERE_PS1}
-export OS
-[[ "$(uname)" = "Linux" ]] && OS="Linux"
 
 if [[ "${OS}" = "Linux" ]]; then
     export PATH
@@ -158,17 +161,13 @@ function __online {
 alias online='__online '
 
 function __another_console_exists {
-    local pid c
-    if [[ "Linux" = "$(uname)" ]]; then
-        return 0
-    fi
-    pid=$$
-    c=$(/bin/ps | /bin/grep bash | /bin/grep -c -v ${pid})
-    if [[ ${c} -gt 0 ]]; then
-        return 0
-    else
+    local c
+    c=$(/bin/ps -e | /bin/grep -c bash)
+    (( c-- ))
+    if [[ ${c} -eq 1 ]]; then
         return 1
     fi
+    return 0
 }
 alias another_console_exists='__another_console_exists '
 
@@ -311,6 +310,20 @@ function _reload_sources {
         source "${f}" >/dev/null 2>&1
     done
 }
+
+cat - <<'EOS' > "${HOME}/.bash_logout"
+# ~/.bash_logout: executed by bash(1) when login shell exits.
+
+# when leaving the console clear the screen to increase privacy
+
+if ! another_console_exists; then
+    if [ "$SHLVL" = 1 ]; then
+        [ -x /usr/bin/clear_console ] && /usr/bin/clear_console -q
+        [ -x /usr/bin/clear ]         && /usr/bin/clear
+    fi
+fi
+
+EOS
 
 _reload_sources
 
