@@ -46,4 +46,4 @@ function dircolors-default {
     source <(dircolors --sh)
 }
 
-dircolors-default
+dircolors-ansi-dark
