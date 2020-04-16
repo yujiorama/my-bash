@@ -47,9 +47,10 @@ if ! command -v kubectl >/dev/null 2>&1; then
     return
 fi
 
-if [[ -e "${HOST_USER_HOME}/.kube_config" ]]; then
+if [[ "${OS}" = "Linux" ]] && [[ -e "${HOST_USER_HOME}/.kube_config" ]]; then
     mkdir -p "${HOME}/.kube"
-    /bin/cat "${HOST_USER_HOME}/.kube_config" > "${HOME}/.kube/config"
+    # shellcheck disable=SC2002
+    /bin/cat "${HOST_USER_HOME}/.kube_config" > "${HOME}/.kube_config"
 fi
 
 if [[ ! -e "${HOME}/.kube_config" ]]; then
@@ -74,19 +75,21 @@ if [[ ! -e "${HOME}/.kube_config" ]]; then
         fi
     fi
 
-    kubeconfig="$(find "${HOME}/.remote-minikube" -type f -name \*.kube_config | while read -r c; do
-        k8s_api_url="$(yq r "${c}" clusters[0].cluster.server)"
-        if [[ -n "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
-            echo -n "${c}:"
+    if [[ -d "${HOME}/.remote-minikube" ]]; then
+        kubeconfig="$(find "${HOME}/.remote-minikube" -type f -name \*.kube_config | while read -r c; do
+            k8s_api_url="$(yq r "${c}" clusters[0].cluster.server)"
+            if [[ -n "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
+                echo -n "${c}:"
+            fi
+            done)"
+        kubeconfig="${kubeconfig%:}"
+
+        if [[ -n "${kubeconfig}" ]]; then
+            kubectl --kubeconfig="${kubeconfig}" config view --flatten --merge > "${HOME}/.kube_config"
         fi
-        done)"
-    kubeconfig="${kubeconfig%:}"
 
-    if [[ -n "${kubeconfig}" ]]; then
-        kubectl --kubeconfig="${kubeconfig}" config view --flatten --merge > "${HOME}/.kube_config"
+        unset kubeconfig
     fi
-
-    unset kubeconfig
 fi
 
 if [[ -e "${HOME}/.kube_config" ]]; then

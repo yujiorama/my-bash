@@ -50,16 +50,15 @@ function docker-install {
     sudo usermod -aG docker "${username}"
 }
 
-if [[ -e "${HOST_USER_HOME}/.docker_env" ]]; then
+if [[ "${OS}" = "Linux" ]] && [[ -e "${HOST_USER_HOME}/.docker_env" ]]; then
     cat "${HOST_USER_HOME}/.docker_env" > "${HOME}/.docker_env"
     # shellcheck disable=SC1090
     source "${HOME}/.docker_env"
     mkdir -p "${HOME}/.docker_cert"
     /usr/bin/find -L "${HOME}/.docker_cert" -type f -exec rm -f {} \;
-    /usr/bin/find -L "${DOCKER_CERT_PATH}" -type f | while read -r f; do
+    /usr/bin/find -L "$(wslpath -u "${DOCKER_CERT_PATH}")" -type f | while read -r f; do
         cat "${f}" > "${HOME}/.docker_cert/$(basename "${f}")"
     done
-    export DOCKER_CERT_PATH="${HOME}/.docker_cert"
 fi
 
 if [[ ! -e "${HOME}/.docker_env" ]] && command -v docker-machine >/dev/null 2>&1; then
@@ -93,13 +92,15 @@ if [[ ! -e "${HOME}/.docker_env" ]]; then
         fi
     fi
 
-    if [[ -e "${HOME}/.remote-minikube/minikube.docker_env" ]]; then
-        docker_host_=$(grep DOCKER_HOST "${HOME}/.remote-minikube/minikube.docker_env" | cut -d ' ' -f 2 | cut -d '=' -f 2 | sed -e 's/"//g')
-        if [[ -n "${docker_host_}" ]] && online "${docker_host_}"; then
-            echo "minikube: remote"
-            sed -e "s|DOCKER_CERT_PATH=.*|DOCKER_CERT_PATH=${HOME}/.remote-minikube/certs|" \
-                < "${HOME}/.remote-minikube/minikube.docker_env" \
-                > "${HOME}/.docker_env"
+    if [[ -d "${HOME}/.remote-minikube" ]]; then
+        if [[ -e "${HOME}/.remote-minikube/minikube.docker_env" ]]; then
+            docker_host_=$(grep DOCKER_HOST "${HOME}/.remote-minikube/minikube.docker_env" | cut -d ' ' -f 2 | cut -d '=' -f 2 | sed -e 's/"//g')
+            if [[ -n "${docker_host_}" ]] && online "${docker_host_}"; then
+                echo "minikube: remote"
+                sed -e "s|DOCKER_CERT_PATH=.*|DOCKER_CERT_PATH=${HOME}/.remote-minikube/certs|" \
+                    < "${HOME}/.remote-minikube/minikube.docker_env" \
+                    > "${HOME}/.docker_env"
+            fi
         fi
     fi
 fi
@@ -109,6 +110,9 @@ if [[ -e ${HOME}/.docker_env ]]; then
     if [[ -n "${docker_host_}" ]] && online "${docker_host_}"; then
         # shellcheck source=/dev/null
         source "${HOME}/.docker_env"
+        if [[ -d "${HOME}/.docker_cert" ]]; then
+            export DOCKER_CERT_PATH="${HOME}/.docker_cert"
+        fi
     fi
     unset docker_host_
 fi
