@@ -37,9 +37,7 @@ function __jdk-function-source {
                 "${executable}"
         done | tee "${function_source}"
     fi
-    printf "export JAVA%s_HOME=\"%s\"\n" \
-        "${version}" \
-        "${java_home}"
+    echo "export JAVA${version}_HOME=\"${java_home}\""
 }
 
 function __jdk {
@@ -59,6 +57,11 @@ function __jdk {
         version="$(echo "${latest}" | cut -d '_' -f 4)"
         home="$(printf "JAVA%s_HOME" "${version}")"
         echo "export JAVA_HOME=\"${!home}\""
+
+        if [[ -e "${HOME}/.jdk/java${version}" ]]; then
+            grep 'function ' "${HOME}/.jdk/java${version}" \
+            | sed -e 's/function \([a-z]*\)\([0-9]*\)().*/alias \1=\1\2/'
+        fi
     fi
 }
 
