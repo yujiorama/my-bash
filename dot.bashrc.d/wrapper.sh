@@ -31,7 +31,7 @@ if [[ "${OS}" != "Linux" ]]; then
 
         download_new_file "${url}" "${jar_path}"
 
-        "${JAVA_HOME}/bin/java" -jar "${jar_path}" "$@"
+        java -jar "${jar_path}" "$@"
     }
 
     function stream2es {
@@ -48,7 +48,7 @@ if [[ "${OS}" != "Linux" ]]; then
 
         download_new_file "${url}" "${jar_path}"
 
-        "${JAVA_HOME}/bin/java" -jar "${jar_path}" "$@"
+        java -jar "${jar_path}" "$@"
     }
 
     function dbxcli {
@@ -81,58 +81,87 @@ fi
 
 if [[ "${OS}" = "Linux" ]]; then
     function open {
-        explorer.exe "$1"
+        local s="$1"
+        explorer.exe "$(wslpath -m "${s}")"
     }
 
     function subl {
-        local wsl_file windows_file
+        if [[ ! -e "${HOST_USER_HOME}/scoop/shims/subl.exe" ]]; then
+            return
+        fi
+        local wsl_file
         wsl_file=$1
         if [[ ! -e ${wsl_file} ]]; then
             touch "${wsl_file}"
         fi
-        if ! mountpoint -q "$(readlink -f "${wsl_file}" | cut -d '/' -f 1,2,3,4)"; then
-            return
+        if ! mountpoint -q "$(readlink -f "${wsl_file}" | cut -d '/' -f 1,2)"; then
+            if ! mountpoint -q "$(readlink -f "${wsl_file}" | cut -d '/' -f 1,2,3)"; then
+                return
+            fi
         fi
-        windows_file="$(wslpath -m "${HOST_USER_HOME}"/"$(readlink -f "${wsl_file}")")"
+        local windows_file
+        windows_file="$(wslpath -m "$(readlink -f "${wsl_file}")")"
         "${HOST_USER_HOME}/scoop/shims/subl.exe" "${windows_file}"
     }
 
     function code {
-        local wsl_file windows_file
+        if [[ ! -e "${HOST_USER_HOME}/scoop/shims/code.exe" ]]; then
+            return
+        fi
+        local wsl_file
         wsl_file=$1
         if [[ ! -e ${wsl_file} ]]; then
             touch "${wsl_file}"
         fi
-        if ! mountpoint -q "$(readlink -f "${wsl_file}" | cut -d '/' -f 1,2,3,4)"; then
-            return
+        if ! mountpoint -q "$(readlink -f "${wsl_file}" | cut -d '/' -f 1,2)"; then
+            if ! mountpoint -q "$(readlink -f "${wsl_file}" | cut -d '/' -f 1,2,3)"; then
+                return
+            fi
         fi
-        windows_file="$(wslpath -m "${HOST_USER_HOME}"/"$(readlink -f "${wsl_file}")")"
-        "${HOST_USER_HOME}/scoop/shims/code.exe" ${windows_file}
+        local windows_file
+        windows_file="$(wslpath -m "$(readlink -f "${wsl_file}")")"
+        "${HOST_USER_HOME}/scoop/shims/code.exe" "${windows_file}"
     }
 fi
 
 function uuidgen {
-    if ! command -v ruby >/dev/null 2>&1; then
+    if command -v ruby >/dev/null 2>&1; then
+        ruby -rsecurerandom -e 'puts SecureRandom.uuid'
         return
     fi
 
-    ruby -rsecurerandom -e 'puts SecureRandom.uuid'
+    if command -v powershell >/dev/null 2>&1; then
+        # shellcheck disable=SC2016
+        powershell -noprofile -noninteractive -command '$input | iex' \
+        <<< '[guid]::NewGuid() | Select-Object -ExpandProperty Guid'
+        return
+    fi
 }
 
 function urlencode {
-    if ! command -v ruby >/dev/null 2>&1; then
+    local s="$1"
+    if command -v ruby >/dev/null 2>&1; then
+        ruby -ruri -e "puts URI.parse($s).to_s"
         return
     fi
-
-    local uri="$1"
-    ruby -ruri -e "puts URI.parse('$uri').to_s"
+    if command -v powershell >/dev/null 2>&1; then
+        # shellcheck disable=SC2016
+        powershell -noprofile -noninteractive -command '$input | iex' \
+        <<< "[System.Web.HttpUtility]::UrlEncode(\"${s}\")"
+        return
+    fi
 }
 
 function urldecode {
+    local s="$1"
     if ! command -v ruby >/dev/null 2>&1; then
+        ruby -rcgi -e "puts CGI.unescape('$s')"
         return
     fi
-
-    local uri="$1"
-    ruby -rcgi -e "puts CGI.unescape('$uri')"
+    if command -v powershell >/dev/null 2>&1; then
+        # shellcheck disable=SC2016
+        powershell -noprofile -noninteractive -command '$input | iex' \
+        <<< "[System.Web.HttpUtility]::UrlDecode(\"${s}\")"
+        return
+    fi
 }
