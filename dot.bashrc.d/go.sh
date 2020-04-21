@@ -1,12 +1,15 @@
 #!/bin/bash
 
 function go-install {
-    # https://tecadmin.net/install-go-on-debian/
-    local version url
-    if [[ 0 -ne $(id -u) ]]; then
+    if [[ "${OS}" != "Linux" ]]; then
+        if command -v scoop >/dev/null 2>&1; then
+            scoop install go
+        fi
         return
     fi
 
+    local version url
+    # https://tecadmin.net/install-go-on-debian/
     if ! online dl.google.com 443; then
         return
     fi
@@ -14,12 +17,13 @@ function go-install {
     version="${1:-1.14}"
     url="https://dl.google.com/go/go${version}.linux-amd64.tar.gz"
 
-    mkdir -p /usr/local/share
-    download_new_file "${url}" "/usr/local/share/go${version}.tar.gz"
-    if [[ -e "/usr/local/share/go${version}.tar.gz" ]]; then
-        tar -C /usr/local/share -xzf "/usr/local/share/go${version}.tar.gz"
-        find /usr/local/share/go/bin -type f | while read -r f; do
-            /bin/ln -f -s "${f}" /usr/local/bin/"$(basename "${f}")"
+    mkdir -p "${HOME}/share"
+
+    download_new_file "${url}" "${HOME}/share/go${version}.tar.gz"
+    if [[ -e "${HOME}/share/go${version}.tar.gz" ]]; then
+        tar -C "${HOME}/share" -xzf "${HOME}/share/go${version}.tar.gz"
+        find "${HOME}/share/go/bin" -type f | while read -r f; do
+            /bin/ln -f -s "${f}" "${HOME}/bin/$(basename "${f}")"
         done
     fi
 }
@@ -43,7 +47,7 @@ __update-go-tool()
     fi
     currenttime=$(date --date="2 weeks ago" +"%s")
     if [[ ${dsttime} -lt ${currenttime} ]]; then
-        (cd "${HOME}" && go get -u "${src}")
+        GO111MODULE=off go get -u "${src}"
     fi
 }
 alias update-go-tool='__update-go-tool'
