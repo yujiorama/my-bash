@@ -29,15 +29,11 @@ export LC_CTYPE
 LC_CTYPE=${LANG}
 export PAGER
 PAGER='less -r -F'
-export HERE_PS1
-# shellcheck disable=SC2016
-HERE_PS1='\[\e[35m\]\u@\h `__here`\[\e[0m\]\n$ '
-export PS1
-PS1=${HERE_PS1}
 
 if [[ "${OS}" = "Linux" ]]; then
     export PATH
     PATH=/usr/local/sbin:/usr/local/bin:/usr/local/games:/usr/sbin:/usr/bin:/sbin:/bin
+    PATH=${HOME}/local/sbin:${HOME}/local/bin:${HOME}/local/libexec:${PATH}
     PATH=${HOME}/bin:${HOME}/.local/bin:${PATH}
     PATH=${PATH}:/mnt/c/Windows:/mnt/c/Windows/System32
 fi
@@ -88,15 +84,6 @@ function __here {
         /bin/echo "$PWD"
     fi
 }
-
-function prompt-here {
-    PS1=$HERE_PS1
-}
-
-function prompt-msys {
-    PS1=$MSYS2_PS1
-}
-
 
 function __download_new_file {
     local src dst ctime
