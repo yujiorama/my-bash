@@ -1,6 +1,7 @@
 #!/bin/bash
 
 function go-install {
+    hash -r
     if [[ "${OS}" != "Linux" ]]; then
         if command -v scoop >/dev/null 2>&1; then
             scoop install go
@@ -8,24 +9,63 @@ function go-install {
         return
     fi
 
-    local version url
     # https://tecadmin.net/install-go-on-debian/
     if ! online dl.google.com 443; then
         return
     fi
 
+    local version
     version="${1:-1.14}"
-    url="https://dl.google.com/go/go${version}.linux-amd64.tar.gz"
-
-    mkdir -p "${HOME}/share"
-
-    download_new_file "${url}" "${HOME}/share/go${version}.tar.gz"
-    if [[ -e "${HOME}/share/go${version}.tar.gz" ]]; then
-        tar -C "${HOME}/share" -xzf "${HOME}/share/go${version}.tar.gz"
-        find "${HOME}/share/go/bin" -type f | while read -r f; do
-            /bin/ln -f -s "${f}" "${HOME}/bin/$(basename "${f}")"
-        done
+    if command -v go >/dev/null 2>&1; then
+        if [[ "go${version}" = "$(go version | cut -d ' ' -f 3)" ]]; then
+            command -v go
+            go version
+            return
+        fi
     fi
+
+    local extprogram ext
+    if command -v gzip >/dev/null 2>&1; then
+        extprogram='gzip'
+        ext='gz'
+    fi
+
+    local url
+    url="https://dl.google.com/go/go${version}.linux-amd64.tar.${ext}"
+
+
+    mkdir -p "${HOME}/tmp" "${HOME}/local/share/go/${version}" "${HOME}/local/bin"
+
+    local tmpfile
+    tmpfile="${HOME}/tmp/go${version}.tar.${ext}"
+
+    download_new_file "${url}" "${tmpfile}"
+    if [[ -e "${tmpfile}" ]]; then
+        ${extprogram} -dc "${tmpfile}" \
+        | tar -C "${HOME}/local/share/go/${version}" --strip-components 1 -xf -
+        if [[ ! -d "${HOME}/local/share/go/${version}" ]]; then
+            return
+        fi
+
+        local f
+        find "${HOME}/local/share/go/${version}/bin" -type f | while read -r f; do
+            /bin/ln -f -s "${f}" "${HOME}/local/bin/$(basename "${f}")"
+        done
+
+        hash -r
+    fi
+
+    command -v go
+    go version
+
+    if [[ "go${version}" = "$(go version | cut -d ' ' -f 3)" ]]; then
+        rm -f "${tmpfile}"
+    fi
+
+    # shellcheck disable=SC1090
+    source "$(dirname "$(readlink -m "${BASH_SOURCE[0]}")")"/go.env
+    # shellcheck disable=SC1090
+    source "$(readlink -m "${BASH_SOURCE[0]}")"
 }
 
 if ! command -v go >/dev/null 2>&1; then
@@ -63,6 +103,7 @@ update-go-tool golang.org/x/tools/cmd/guru &
 
 wait
 
+hash -r
 if command -v ghq >/dev/null 2>&1; then
     if command -v fzf >/dev/null 2>&1; then
         ghqd() {
