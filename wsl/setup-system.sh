@@ -32,6 +32,7 @@ apt upgrade -y
 ## basic
 ##
 apt install -y \
+    apt-file \
     task-japanese \
     man \
     less \
@@ -48,9 +49,12 @@ apt install -y \
     gnupg \
     tree \
     python3:any python3-xdg \
-    lsb-release
+    lsb-release \
+    fzf \
+    build-essential
 
 apt autoremove -y
+apt-file update
 
 ##
 ## Timezone
