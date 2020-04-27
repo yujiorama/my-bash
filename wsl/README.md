@@ -3,25 +3,15 @@ WSL のセットアップ
 
 ## Debian
 
-### `sudo` の設定
-
-パスワード無しで `sudo` を使えるようにする。
-新しく起動した bash でパスワードを確認されなかったら成功。
+Git Bash からセットアップスクリプトを実行する。
 
 ```bash
-echo "$(id -u -n) ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/nopassword
-bash -i -l
-sudo ls
-```
-
-### システムの設定
-
-```bash
-sudo bash /mnt/c/path/to/setup-system.sh
+config-scripts/wsl/init.sh
 ```
 
 以下をまとめて実行する。
 
+* sudo にパスワード無し実行設定を追加
 * apt の接続先を Debian JP のミラーサイトに変更
 * 基本的なパッケージの追加
   - 日本語関係のパッケージ
@@ -32,15 +22,6 @@ sudo bash /mnt/c/path/to/setup-system.sh
   - ユーティリティ
 * タイムゾーンを変更
 * ロケールを変更
-
-### ユーザー別の設定
-
-```bash
-bash /mnt/c/path/to/setup-user.sh
-```
-
-以下を実行する。
-
 * `${HOME}/.bash_profile` を作成
 
 ### 後からやること
