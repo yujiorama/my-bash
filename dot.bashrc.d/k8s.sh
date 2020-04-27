@@ -41,6 +41,11 @@ function kubectl-install {
     if [[ -e "${HOME}/bin/kubectl" ]]; then
         chmod 755 "${HOME}/bin/kubectl"
     fi
+
+    # shellcheck disable=SC1090
+    [[ -e "${HOME}/.bashrc.d/k8s.env" ]] && source "${HOME}/.bashrc.d/k8s.env"
+    # shellcheck disable=SC1090
+    [[ -e "${HOME}/.bashrc.d/k8s.sh" ]] && source "${HOME}/.bashrc.d/k8s.sh"
 }
 
 if ! command -v kubectl >/dev/null 2>&1; then

@@ -63,9 +63,9 @@ function go-install {
     fi
 
     # shellcheck disable=SC1090
-    source "$(dirname "$(readlink -m "${BASH_SOURCE[0]}")")"/go.env
+    [[ -e "${HOME}/.bashrc.d/go.env" ]] && source "${HOME}/.bashrc.d/go.env"
     # shellcheck disable=SC1090
-    source "$(readlink -m "${BASH_SOURCE[0]}")"
+    [[ -e "${HOME}/.bashrc.d/go.sh" ]] && source "${HOME}/.bashrc.d/go.sh"
 }
 
 if ! command -v go >/dev/null 2>&1; then
@@ -74,10 +74,10 @@ fi
 
 __update-go-tool()
 {
-    local src name dst dsttime currenttime
     if ! command -v go >/dev/null 2>&1; then
         return
     fi
+    local src name dst dsttime currenttime
     src=$1
     name=$(basename "${src}")
     dst="$(command -v "${name}" 2>/dev/null)"
@@ -87,23 +87,40 @@ __update-go-tool()
     fi
     currenttime=$(date --date="2 weeks ago" +"%s")
     if [[ ${dsttime} -lt ${currenttime} ]]; then
-        GO111MODULE=off go get -u "${src}"
+        go get -u "${src}"
     fi
 }
 alias update-go-tool='__update-go-tool'
 
-update-go-tool golang.org/x/tools/cmd/goimports &
-update-go-tool github.com/x-motemen/ghq &
-update-go-tool github.com/mikefarah/yq/v3 &
-update-go-tool bitbucket.org/yujiorama/docker-tag-search &
-update-go-tool bitbucket.org/yujiorama/tiny-nc &
-update-go-tool github.com/golang/lint &
-update-go-tool github.com/visualfc/gocode &
-update-go-tool golang.org/x/tools/cmd/guru &
+for pkg in \
+bitbucket.org/yujiorama/docker-tag-search \
+bitbucket.org/yujiorama/tiny-nc \
+github.com/mikefarah/yq/v3 \
+github.com/visualfc/gocode \
+github.com/x-motemen/ghq \
+golang.org/x/lint \
+golang.org/x/tools/cmd/goimports \
+golang.org/x/tools/cmd/guru \
+; do
+    __update-go-tool ${pkg} &
+done
 
 wait
 
 hash -r
+
+if ! command -v fzf >/dev/null 2>&1; then
+    if [[ "${OS}" = "Linux" ]]; then
+        DEBIAN_FRONTEND=noninteractive apt install --yes --no-install-recommend --quiet fzf
+    fi
+
+    if [[ "${OS}" != "Linux" ]]; then
+        if command -v scoop >/dev/null 2>&1; then
+            scoop install fzf
+        fi
+    fi
+fi
+
 if command -v ghq >/dev/null 2>&1; then
     if command -v fzf >/dev/null 2>&1; then
         ghqd() {
@@ -112,15 +129,6 @@ if command -v ghq >/dev/null 2>&1; then
         }
         ghqv() {
             d="$(ghq root)/$(ghq list | fzf)"
-            [[ "${d}" != "$(ghq root)" ]] && subl -a "${d}"
-        }
-    elif command -v peco >/dev/null 2>&1; then
-        ghqd() {
-            d="$(ghq root)/$(ghq list | peco)"
-            [[ "${d}" != "$(ghq root)" ]] && pushd "${d}" || exit
-        }
-        ghqv() {
-            d="$(ghq root)/$(ghq list | peco)"
             [[ "${d}" != "$(ghq root)" ]] && subl -a "${d}"
         }
     fi

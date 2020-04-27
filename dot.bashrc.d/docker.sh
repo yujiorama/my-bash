@@ -48,6 +48,11 @@ function docker-install {
     sudo apt update
     sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose
     sudo usermod -aG docker "${username}"
+
+    # shellcheck disable=SC1090
+    [[ -e "${HOME}/.bashrc.d/docker.env" ]] && source "${HOME}/.bashrc.d/docker.env"
+    # shellcheck disable=SC1090
+    [[ -e "${HOME}/.bashrc.d/docker.sh" ]] && source "${HOME}/.bashrc.d/docker.sh"
 }
 
 if [[ "${OS}" = "Linux" ]] && [[ -e "${HOST_USER_HOME}/.docker_env" ]]; then

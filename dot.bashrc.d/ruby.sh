@@ -5,9 +5,6 @@ function ruby-install {
         return
     fi
 
-    local version
-    version="${1:-2.7.1}"
-
     if ! command -v git >/dev/null 2>&1; then
         return
     fi
@@ -15,6 +12,9 @@ function ruby-install {
     if ! online github.com 443; then
         return
     fi
+
+    local version
+    version="${1:-2.7.1}"
 
     sudo apt install -y \
         libssl-dev \
@@ -37,23 +37,39 @@ function ruby-install {
     if [[ ! -d "${HOME}/.rbenv" ]] || [[ ! -d "${HOME}/.rbenv/.git" ]]; then
         return
     fi
+
+    mkdir -p "${HOME}/.rbenv/plugins"
+    if [[ ! -d "${HOME}/.rbenv/plugins/ruby-build" ]]; then
+        git clone https://github.com/rbenv/ruby-build.git "${HOME}/.rbenv/plugins/ruby-build"
+    else
+        (cd "${HOME}/.rbenv/plugins/ruby-build" && git pull)
+    fi
+
     (cd "${HOME}/.rbenv" && ./src/configure && make -C src)
 
     # shellcheck disable=SC1090
     source <("${HOME}/.rbenv/bin/rbenv" init -)
 
-    mkdir -p "$(rbenv root)"/plugins
-    if [[ ! -d "$(rbenv root)/plugins/ruby-build" ]]; then
-        git clone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-build
-    else
-        (cd "$(rbenv root)/plugins/ruby-build" && git pull)
+    if ! command -v rbenv >/dev/null 2>&1; then
+        return
     fi
+
+    hash -r
 
     if rbenv install --list | grep "${version}"; then
         rbenv install "${version}"
         rbenv local "${version}"
         rbenv global "${version}"
     fi
+
+    rbenv rehash
+    rbenv which ruby
+    rbenv version
+
+    # shellcheck disable=SC1090
+    [[ -e "${HOME}/.bashrc.d/ruby.env" ]] && source "${HOME}/.bashrc.d/ruby.env"
+    # shellcheck disable=SC1090
+    [[ -e "${HOME}/.bashrc.d/ruby.sh" ]] && source "${HOME}/.bashrc.d/ruby.sh"
 }
 
 if ! command -v ruby >/dev/null 2>&1; then
