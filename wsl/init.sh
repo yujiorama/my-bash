@@ -1,17 +1,25 @@
 #!/bin/bash
 
-wsl --upgrade Debian
+distribution="${1}"
+if [[ -z "${distribution}" ]]; then
+    distribution="$(wsl --list | iconv -f UTF-16LE -t UTF-8 | grep '既定' | cut -d ' ' -f 1)"
+    if [[ -z "${distribution}" ]]; then
+        exit
+    fi
+fi
+
+wsl --upgrade "${distribution}"
 
 # shellcheck disable=SC2016
-MSYS_NO_PATHCONV=1 wsl bash -c 'echo "$(id -u -n) ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/nopassword'
+MSYS_NO_PATHCONV=1 wsl --distribution "${distribution}" bash -c 'echo "$(id -u -n) ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/nopassword'
 
-MSYS_NO_PATHCONV=1 wsl --user root bash "/mnt/$(dirname "$(readlink -m "${BASH_SOURCE[0]}")")/init-system.sh"
+MSYS_NO_PATHCONV=1 wsl --distribution "${distribution}" --user root bash "/mnt/$(dirname "$(readlink -m "${BASH_SOURCE[0]}")")/init-system.sh"
 
 host_user_home="$(cygpath -ua "${HOME}")"
 dot_bashrc_d="$(dirname "$(dirname "$(readlink -m "${BASH_SOURCE[0]}")")")/dot.bashrc.d"
 
 # shellcheck disable=SC2016
-cat - <<EOS | MSYS_NO_PATHCONV=1 wsl bash -c 'cat - > ${HOME}/.bash_profile; ls -l ${HOME}/.bash_profile'
+cat - <<EOS | MSYS_NO_PATHCONV=1 wsl --distribution "${distribution}" bash -c 'cat - > ${HOME}/.bash_profile; ls -l ${HOME}/.bash_profile'
 # ホスト側の C:\ を /c にマウント
 if [[ -d /mnt/c ]] && [[ -d /c ]] && ! mountpoint -q /c; then
     sudo mount --bind /mnt/c /c
