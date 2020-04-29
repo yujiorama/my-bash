@@ -18,12 +18,10 @@ fi
 dispatch() {
     export EXIT_STATUS="$?" # 直前のコマンド実行結果のエラーコードを保存
 
-    local f
-    for f in ${!PROMPT_COMMAND_*}; do #${!HOGE*}は、HOGEで始まる変数の一覧を得る
-        eval "${!f}" # "${!f}"は、$fに格納された文字列を名前とする変数を参照する（間接参照）
+    local command
+    for command in ${!PROMPT_COMMAND_*}; do
+        eval "${!command}"
     done
-    unset f
 }
-export PROMPT_COMMAND='dispatch'
-
-shopt -u histappend
+export PROMPT_COMMAND
+PROMPT_COMMAND='dispatch'

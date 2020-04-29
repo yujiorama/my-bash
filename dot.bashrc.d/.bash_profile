@@ -30,6 +30,16 @@ LC_CTYPE=${LANG}
 export PAGER
 PAGER='less -r -F'
 
+shopt -s cdspell
+shopt -s checkjobs
+shopt -s checkwinsize
+shopt -s cmdhist
+shopt -s direxpand
+shopt -s dirspell
+shopt -s histappend
+shopt -s interactive_comments
+
+
 if [[ "${OS}" = "Linux" ]]; then
     export PATH
     PATH=/usr/local/sbin:/usr/local/bin:/usr/local/games:/usr/sbin:/usr/bin:/sbin:/bin
