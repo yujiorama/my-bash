@@ -31,7 +31,9 @@ apt upgrade -y
 ##
 ## basic
 ##
-apt install -y \
+apt install \
+    --yes \
+    --no-install-recommends \
     apt-file \
     task-japanese \
     man \
@@ -51,7 +53,8 @@ apt install -y \
     python3:any python3-xdg \
     lsb-release \
     fzf \
-    build-essential
+    build-essential \
+    openssh-client
 
 apt autoremove -y
 apt-file update
@@ -82,7 +85,7 @@ fi
 ##
 sed -i.bak -e 's/^# ja_JP.UTF-8.*/ja_JP.UTF-8 UTF-8/' /etc/locale.gen
 dpkg-reconfigure -f noninteractive locales
-update-locale LANG=ja_JP.UTF-8
+update-locale LANG=ja_JP.UTF-8 LANGUAGE="ja_JP:ja"
 
 ##
 ## Mount
