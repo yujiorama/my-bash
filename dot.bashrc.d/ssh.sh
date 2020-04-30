@@ -106,16 +106,12 @@ fi
 
 cat - <<'EOS' >> "${HOME}/.bash_logout"
 
-if ! another_console_exists; then
-    if [ "$SHLVL" = 1 ]; then
-        if command -v ssh-pagent >/dev/null 2>&1; then
-            ssh-pageant -k
-        fi
+if command -v ssh-pagent >/dev/null 2>&1; then
+    ssh-pageant -k
+fi
 
-        if command -v taskkill >/dev/null 2>&1; then
-            MSYS_NO_PATHCONV=1 taskkill /F /IM ssh-pageant.exe
-        fi
-    fi
+if command -v taskkill >/dev/null 2>&1; then
+    MSYS_NO_PATHCONV=1 taskkill /F /IM ssh-pageant.exe
 fi
 
 EOS

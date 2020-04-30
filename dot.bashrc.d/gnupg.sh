@@ -76,20 +76,16 @@ fi
 
 cat - <<'EOS' >> "${HOME}/.bash_logout"
 
-if ! another_console_exists; then
-    if [ "$SHLVL" = 1 ]; then
-        MSYS_NO_PATHCONV=1 gpg-connect-agent --homedir "${GNUPGHOME}" killagent '/bye'
+MSYS_NO_PATHCONV=1 gpg-connect-agent --homedir "${GNUPGHOME}" killagent '/bye'
 
-        if command -v taskkill >/dev/null 2>&1; then
-            MSYS_NO_PATHCONV=1 taskkill /F /IM gpg-agent.exe
-        fi
+if command -v taskkill >/dev/null 2>&1; then
+    MSYS_NO_PATHCONV=1 taskkill /F /IM gpg-agent.exe
+fi
 
-        if command -v pkill >/dev/null 2>&1; then
-            pkill -KILL gpg-agent
-            pkill -KILL gpg-agent
-            pkill -KILL gpg-agent
-        fi
-    fi
+if command -v pkill >/dev/null 2>&1; then
+    pkill -KILL gpg-agent
+    pkill -KILL gpg-agent
+    pkill -KILL gpg-agent
 fi
 
 EOS
