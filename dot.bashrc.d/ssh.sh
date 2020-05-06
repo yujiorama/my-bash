@@ -1,7 +1,7 @@
 #!/bin/bash
 # skip: no
 
-cat - <<'EOS' > "${HOME}/.completion/ssh"
+cat - <<'EOS' > "${MY_BASH_COMPLETION}/ssh"
 function __hostname_completion {
     local ssh_config_ compword_ hosts_
     if [[ -e "${HOME}/.ssh/config" ]]; then
@@ -104,7 +104,7 @@ fi
 #   unset agent_pid
 # fi
 
-cat - <<'EOS' >> "${HOME}/.bash_logout"
+cat - <<'EOS' > "${MY_BASH_LOGOUT}/ssh"
 
 if command -v ssh-pagent >/dev/null 2>&1; then
     ssh-pageant -k

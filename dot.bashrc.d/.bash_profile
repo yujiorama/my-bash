@@ -38,6 +38,27 @@ PAGER='less -r -F'
 export EDITOR
 EDITOR="$(/usr/bin/which vi)"
 
+export MY_BASH_SOURCES
+MY_BASH_SOURCES="$(/usr/bin/dirname "${BASH_SOURCE[0]}")"
+
+export MY_BASH_BIN
+MY_BASH_BIN="${HOME}/.config/my-bash/bin"
+/bin/mkdir -p "${MY_BASH_BIN}"
+
+export MY_BASH_LOGOUT
+MY_BASH_LOGOUT="${HOME}/.config/my-bash/logout"
+/bin/mkdir -p "${MY_BASH_LOGOUT}"
+
+export MY_BASH_CACHE
+MY_BASH_CACHE="${HOME}/.config/my-bash/cache"
+/bin/mkdir -p "${MY_BASH_CACHE}"
+
+export MY_BASH_COMPLETION
+MY_BASH_COMPLETION="${HOME}/.config/my-bash/completion"
+/bin/mkdir -p "${MY_BASH_COMPLETION}"
+
+# shellcheck source=/dev/null
+
 if [[ "${OS}" = "Linux" ]]; then
     export TERM
     TERM="xterm-256color"
@@ -45,6 +66,7 @@ if [[ "${OS}" = "Linux" ]]; then
     PATH=/usr/local/sbin:/usr/local/bin:/usr/local/games:/usr/sbin:/usr/bin:/sbin:/bin
     PATH=${HOME}/local/sbin:${HOME}/local/bin:${HOME}/local/libexec:${PATH}
     PATH=${HOME}/bin:${HOME}/.local/bin:${PATH}
+    PATH=${MY_BASH_BIN}:${PATH}
     PATH=${PATH}:/mnt/c/Windows:/mnt/c/Windows/System32
 fi
 
@@ -60,6 +82,7 @@ if [[ "${OS}" != "Linux" ]]; then
     /bin/rm -f "${HOME}/.bash_path_suffix" "${HOME}/.bash_path_prefix"
 
     {
+        /bin/cygpath --unix "${MY_BASH_BIN}";
         /bin/cygpath --unix "${HOME}/bin";
         [[ -d "${HOME}/scoop/shims" ]] && \
             echo "${HOME}/scoop/shims";
@@ -94,10 +117,19 @@ fi
 # shellcheck source=/dev/null
 [[ -e "${HOME}/.bashrc" ]] && source "${HOME}/.bashrc"
 
-# shellcheck source=/dev/null
-[[ -e "$(/usr/bin/dirname "${BASH_SOURCE[0]}")/.bash_functions" ]] && source "$(/usr/bin/dirname "${BASH_SOURCE[0]}")/.bash_functions"
+[[ -e "${MY_BASH_SOURCES}/.bash_functions" ]] && source "${MY_BASH_SOURCES}/.bash_functions"
 
-cat - <<'EOS' > "${HOME}/.bash_logout"
+mybash-cache-init
+
+mybash-reload-sources
+
+mybash-reload-completion
+
+mybash-cache-flush
+
+mybash-bin
+
+/bin/cat - <<'EOS' > "${HOME}/.bash_logout"
 if [ "$SHLVL" != 1 ]; then
     exit
 fi
@@ -109,8 +141,9 @@ fi
 [ -x /usr/bin/clear_console ] && /usr/bin/clear_console -q
 [ -x /usr/bin/clear ]         && /usr/bin/clear
 
+for f in $(/usr/bin/find "${MY_BASH_LOGOUT}" -type f); do
+    source "${f}"
+done
 EOS
-
-_reload_sources
 
 echo "Startup Time: $SECONDS sec"

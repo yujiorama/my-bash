@@ -4,7 +4,7 @@ if [[ "${OS}" = "Linux" ]]; then
     return
 fi
 
-cat - <<EOS > "${HOME}/.completion/scoop"
+cat - <<EOS > "${MY_BASH_COMPLETION}/scoop"
 function _scoop-completion {
     local compword_ candidates_
     compword_="${COMP_WORDS[${COMP_CWORD}]}"

@@ -4,7 +4,7 @@ if [[ "${OS}" = "Linux" ]]; then
     return
 fi
 
-cat - <<'EOS' > "${HOME}/.completion/netsh"
+cat - <<'EOS' > "${MY_BASH_COMPLETION}/netsh"
 function __netsh_command_completion {
 
     local candidates_

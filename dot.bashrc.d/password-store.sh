@@ -5,11 +5,11 @@ if ! command -v pass >/dev/null 2>&1; then
 fi
 
 if [[ -e "${HOME}/bin/password-store/share/bash-completion/completions/pass" ]]; then
-    cp "${HOME}/bin/password-store/share/bash-completion/completions/pass" "${HOME}/.completion/pass"
+    cp "${HOME}/bin/password-store/share/bash-completion/completions/pass" "${MY_BASH_COMPLETION}/pass"
 fi
 
 if [[ -e "/usr/share/bash-completion/completions/pass" ]]; then
-    cp "/usr/share/bash-completion/completions/pass" "${HOME}/.completion/pass"
+    cp "/usr/share/bash-completion/completions/pass" "${MY_BASH_COMPLETION}/pass"
 fi
 
 if [[ "${OS}" = "Linux" ]]; then

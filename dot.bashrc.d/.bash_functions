@@ -81,22 +81,38 @@ function __another_console_exists {
 }
 alias another_console_exists='__another_console_exists '
 
-function cache-flush {
+function mybash-cache-id {
+    /usr/bin/find -L "${MY_BASH_SOURCES}" -type f \
+    | /usr/bin/xargs -r /bin/cat \
+    | /usr/bin/md5sum --binary - \
+    | /usr/bin/cut -d ' ' -f 1
+}
+
+function mybash-cache-dir {
+    local cacheid
+    cacheid="$1"
+    [[ -z "${cacheid}" ]] && cacheid="$(mybash-cache-id)"
+    echo -n "${MY_BASH_CACHE}/${cacheid}"
+}
+
+function mybash-cache-init {
+    local cacheid
+    cacheid="$(mybash-cache-id)"
+    /usr/bin/find -L "${MY_BASH_CACHE}" -mindepth 1 -type d -not -name "${cacheid}" \
+    | xargs -r /bin/rm -rf
+    local cachedir
+    cachedir="$(mybash-cache-dir "${cacheid}")"
+    mkdir -p "${cachedir}"
+}
+
+function mybash-cache-flush {
+    local cacheid
+    cacheid="$(mybash-cache-id)"
+    local cachedir
+    cachedir="$(mybash-cache-dir "${cacheid}")"
     local cacheenv cachefunc
-    cacheenv="$1"
-    if [[ -z "${cacheenv}" ]]; then
-        cacheenv="$(find "${HOME}/.cache" -type f -name .env-\* | head -n 1)"
-    fi
-    if [[ -z "${cacheenv}" ]]; then
-        return
-    fi
-    cachefunc="$2"
-    if [[ -z "${cachefunc}" ]]; then
-        cachefunc="$(find "${HOME}/.cache" -type f -name .func-\* | head -n 1)"
-    fi
-    if [[ -z "${cachefunc}" ]]; then
-        return
-    fi
+    cacheenv="${cachedir}/env"
+    cachefunc="${cachedir}/func"
 
     # shellcheck disable=SC2016
     /usr/bin/printenv \
@@ -109,52 +125,37 @@ function cache-flush {
     > "${cacheenv}"
 
     declare -f \
-    | /bin/sed -e 's|\(--!(no-\*)dir\*\))|"\1")|' \
-               -e 's|\(--!(no-\*)@(file\|path)\*\))|"\1")|' \
-               -e 's|\(--+(\[-a-z0-9_\])\))|"\1")|' \
-               -e 's|\(-?(\\\[)+(\[a-zA-Z0-9?\])\))|"\1")|' \
+    | /bin/sed \
+        -e 's|\(--!(no-\*)dir\*\))|"\1")|' \
+        -e 's|\(--!(no-\*)@(file\|path)\*\))|"\1")|' \
+        -e 's|\(--+(\[-a-z0-9_\])\))|"\1")|' \
+        -e 's|\(-?(\\\[)+(\[a-zA-Z0-9?\])\))|"\1")|' \
     > "${cachefunc}"
 
     alias >> "${cachefunc}"
 }
 
-function _reload_sources {
-
-    local sourcedir completiondir cachedir cacheid
-    sourcedir="$(/usr/bin/dirname "${BASH_SOURCE[0]}")"
-
-    completiondir="${HOME}/.completion"
-    mkdir -p "${completiondir}"
-
-    cachedir="${HOME}/.cache"
-    mkdir -p "${cachedir}"
-
-    cacheid=$(/usr/bin/find -L "${sourcedir}" -type f \
-            | /usr/bin/xargs -r /bin/cat \
-            | /usr/bin/md5sum --binary - \
-            | /usr/bin/cut -d ' ' -f 1)
-
-    /usr/bin/find -L "${cachedir}" -type f -not -name \*"-${cacheid}" | /usr/bin/xargs -r /bin/rm -f
-
+function mybash-reload-sources {
+    local cacheid
+    cacheid="$(mybash-cache-id)"
+    local cachedir
+    cachedir="$(mybash-cache-dir "${cacheid}")"
     local cacheenv cachefunc
-    cacheenv="${cachedir}/.env-${cacheid}"
-    cachefunc="${cachedir}/.func-${cacheid}"
+    cacheenv="${cachedir}/env"
+    cachefunc="${cachedir}/func"
+    # shellcheck disable=SC1090
+    [[ -e "${cacheenv}" ]] && source "${cacheenv}"
+    # shellcheck disable=SC1090
+    [[ -e "${cachefunc}" ]] && source "${cachefunc}"
 
     local sources
     if [[ -e "${cacheenv}" ]]; then
-        sources=$(/usr/bin/find -L "${sourcedir}" -type f -a \( -name \*.sh -o -name \*.env \) \
+        sources=$(/usr/bin/find -L "${MY_BASH_SOURCES}" -type f -a \( -name \*.sh -o -name \*.env \) \
             | /usr/bin/sort -d \
             | /usr/bin/xargs -r /bin/grep -l "skip: no")
     else
-        sources=$(/usr/bin/find -L "${sourcedir}" -type f -a \( -name \*.sh -o -name \*.env \) \
+        sources=$(/usr/bin/find -L "${MY_BASH_SOURCES}" -type f -a \( -name \*.sh -o -name \*.env \) \
             | /usr/bin/sort -d)
-    fi
-
-    if [[ -e "${cacheenv}" ]]; then
-        # shellcheck disable=SC1090
-        source "${cacheenv}"
-        # shellcheck disable=SC1090
-        source "${cachefunc}"
     fi
 
     local f
@@ -168,7 +169,8 @@ function _reload_sources {
         cached=""
         if [[ "env" = "${f##*.}" ]]; then
             local cachefile envbefore envafter
-            cachefile="${cachedir}/$(basename "${f}")-${cacheid}"
+            cachefile="${cachedir}/$(basename "${f}")"
+
             if [[ -e "${cachefile}" ]]; then
                 cached=" (cached)"
                 # shellcheck source=/dev/null
@@ -208,13 +210,18 @@ function _reload_sources {
             fi
         fi
     done
+}
 
-    if [[ ! -e "${cacheenv}" ]]; then
-        cache-flush "${cacheenv}" "${cachefunc}"
-    fi
+function mybash-reload-completion {
+    # shellcheck disable=SC1090
+    source <(/usr/bin/find "${MY_BASH_COMPLETION}" -type f | xargs -r cat) >/dev/null
+}
 
-    for f in $(/usr/bin/find "${completiondir}" -type f); do
-        # shellcheck disable=SC1090
-        source "${f}" >/dev/null 2>&1
+function mybash-bin {
+    local source_bin
+    source_bin="$(/bin/readlink -m "${MY_BASH_SOURCES}/../bin")"
+    /usr/bin/find "${source_bin}" -type f | while read -r f; do
+        /bin/cp "${f}" "${MY_BASH_BIN}/$(basename "${f}")"
     done
+    /usr/bin/find "${MY_BASH_BIN}" -ls
 }

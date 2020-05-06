@@ -10,5 +10,5 @@ done
 wait
 
 if command -v aws_completer >/dev/null 2>&1; then
-    echo "complete -C aws_completer aws" > "${HOME}/.completion/awscli"
+    echo "complete -C aws_completer aws" > "${MY_BASH_COMPLETION}/awscli"
 fi

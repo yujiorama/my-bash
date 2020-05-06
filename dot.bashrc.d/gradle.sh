@@ -1,5 +1,5 @@
 #!/bin/bash
-completion="${HOME}/.completion/gradle"
+completion="${MY_BASH_COMPLETION}/gradle"
 url=https://raw.githubusercontent.com/gradle/gradle-completion/master/gradle-completion.bash
 
 download_new_file "${url}" "${completion}"

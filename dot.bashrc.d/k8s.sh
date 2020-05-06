@@ -104,10 +104,10 @@ fi
 
 if command -v kubectl >/dev/null 2>&1; then
 
-    kubectl completion bash > "${HOME}/.completion/kubectl"
+    kubectl completion bash > "${MY_BASH_COMPLETION}/kubectl"
 
     ## temporary fix
-    completion="${HOME}/.completion/bash"
+    completion="${MY_BASH_COMPLETION}/bash"
     url=https://raw.githubusercontent.com/scop/bash-completion/master/bash_completion
     download_new_file "${url}" "${completion}"
 
@@ -115,10 +115,10 @@ if command -v kubectl >/dev/null 2>&1; then
 fi
 
 if command -v helm >/dev/null 2>&1; then
-    helm completion bash > "${HOME}/.completion/helm"
+    helm completion bash > "${MY_BASH_COMPLETION}/helm"
 fi
 
 if command -v eksctl >/dev/null 2>&1; then
     # shellcheck source=/dev/null
-    eksctl completion bash > "${HOME}/.completion/eksctl"
+    eksctl completion bash > "${MY_BASH_COMPLETION}/eksctl"
 fi

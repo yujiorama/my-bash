@@ -75,8 +75,7 @@ if [[ ! -e "${HOME}/.docker_env" ]] && command -v docker-machine >/dev/null 2>&1
 fi
 
 if [[ ! -e "${HOME}/.docker_env" ]] && command -v minikube >/dev/null 2>&1; then
-    # shellcheck source=/dev/null
-    source <(minikube completion bash)
+    minikube completion bash > "${MY_BASH_COMPLETION}/minikube"
     if (minikube status --profile minikube --format '{{.Host}}' | grep -i running) >/dev/null 2>&1; then
         echo "minikube: running"
         minikube docker-env --profile minikube > "${HOME}/.docker_env"
@@ -123,7 +122,7 @@ if [[ -e ${HOME}/.docker_env ]]; then
 fi
 
 if command -v docker >/dev/null 2>&1; then
-    completion="${HOME}/.completion/docker"
+    completion="${MY_BASH_COMPLETION}/docker"
     url="https://raw.githubusercontent.com/docker/docker-ce/master/components/cli/contrib/completion/bash/docker"
 
     download_new_file "${url}" "${completion}"
@@ -133,7 +132,7 @@ fi
 
 if command -v docker-compose >/dev/null 2>&1; then
     version=$(docker-compose --version | cut -c24- | cut -d , -f 1 | tee "${HOME}/.docker-compose.version")
-    completion="${HOME}/.completion/docker-compose"
+    completion="${MY_BASH_COMPLETION}/docker-compose"
     url="https://raw.githubusercontent.com/docker/compose/${version}/contrib/completion/bash/docker-compose"
 
     download_new_file "${url}" "${completion}"

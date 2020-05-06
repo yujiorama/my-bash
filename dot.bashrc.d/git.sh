@@ -88,7 +88,7 @@ if [[ "${OS}" = "Linux" ]]; then
     if [[ -d "${HOME}/local/share/git/completion" ]]; then
 
         if [[ -e "${HOME}/local/share/git/completion/git-completion.bash" ]]; then
-            cp "${HOME}/local/share/git/completion/git-completion.bash" "${HOME}/.completion/git"
+            cp "${HOME}/local/share/git/completion/git-completion.bash" "${MY_BASH_COMPLETION}/git"
         fi
 
         if [[ -e "${HOME}/local/share/git/completion/git-prompt.sh" ]]; then
@@ -106,7 +106,7 @@ download_new_file "https://raw.githubusercontent.com/awslabs/git-secrets/master/
 [[ -e "${HOME}/bin/git-secrets" ]] && chmod 755 "${HOME}/bin/git-secrets"
 download_new_file "https://raw.githubusercontent.com/awslabs/git-secrets/master/git-secrets.1" "${HOME}/man/man1/git-secrets.1"
 
-echo run git secrets --install -f "${HOME}/.git-templates"
+echo run git secrets --install -f "${HOME}/.git-templates/git-secrets"
 echo run git config --global init.templateDir "${HOME}/.git-templates/git-secrets"
 echo run git secrets --register-aws --global
 
