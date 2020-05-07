@@ -218,10 +218,112 @@ function mybash-reload-completion {
 }
 
 function mybash-bin {
+
+    /usr/bin/find "${MY_BASH_BIN}" -type f -exec /bin/rm -f {} \;
+
     local source_bin
     source_bin="$(/bin/readlink -m "${MY_BASH_SOURCES}/../bin")"
     /usr/bin/find "${source_bin}" -type f | while read -r f; do
         /bin/cp "${f}" "${MY_BASH_BIN}/$(basename "${f}")"
     done
     /usr/bin/find "${MY_BASH_BIN}" -ls
+}
+
+function mybash-secret-backup {
+    if ! command -v rclone >/dev/null 2>&1; then
+        return
+    fi
+
+    local prefix
+    prefix="${1}"; shift
+    [[ -z "${prefix}" ]] && prefix="$(hostname)"
+    local rclone_flags
+    rclone_flags="${RCLONE_FLAGS:-}"
+    [[ -z "${rclone_flags}" ]] && rclone_flags="--progress --dry-run"
+
+    local sources
+    sources=(
+        "${HOME}/gpg"
+        "${HOME}/OpenVPN/config"
+        "${HOME}/.gnupg"
+        "${HOME}/.password-store"
+        "${HOME}/.ssh"
+        "${HOME}/.config"
+        "${HOME}/.aws"
+        "${HOME}/.azure"
+        "${HOME}/AppData/Roaming/gcloud"
+        "${HOME}/AppData/Roaming/terraform.rc"
+    )
+    local primary
+    primary="dropbox"
+    local secondary
+    secondary="gdrive"
+
+    local temporary
+    temporary="$(mktemp -t -d mybash.XXXXX)"
+
+    local remote_base
+    remote_base="mybash/secret"
+
+    local source
+    for source in "${sources[@]}"; do
+        local remote
+        remote="${source#${HOME}/}"
+
+        if [[ -d "${source}" ]]; then
+            rclone mkdir "${temporary}/${prefix}/${remote}" >/dev/null 2>&1
+            # shellcheck disable=SC2086
+            rclone ${rclone_flags} sync --exclude ".tmp*/**" --exclude "cliextensions/**" "${source}" "${temporary}/${prefix}/${remote}"
+        elif [[ -e "${source}" ]]; then
+            # shellcheck disable=SC2086
+            rclone ${rclone_flags} copy "${source}" "${temporary}/${prefix}/${remote}"
+        else
+            echo "skip ${source}"
+        fi
+    done
+
+    rclone mkdir "${primary}:${remote_base}/${prefix}" >/dev/null 2>&1
+    # shellcheck disable=SC2086
+    rclone ${rclone_flags} sync "${temporary}/${prefix}" "${primary}:${remote_base}/${prefix}"
+    rclone mkdir "${secondary}:${remote_base}/${prefix}" >/dev/null 2>&1
+    # shellcheck disable=SC2086
+    rclone ${rclone_flags} sync "${primary}:${remote_base}/${prefix}" "${secondary}:${remote_base}/${prefix}"
+
+    echo "backup: ${primary}:${remote_base}/${prefix} (${secondary}:${remote_base}/${prefix})"
+    rm -rf "${temporary}"
+}
+
+function mybash-secret-restore {
+    if ! command -v rclone >/dev/null 2>&1; then
+        return
+    fi
+
+    if [[ $# -lt 2 ]]; then
+        return
+    fi
+
+    local prefix
+    prefix="${1}"; shift
+    [[ -z "${prefix}" ]] && prefix="$(hostname)"
+    local destination
+    destination="${1}"; shift
+    [[ -z "${destination}" ]] && destination="$(mktemp -t -d mybash.XXXXX)"
+    local rclone_flags
+    rclone_flags="${RCLONE_FLAGS:-}"
+    [[ -z "${rclone_flags}" ]] && rclone_flags="--progress --dry-run"
+
+    local primary
+    primary="dropbox"
+    local secondary
+    secondary="gdrive"
+
+    local remote_base
+    remote_base="mybash/secret"
+
+    rclone mkdir "${destination}/${prefix}" >/dev/null 2>&1
+    # shellcheck disable=SC2086
+    rclone ${rclone_flags} sync "${primary}:${remote_base}/${prefix}" "${destination}/${prefix}"
+
+    echo "restore: ${destination}/${prefix}"
+    ls -la "${destination}/${prefix}"
 }
