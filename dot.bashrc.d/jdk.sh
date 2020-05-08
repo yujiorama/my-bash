@@ -1,5 +1,4 @@
 #!/bin/bash
-# skip: no
 
 if [[ "${OS}" = "Linux" ]]; then
     return

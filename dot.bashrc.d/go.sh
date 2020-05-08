@@ -1,5 +1,4 @@
 #!/bin/bash
-# skip: no
 
 function go-install {
     hash -r
