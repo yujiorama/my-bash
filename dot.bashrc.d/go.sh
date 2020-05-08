@@ -1,4 +1,5 @@
 #!/bin/bash
+# skip: no
 
 function go-install {
     hash -r
@@ -63,9 +64,9 @@ function go-install {
     fi
 
     # shellcheck disable=SC1090
-    [[ -e "${HOME}/.bashrc.d/go.env" ]] && source "${HOME}/.bashrc.d/go.env"
+    [[ -e "${MY_BASH_SOURCES}/go.env" ]] && source "${MY_BASH_SOURCES}/go.env"
     # shellcheck disable=SC1090
-    [[ -e "${HOME}/.bashrc.d/go.sh" ]] && source "${HOME}/.bashrc.d/go.sh"
+    [[ -e "${MY_BASH_SOURCES}/go.sh" ]] && source "${MY_BASH_SOURCES}/go.sh"
 }
 
 if ! command -v go >/dev/null 2>&1; then

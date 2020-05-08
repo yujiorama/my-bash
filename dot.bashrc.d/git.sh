@@ -73,9 +73,9 @@ function git-install {
     git --version
 
     # shellcheck disable=SC1090
-    [[ -e "${HOME}/.bashrc.d/git.env" ]] && source "${HOME}/.bashrc.d/git.env"
+    [[ -e "${MY_BASH_SOURCES}/git.env" ]] && source "${MY_BASH_SOURCES}/git.env"
     # shellcheck disable=SC1090
-    [[ -e "${HOME}/.bashrc.d/git.sh" ]] && source "${HOME}/.bashrc.d/git.sh"
+    [[ -e "${MY_BASH_SOURCES}/git.sh" ]] && source "${MY_BASH_SOURCES}/git.sh"
 }
 
 if ! command -v git >/dev/null 2>&1; then

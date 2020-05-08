@@ -1,4 +1,6 @@
 #!/bin/bash
+# skip: no
+
 docker-reconfigure() {
     local OPTIND
     local verbose=""
@@ -17,9 +19,9 @@ docker-reconfigure() {
     fi
 
     # shellcheck source=/dev/null
-    source "${HOME}/.bashrc.d/docker.env"
+    source "${MY_BASH_SOURCES}/docker.env"
     # shellcheck source=/dev/null
-    source "${HOME}/.bashrc.d/docker.sh"
+    source "${MY_BASH_SOURCES}/docker.sh"
 
     if [[ "verbose" = "${verbose}" ]]; then
         docker version
@@ -50,9 +52,9 @@ function docker-install {
     sudo usermod -aG docker "${username}"
 
     # shellcheck disable=SC1090
-    [[ -e "${HOME}/.bashrc.d/docker.env" ]] && source "${HOME}/.bashrc.d/docker.env"
+    [[ -e "${MY_BASH_SOURCES}/docker.env" ]] && source "${MY_BASH_SOURCES}/docker.env"
     # shellcheck disable=SC1090
-    [[ -e "${HOME}/.bashrc.d/docker.sh" ]] && source "${HOME}/.bashrc.d/docker.sh"
+    [[ -e "${MY_BASH_SOURCES}/docker.sh" ]] && source "${MY_BASH_SOURCES}/docker.sh"
 }
 
 if [[ "${OS}" = "Linux" ]] && [[ -e "${HOST_USER_HOME}/.docker_env" ]]; then

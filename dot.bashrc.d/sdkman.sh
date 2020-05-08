@@ -1,5 +1,5 @@
 #!/bin/bash
-PATH=$(echo "$PATH" | tr ':' '\n' | grep -v -e '^$' | grep -v -e 'sdkman' | tr '\n' ':')
+# skip: no
 
 function sdkman-install {
     if [[ "${OS}" = "Linux" ]]; then
@@ -11,13 +11,12 @@ function sdkman-install {
     fi
 
     # shellcheck disable=SC1090
-    [[ -e "${HOME}/.bashrc.d/sdkman.env" ]] && source "${HOME}/.bashrc.d/sdkman.env"
+    [[ -e "${MY_BASH_SOURCES}/sdkman.env" ]] && source "${MY_BASH_SOURCES}/sdkman.env"
     # shellcheck disable=SC1090
-    [[ -e "${HOME}/.bashrc.d/sdkman.sh" ]] && source "${HOME}/.bashrc.d/sdkman.sh"
+    [[ -e "${MY_BASH_SOURCES}/sdkman.sh" ]] && source "${MY_BASH_SOURCES}/sdkman.sh"
 }
 
 if [[ -e "${SDKMAN_DIR}/bin/sdkman-init.sh" ]]; then
     # shellcheck disable=SC1090
     source "${SDKMAN_DIR}/bin/sdkman-init.sh"
 fi
-

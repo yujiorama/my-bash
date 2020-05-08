@@ -1,4 +1,6 @@
 #!/bin/bash
+# skip: no
+
 k8s-reconfigure() {
     local OPTIND
     local verbose=""
@@ -17,9 +19,9 @@ k8s-reconfigure() {
     fi
 
     # shellcheck source=/dev/null
-    source "${HOME}/.bashrc.d/k8s.env"
+    source "${MY_BASH_SOURCES}/k8s.env"
     # shellcheck source=/dev/null
-    source "${HOME}/.bashrc.d/k8s.sh"
+    source "${MY_BASH_SOURCES}/k8s.sh"
 
     if [[ "verbose" = "${verbose}" ]]; then
         kubectl version
@@ -43,9 +45,9 @@ function kubectl-install {
     fi
 
     # shellcheck disable=SC1090
-    [[ -e "${HOME}/.bashrc.d/k8s.env" ]] && source "${HOME}/.bashrc.d/k8s.env"
+    [[ -e "${MY_BASH_SOURCES}/k8s.env" ]] && source "${MY_BASH_SOURCES}/k8s.env"
     # shellcheck disable=SC1090
-    [[ -e "${HOME}/.bashrc.d/k8s.sh" ]] && source "${HOME}/.bashrc.d/k8s.sh"
+    [[ -e "${MY_BASH_SOURCES}/k8s.sh" ]] && source "${MY_BASH_SOURCES}/k8s.sh"
 }
 
 if ! command -v kubectl >/dev/null 2>&1; then

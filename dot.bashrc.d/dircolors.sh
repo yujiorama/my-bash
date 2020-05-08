@@ -1,4 +1,5 @@
 #!/bin/bash
+# skip: no
 
 mkdir -p "${DIR_COLORS}"
 

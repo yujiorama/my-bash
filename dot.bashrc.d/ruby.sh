@@ -1,4 +1,5 @@
 #!/bin/bash
+# skip: no
 
 function ruby-install {
     if [[ "${OS}" != "Linux" ]]; then
@@ -29,65 +30,76 @@ function ruby-install {
         bison \
         build-essential
 
-    if [[ ! -d "${HOME}/.rbenv" ]] || [[ ! -d "${HOME}/.rbenv/.git" ]]; then
-        git clone https://github.com/rbenv/rbenv.git "${HOME}/.rbenv"
+    if [[ ! -d "${RBENV_ROOT}" ]] || [[ ! -d "${RBENV_ROOT}/.git" ]]; then
+        git clone https://github.com/rbenv/rbenv.git "${RBENV_ROOT}"
     else
-        (cd "${HOME}/.rbenv" && git pull)
+        (cd "${RBENV_ROOT}" && git pull)
     fi
-    if [[ ! -d "${HOME}/.rbenv" ]] || [[ ! -d "${HOME}/.rbenv/.git" ]]; then
+    if [[ ! -d "${RBENV_ROOT}" ]] || [[ ! -d "${RBENV_ROOT}/.git" ]]; then
         return
     fi
 
-    mkdir -p "${HOME}/.rbenv/plugins"
-    if [[ ! -d "${HOME}/.rbenv/plugins/ruby-build" ]]; then
-        git clone https://github.com/rbenv/ruby-build.git "${HOME}/.rbenv/plugins/ruby-build"
+    mkdir -p "${RBENV_ROOT}/plugins"
+    if [[ ! -d "${RBENV_ROOT}/plugins/ruby-build" ]] || [[ ! -d "${RBENV_ROOT}/plugins/ruby-build/.git" ]]; then
+        git clone https://github.com/rbenv/ruby-build.git "${RBENV_ROOT}/plugins/ruby-build"
     else
-        (cd "${HOME}/.rbenv/plugins/ruby-build" && git pull)
+        (cd "${RBENV_ROOT}/plugins/ruby-build" && git pull)
+    fi
+    if [[ ! -d "${RBENV_ROOT}/plugins/ruby-build" ]] || [[ ! -d "${RBENV_ROOT}/plugins/ruby-build/.git" ]]; then
+        return
     fi
 
-    (cd "${HOME}/.rbenv" && ./src/configure && make -C src)
+    (cd "${RBENV_ROOT}" && ./src/configure && make -C src)
 
     # shellcheck disable=SC1090
-    source <("${HOME}/.rbenv/bin/rbenv" init -)
+    source <("${RBENV_ROOT}/bin/rbenv" init -)
 
     if ! command -v rbenv >/dev/null 2>&1; then
         return
     fi
 
-    hash -r
-
     if rbenv install --list | grep "${version}"; then
         rbenv install "${version}"
         rbenv local "${version}"
         rbenv global "${version}"
+
+        rbenv rehash
+        rbenv which ruby
+        rbenv version
+
+        # shellcheck disable=SC1090
+        [[ -e "${MY_BASH_SOURCES}/ruby.env" ]] && source "${MY_BASH_SOURCES}/ruby.env"
+        # shellcheck disable=SC1090
+        [[ -e "${MY_BASH_SOURCES}/ruby.sh" ]] && source "${MY_BASH_SOURCES}/ruby.sh"
     fi
 
-    rbenv rehash
-    rbenv which ruby
-    rbenv version
-
-    # shellcheck disable=SC1090
-    [[ -e "${HOME}/.bashrc.d/ruby.env" ]] && source "${HOME}/.bashrc.d/ruby.env"
-    # shellcheck disable=SC1090
-    [[ -e "${HOME}/.bashrc.d/ruby.sh" ]] && source "${HOME}/.bashrc.d/ruby.sh"
 }
 
-if ! command -v ruby >/dev/null 2>&1; then
-    return
-fi
+if [[ "${OS}" != "Linux" ]]; then
 
-if command -v rbenv >/dev/null 2>&1; then
-    # shellcheck disable=SC1090
-    source <(rbenv init -)
-fi
+    if ! command -v ruby >/dev/null 2>&1; then
+        return
+    fi
 
-if command -v bundle >/dev/null 2>&1; then
-    alias be='bundle exec '
-fi
-
-if command -v bundle.cmd >/dev/null 2>&1; then
     # shellcheck disable=SC2139
-    alias be="$(command -v bundl.cmd) exec "
+    alias be="$(dirname "$(command -v ruby)")/bundle.cmd exec "
     # shellcheck disable=SC2139
-    alias bundle="$(command -v bundl.cmd) "
+    alias bundle="$(dirname "$(command -v ruby)")/bundle.cmd "
+fi
+
+if [[ "${OS}" = "Linux" ]]; then
+
+    if [[ -e "${RBENV_ROOT}/bin/rbenv" ]]; then
+        # shellcheck disable=SC1090
+        source <("${RBENV_ROOT}/bin/rbenv" init -)
+    fi
+
+    if ! command -v rbenv >/dev/null 2>&1; then
+        return
+    fi
+
+    # shellcheck disable=SC2139
+    alias be="$(rbenv which bundle) exec "
+    # shellcheck disable=SC2139
+    alias bundle="$(rbenv which bundle) "
 fi
