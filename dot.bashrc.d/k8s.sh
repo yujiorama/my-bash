@@ -50,6 +50,29 @@ function kubectl-install {
     [[ -e "${MY_BASH_SOURCES}/k8s.sh" ]] && source "${MY_BASH_SOURCES}/k8s.sh"
 }
 
+function helm-install {
+    if [[ "${OS}" != "Linux" ]]; then
+        scoop install helm
+        return
+    fi
+
+    local url install_script
+    url="https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3"
+    install_script="$(mktemp)"
+
+    download_new_file "${url}" "${install_script}"
+    if [[ -e "${install_script}" ]]; then
+        env BINARY_NAME="helm" USE_SUDO=false HELM_INSTALL_DIR="${HOME}/bin" bash "${install_script}"
+        if [[ -e "${HOME}/bin/helm" ]]; then
+            chmod 755 "${HOME}/bin/helm"
+            ls -l "${HOME}/bin/helm"
+            "${HOME}/bin/helm" version
+        fi
+    fi
+
+    rm -f "${install_script}"
+}
+
 if ! command -v kubectl >/dev/null 2>&1; then
     return
 fi
