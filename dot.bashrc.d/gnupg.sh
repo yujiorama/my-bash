@@ -147,6 +147,7 @@ if ! gpg-agent 2>/dev/null; then
                 --exclude='private-keys-v1.d/*' \
                 "${HOST_USER_HOME}/$(basename "${GNUPGHOME}")/" "${GNUPGHOME}/"
             find "${GNUPGHOME}" -type f -exec chmod 600 {} \;
+            chmod 700 "${GNUPGHOME}"
         fi
     fi
 
