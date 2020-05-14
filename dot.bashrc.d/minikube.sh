@@ -87,8 +87,8 @@ function minikube-start-hyperv {
     local disksize="60g"
     local dockerOptBip="bip=10.1.0.5/24"
     local dockerOptFixedCidr="fixed-cidr=10.1.0.5/25"
-    local registry
-    registry="${HOSTNAME}.$(echo "${USERDNSDOMAIN}" | tr '[:upper:]' '[:lower:]'):5000"
+    local localRegistry="minikube.internal:5000"
+    local registry=""
 
     local OPTIND OPTARG
     while getopts "hp:v:r:c:m:d:g:" opt; do
@@ -99,7 +99,7 @@ function minikube-start-hyperv {
             c) cpus="${OPTARG}";;
             m) memorysize="${OPTARG}";;
             d) disksize="${OPTARG}";;
-            g) registry="${OPTARG}";;
+            g) registry="--insecure-registry \"${OPTARG}\"";;
             h) return 1;;
             *) return 1;;
         esac
@@ -119,7 +119,9 @@ function minikube-start-hyperv {
         --disk-size \""${disksize}"\" \
         --docker-opt \""${dockerOptBip}"\" \
         --docker-opt \""${dockerOptFixedCidr}"\" \
-        --insecure-registry \""${registry}"\" \
+        \""${registry}"\" \
+        --insecure-registry \""${localRegistry}"\" \
+        --interactive=false \
         --logtostderr
 
     return 0
@@ -175,6 +177,7 @@ function minikube-customize {
 
     minikube ssh <<-EOS >/dev/null
 echo vm.max_map_count=262144 | sudo tee /etc/sysctl.d/vm.conf
+sudo sed -i.bak -e 's/.*control-plane.minikube.internal/\\0 minikube.internal/' /etc/hosts
 sudo sysctl -w vm.max_map_count=262144
 (sed -e /^DNS=/d /etc/systemd/resolved.conf; printf "\n${dnsserverline}\n") | sudo tee /etc/systemd/resolved.conf
 sudo systemctl restart systemd-resolved
@@ -184,13 +187,54 @@ EOS
     return 0
 }
 
+function add-line-to-hosts {
+    local newline
+    newline="$1"
+
+    local ps1_file
+    ps1_file="$(mktemp --suffix=.ps1 --tmpdir="${TMP}")"
+
+    cat - <<-EOS  > "${ps1_file}"
+\$hostsPath = "\$env:WinDir/System32/drivers/etc/hosts"
+\$value = "${newline}"
+echo "Add \$value"
+Add-Content -Path \$hostsPath -Value \$value -Force
+EOS
+
+    sudo powershell -file "${ps1_file}"
+    rm -f "${ps1_file}"
+}
+
+function remove-line-from-hosts {
+    local pattern
+    pattern="$1"
+
+    local ps1_file
+    ps1_file="$(mktemp --suffix=.ps1 --tmpdir="${TMP}")"
+
+    cat - <<-EOS  > "${ps1_file}"
+\$hostsPath = "\$env:WinDir/System32/drivers/etc/hosts"
+echo "Remove ${pattern}"
+Set-Content -Path \$hostsPath -Value (Get-Content -Path \$hostsPath | Select-String -Pattern '${pattern}' -NotMatch)
+EOS
+
+    sudo powershell -file "${ps1_file}"
+    rm -f "${ps1_file}"
+}
+
+function host-customize {
+    local newline
+    newline="$(minikube ip) minikube.internal"
+
+    add-line-to-hosts "${newline}"
+}
+
 function minikube-enable-addons {
 
-    minikube addons enable default-storageclass
-    minikube addons enable storage-provisioner
-
-    minikube addons enable registry
-    port-forward-bg kube-system actual-registry=true 5000 5000
+    for addon in ingress registry; do
+        minikube addons disable ${addon}
+        minikube addons enable ${addon}
+    done
 
     return 0
 }
@@ -284,6 +328,10 @@ function minikube-start {
     update-kube-config
 
     minikube-customize
+
+    minikube-enable-addons
+
+    host-customize
 }
 
 function minikube-stop {
@@ -293,4 +341,6 @@ function minikube-stop {
     fi
 
     minikube ssh "sudo poweroff"
+
+    remove-line-from-hosts "minikube"
 }
