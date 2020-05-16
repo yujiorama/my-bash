@@ -119,8 +119,6 @@ fi
 
 [[ -e "${MY_BASH_SOURCES}/.bash_functions" ]] && source "${MY_BASH_SOURCES}/.bash_functions"
 
-mybash-cache-init
-
 mybash-reload-sources
 
 mybash-reload-completion

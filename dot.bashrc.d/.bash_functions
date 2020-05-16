@@ -98,11 +98,18 @@ function mybash-cache-dir {
 function mybash-cache-init {
     local cacheid
     cacheid="$(mybash-cache-id)"
+    local force_reload
+    force_reload="$2"
     /usr/bin/find -L "${MY_BASH_CACHE}" -mindepth 1 -type d -not -name "${cacheid}" \
     | xargs -r /bin/rm -rf
+    if [[ -n "${force_reload}" ]]; then
+        /usr/bin/find -L "${MY_BASH_CACHE}" -mindepth 1 -type d -name "${cacheid}" \
+        | xargs -r /bin/rm -rf
+    fi
     local cachedir
     cachedir="$(mybash-cache-dir "${cacheid}")"
     mkdir -p "${cachedir}"
+    echo -n "${cachedir}"
 }
 
 function mybash-cache-flush {
@@ -136,10 +143,12 @@ function mybash-cache-flush {
 }
 
 function mybash-reload-sources {
+    local force_reload
+    force_reload="$1"
     local cacheid
     cacheid="$(mybash-cache-id)"
     local cachedir
-    cachedir="$(mybash-cache-dir "${cacheid}")"
+    cachedir="$(mybash-cache-init "${force_reload}" "${cacheid}")"
     local cacheenv cachefunc
     cacheenv="${cachedir}/env"
     cachefunc="${cachedir}/func"
