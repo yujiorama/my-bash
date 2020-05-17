@@ -104,25 +104,16 @@ if [[ "${OS}" = "Linux" ]]; then
         "${HOST_USER_HOME}/scoop/shims/subl.exe" "${windows_file}"
     }
 
-    function code {
-        if [[ ! -e "${HOST_USER_HOME}/scoop/shims/code.exe" ]]; then
-            return
-        fi
-        local wsl_file
-        wsl_file=$1
-        if [[ ! -e ${wsl_file} ]]; then
-            touch "${wsl_file}"
-        fi
-        if ! mountpoint -q "$(readlink -f "${wsl_file}" | cut -d '/' -f 1,2)"; then
-            if ! mountpoint -q "$(readlink -f "${wsl_file}" | cut -d '/' -f 1,2,3)"; then
-                return
-            fi
-        fi
-        local windows_file
-        windows_file="$(wslpath -m "$(readlink -f "${wsl_file}")")"
-        "${HOST_USER_HOME}/scoop/shims/code.exe" "${windows_file}"
-    }
 fi
+
+function code {
+    local code_command
+    code_command="${HOME}/scoop/apps/vscode/current/bin/code"
+    if [[ "${OS}" = "Linux" ]]; then
+        code_command="${HOST_USER_HOME}/scoop/apps/vscode/current/bin/code"
+    fi
+    "${code_command}" "$@"
+}
 
 function uuidgen {
     if command -v ruby >/dev/null 2>&1; then
