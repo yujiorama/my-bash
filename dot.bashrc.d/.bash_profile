@@ -62,6 +62,8 @@ MY_BASH_COMPLETION="${HOME}/.config/my-bash/completion"
 if [[ "${OS}" = "Linux" ]]; then
     export TERM
     TERM="xterm-256color"
+    export USERPROFILE
+    USERPROFILE="${HOME}"
     export PATH
     PATH=/usr/local/sbin:/usr/local/bin:/usr/local/games:/usr/sbin:/usr/bin:/sbin:/bin
     PATH=${HOME}/local/sbin:${HOME}/local/bin:${HOME}/local/libexec:${PATH}
