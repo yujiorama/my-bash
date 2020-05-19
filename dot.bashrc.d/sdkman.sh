@@ -36,8 +36,3 @@ sdkman_debug_mode=false
 sdkman_colour_enable=true
 sdkman_auto_env=false
 EOS
-
-for v in maven gradle; do
-    sdk install "${v}"
-    sdk current "${v}"
-done
