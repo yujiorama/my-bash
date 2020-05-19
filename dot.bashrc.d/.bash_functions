@@ -148,7 +148,7 @@ function mybash-reload-sources {
     local cacheid
     cacheid="$(mybash-cache-id)"
     local cachedir
-    cachedir="$(mybash-cache-init "${force_reload}" "${cacheid}")"
+    cachedir="$(mybash-cache-init "${cacheid}" "${force_reload}")"
     local cacheenv cachefunc
     cacheenv="${cachedir}/env"
     cachefunc="${cachedir}/func"
