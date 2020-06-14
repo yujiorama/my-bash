@@ -44,7 +44,7 @@ else
 
     if [[ -d "${HOST_USER_HOME}/.ssh" ]]; then
         mkdir -p "${HOME}/.ssh"
-        find "${HOST_USER_HOME}/.ssh" -type f -a -not -name \*.ppk | while read -r f; do
+        find "${HOST_USER_HOME}/.ssh" -maxdepth 1 -type f -a -not -name \*.ppk | while read -r f; do
             cat "${f}" > "${HOME}/.ssh/$(basename "${f}")"
         done
         chmod 700 "${HOME}/.ssh"
