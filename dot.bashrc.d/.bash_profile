@@ -57,7 +57,8 @@ export MY_BASH_COMPLETION
 MY_BASH_COMPLETION="${HOME}/.config/my-bash/completion"
 /bin/mkdir -p "${MY_BASH_COMPLETION}"
 
-# shellcheck source=/dev/null
+export MY_BASH_DEBUG
+MY_BASH_DEBUG="${MY_BASH_DEBUG:-}"
 
 if [[ "${OS}" = "Linux" ]]; then
     export TERM

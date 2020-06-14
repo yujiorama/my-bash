@@ -211,7 +211,7 @@ function mybash-reload-sources {
             echo "=== stderr"; /bin/cat "${stderr_log}"; echo
         fi
         /bin/rm -f "${stdout_log}" "${stderr_log}"
-        if [[ -n "${DEBUG}" ]]; then
+        if [[ -n "${MY_BASH_DEBUG}" ]]; then
             local no
             read -r -p "continue?[n] " no
             if [[ "n" = "${no:0:1}" ]] || [[ "N" = "${no:0:1}" ]]; then
