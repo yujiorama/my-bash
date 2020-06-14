@@ -73,6 +73,22 @@ function helm-install {
     rm -f "${install_script}"
 }
 
+function krew-install {
+    if [[ "${OS}" != "Linux" ]]; then
+        scoop install krew
+        return
+    fi
+
+    (
+      set -x; cd "$(mktemp -d)" &&
+      curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew.{tar.gz,yaml}" &&
+      tar zxvf krew.tar.gz &&
+      KREW=./krew-"$(uname | tr '[:upper:]' '[:lower:]')_amd64" &&
+      "$KREW" install --manifest=krew.yaml --archive=krew.tar.gz &&
+      "$KREW" update
+    )
+}
+
 if ! command -v kubectl >/dev/null 2>&1; then
     return
 fi
@@ -137,6 +153,10 @@ if command -v kubectl >/dev/null 2>&1; then
     download_new_file "${url}" "${completion}"
 
     unset completion url
+
+    kubectl krew update >/dev/null 2>&1
+    kubectl plugin list 2>/dev/null
+    kubectl krew list 2>/dev/null
 fi
 
 if command -v helm >/dev/null 2>&1; then
