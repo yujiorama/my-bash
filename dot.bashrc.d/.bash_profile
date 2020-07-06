@@ -57,6 +57,10 @@ export MY_BASH_COMPLETION
 MY_BASH_COMPLETION="${HOME}/.config/my-bash/completion"
 /bin/mkdir -p "${MY_BASH_COMPLETION}"
 
+export MY_BASH_ENV
+MY_BASH_ENV="${HOME}/.config/my-bash/env"
+/bin/mkdir -p "${MY_BASH_ENV}"
+
 export MY_BASH_DEBUG
 MY_BASH_DEBUG="${MY_BASH_DEBUG:-}"
 
@@ -123,6 +127,8 @@ fi
 [[ -e "${MY_BASH_SOURCES}/.bash_functions" ]] && source "${MY_BASH_SOURCES}/.bash_functions"
 
 mybash-reload-sources
+
+mybash-reload-env
 
 mybash-reload-completion
 

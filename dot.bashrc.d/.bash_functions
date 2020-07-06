@@ -221,6 +221,11 @@ function mybash-reload-sources {
     done
 }
 
+function mybash-reload-env {
+    # shellcheck disable=SC1090
+    source <(/usr/bin/find "${MY_BASH_ENV}" -type f | xargs -r cat) >/dev/null
+}
+
 function mybash-reload-completion {
     # shellcheck disable=SC1090
     source <(/usr/bin/find "${MY_BASH_COMPLETION}" -type f | xargs -r cat) >/dev/null

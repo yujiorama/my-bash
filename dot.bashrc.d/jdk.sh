@@ -1,4 +1,5 @@
 #!/bin/bash
+# skip: no
 
 if [[ "${OS}" = "Linux" ]]; then
     return
@@ -41,14 +42,16 @@ function __jdk-function-source {
 }
 
 function __jdk {
-    local scoop_app
 
+    local scoop_app
     for scoop_app in ${!SCOOP_APP_JAVA*}; do
         local version
         version="$(echo "${scoop_app}" | cut -d '_' -f 4)"
         __jdk-function-source "${!scoop_app}" "${version}"
     done
+}
 
+function __java_home {
     local latest
     # shellcheck disable=SC2086
     latest="$(echo ${!SCOOP_APP_JAVA*} | tr ' ' '\n' | sort -t '_' -k 4 -n -r | head -n 1)"
@@ -56,12 +59,7 @@ function __jdk {
         local version home
         version="$(echo "${latest}" | cut -d '_' -f 4)"
         home="$(printf "JAVA%s_HOME" "${version}")"
-        echo "export JAVA_HOME=\"${!home}\""
-
-        if [[ -e "${HOME}/.jdk/java${version}" ]]; then
-            grep 'function ' "${HOME}/.jdk/java${version}" \
-            | sed -e 's/function \([a-z]*\)\([0-9]*\)().*/alias \1=\1\2/'
-        fi
+        export JAVA_HOME=\"${!home}\"
     fi
 }
 
@@ -74,34 +72,7 @@ function __lombok {
     download_new_file "${url}" "${destination}"
 }
 
-function __pleiades {
-    local url destination
-    url="http://ftp.jaist.ac.jp/pub/mergedoc/pleiades/build/stable/pleiades.zip"
-    destination="${HOME}/.pleiades/$(basename "${url}")"
+(__jdk; echo '__java_home') > "${MY_BASH_ENV}/jdk"
+ls -l "${MY_BASH_ENV}/jdk"
 
-    mkdir -p "$(dirname "${destination}")"
-    download_new_file "${url}" "${destination}"
-
-    if [[ -e "${destination}" ]]; then
-        local workdir
-        workdir=$(mktemp --directory)
-        unzip -q -d "${workdir}" "${destination}"
-        if [[ -e "${workdir}/plugins/jp.sourceforge.mergedoc.pleiades/pleiades.jar" ]]; then
-            local src dst
-            src="${workdir}/plugins/jp.sourceforge.mergedoc.pleiades/pleiades.jar"
-            dst="$(dirname "${destination}")/pleiades.jar"
-            if [[ "${src}" -nt "${dst}" ]]; then
-                cp "${src}" "${dst}"
-            fi
-            ls -l "${dst}"
-        fi
-        rm -rf "${workdir}"
-    fi
-}
-
-eval "$(__jdk)"
-
-__lombok &
-__pleiades &
-
-wait
+__lombok
