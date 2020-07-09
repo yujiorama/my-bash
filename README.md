@@ -35,7 +35,7 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/in
 そしてもろもろのソフトウェアをインストールします。
 
 ```ps1
-cinst -y adobereader ruby ruby2.devkit virtualbox
+cinst -y adobereader
 ```
 
 Visual Studio のインストールは結局よくわかりません。
@@ -79,7 +79,7 @@ scoop update
 残りのソフトウェアをインストールします。
 
 ```ps1
-scoop install sudo launchy sysinternals tortoisesvn chrome firefox thunderbird adopt11-openj9 openjdk13 go nodejs python IntelliJ-IDEA-Ultimate sublime-text vscode winmerge vagrant docker docker-compose kubectl minikube openvpn putty winscp 7zip zip unzip zstd mysql-workbench peco jq
+scoop install sudo launchy sysinternals tortoisesvn googlechrome firefox thunderbird adopt8-hotspot adopt11-hotspot openjdk15 go nodejs python IntelliJ-IDEA-Ultimate sublime-text vscode winmerge vagrant docker docker-compose kubectl minikube openvpn putty winscp 7zip zip unzip zstd mysql-workbench fzf jq
 ```
 
 ### 4. .bash_profile の変更
@@ -90,5 +90,5 @@ scoop install sudo launchy sysinternals tortoisesvn chrome firefox thunderbird a
 
 ```bash
 
-[ -e ${HOME}/windows-gitbash-config/.bash_profile ] && source ${HOME}/windows-gitbash-config/.bash_profile
+[ -e "${HOME}/windows-gitbash-config/init.sh" ] && source "${HOME}/windows-gitbash-config/init.sh"
 ```
