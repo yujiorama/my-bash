@@ -126,14 +126,19 @@ fi
 
 [[ -e "${MY_BASH_SOURCES}/.bash_functions" ]] && source "${MY_BASH_SOURCES}/.bash_functions"
 
+echo "== mybash-reload-sources"
 mybash-reload-sources
 
+echo "== mybash-reload-env"
 mybash-reload-env
 
+echo "== mybash-reload-completion"
 mybash-reload-completion
 
+echo "== mybash-cache-flush"
 mybash-cache-flush
 
+echo "== mybash-bin"
 mybash-bin
 
 /bin/cat - <<'EOS' > "${HOME}/.bash_logout"
@@ -153,4 +158,4 @@ for f in $(/usr/bin/find "${MY_BASH_LOGOUT}" -type f); do
 done
 EOS
 
-echo "Startup Time: $SECONDS sec"
+echo "== Startup Time: $SECONDS sec"
