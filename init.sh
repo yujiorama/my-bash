@@ -15,18 +15,16 @@ shopt -s dirspell
 shopt -s histappend
 shopt -s interactive_comments
 
-export OS
-[[ "$(/bin/uname)" = "Linux" ]] && OS="Linux"
-
 export MSYS
 MSYS=winsymlinks:nativestrict
-
 # https://www.msys2.org/wiki/Porting/
 # export MSYS_NO_PATHCONV
 # MSYS_NO_PATHCONV=1
 # export MSYS2_ARG_CNOV_EXCL
 # MSYS2_ARG_CNOV_EXCL=1
 
+export OS
+[[ "$(/bin/uname)" = "Linux" ]] && OS="Linux"
 export LANG
 LANG="ja_JP.UTF-8"
 export LANGUAGE
@@ -39,7 +37,7 @@ export EDITOR
 EDITOR="$(/usr/bin/which vi)"
 
 export MY_BASH_SOURCES
-MY_BASH_SOURCES="$(/usr/bin/dirname "${BASH_SOURCE[0]}")"
+MY_BASH_SOURCES="$(/usr/bin/dirname "${BASH_SOURCE[0]}")/my-bash"
 
 export MY_BASH_BIN
 MY_BASH_BIN="${HOME}/.config/my-bash/bin"
@@ -104,11 +102,6 @@ if [[ "${OS}" != "Linux" ]]; then
         echo "/c/WINDOWS/system32";
         echo "/c/WINDOWS/System32/Wbem";
         echo "/c/WINDOWS/System32/WindowsPowerShell/v1.0";
-        if [[ -n "${ConEmuBaseDir}" ]] && [[ -d "${ConEmuBaseDir}" ]]; then
-            /bin/cygpath --unix "$(/usr/bin/dirname "${ConEmuBaseDir}")"
-            /bin/cygpath --unix "${ConEmuBaseDir}"
-            /bin/cygpath --unix "${ConEmuBaseDir}/Scripts"
-        fi
     } >> "${HOME}/.bash_path_suffix"
 
 
@@ -121,10 +114,11 @@ if [[ "${OS}" != "Linux" ]]; then
     fi
 fi
 
-# shellcheck source=/dev/null
+# shellcheck disable=SC1090
 [[ -e "${HOME}/.bashrc" ]] && source "${HOME}/.bashrc"
 
-[[ -e "${MY_BASH_SOURCES}/.bash_functions" ]] && source "${MY_BASH_SOURCES}/.bash_functions"
+# shellcheck disable=SC1090
+[[ -e "${MY_BASH_SOURCES}/functions" ]] && source "${MY_BASH_SOURCES}/functions"
 
 echo "== mybash-reload-sources"
 mybash-reload-sources

@@ -19,6 +19,8 @@ Windows 10
 
 適当な場所にこのリポジトリを clone します。
 
+以降の説明では `${HOME}/windows-gitbash-config` に clone したことにします。
+
 ### 1. `Chocolatey` のインストール
 
 [Installation](https://chocolatey.org/install)
@@ -82,13 +84,21 @@ scoop update
 scoop install sudo launchy sysinternals tortoisesvn googlechrome firefox thunderbird adopt8-hotspot adopt11-hotspot openjdk15 go nodejs python IntelliJ-IDEA-Ultimate sublime-text vscode winmerge vagrant docker docker-compose kubectl minikube openvpn putty winscp 7zip zip unzip zstd mysql-workbench fzf jq
 ```
 
-### 4. .bash_profile の変更
+### 3. Git Bash の構成
 
-このリポジトリのスクリプトを読み込むようにします。
+`.bash_profile` を編集してこのリポジトリのスクリプトを読み込むようにします。
 
-`.bash_profile` の最後に次の行を追加するだけです。
+最後に次の行を追加するだけです。
 
 ```bash
-
 [ -e "${HOME}/windows-gitbash-config/init.sh" ] && source "${HOME}/windows-gitbash-config/init.sh"
+```
+
+### 4. WSL の構成
+
+Git Bash のプロンプトで次のようにスクリプトを実行します。
+途中で WSL 環境で `sudo` を実行するため WSL 環境のユーザーに設定したパスワードの入力が求められるので注意。
+
+```bash
+${HOME}/windows-gitbash-config/wsl/init.sh
 ```

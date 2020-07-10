@@ -16,7 +16,7 @@ MSYS_NO_PATHCONV=1 wsl --distribution "${distribution}" bash -c 'echo "$(id -u -
 MSYS_NO_PATHCONV=1 wsl --distribution "${distribution}" --user root bash "/mnt/$(dirname "$(readlink -m "${BASH_SOURCE[0]}")")/init-system.sh"
 
 host_user_home="$(cygpath -ua "${HOME}")"
-dot_bashrc_d="$(dirname "$(dirname "$(readlink -m "${BASH_SOURCE[0]}")")")/dot.bashrc.d"
+config_script_d="$(dirname "$(dirname "$(readlink -m "${BASH_SOURCE[0]}")")")"
 
 # shellcheck disable=SC2016
 cat - <<EOS | MSYS_NO_PATHCONV=1 wsl --distribution "${distribution}" bash -c 'cat - > ${HOME}/.bash_profile; ls -l ${HOME}/.bash_profile'
@@ -31,9 +31,9 @@ export HOST_USER_HOME
 HOST_USER_HOME="${host_user_home}"
 
 # dotfile の置き場所は固定
-/bin/rm -rf "\${HOME}/.bashrc.d"
-if [[ -d "${dot_bashrc_d}" ]]; then
-    /bin/ln -f -s "${dot_bashrc_d}" "\${HOME}/.bashrc.d"
+/bin/rm -rf "\${HOME}/config-script"
+if [[ -d "${config_script_d}" ]]; then
+    /bin/ln -f -s "${config_script_d}" "\${HOME}/config-script"
 fi
 
 # 任意。あると便利だと思う
@@ -45,5 +45,5 @@ for d in work Downloads .aws .m2; do
 done
 
 # 必須。読み込みする
-[[ -e \${HOME}/.bashrc.d/.bash_profile ]] && source \${HOME}/.bashrc.d/.bash_profile
+[[ -e \${HOME}/config-script/init.sh ]] && source \${HOME}/config-script/init.sh
 EOS
