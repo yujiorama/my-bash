@@ -52,7 +52,7 @@ function git-install {
     --quiet \
     --no-install-recommends \
     --yes \
-    build-essential libssl-dev zlib1g-dev libcurl4-openssl-dev libexpat1-dev tcl gettext make
+    build-essential libssl-dev zlib1g-dev libcurl4-openssl-dev libexpat1-dev tcl gettext make asciidoc xmlto
 
     if [[ ! -d "${source_dir}/.git" ]]; then
         git clone --quiet https://github.com/git/git "${source_dir}"
