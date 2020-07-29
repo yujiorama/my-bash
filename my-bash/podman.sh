@@ -66,7 +66,7 @@ POMDMAN_REMOTE_CONF="${HOME}/.config/containers/podman-remote.conf"
 if [[ "${OS}" = "Linux" ]]; then
     if [[ -e "${HOST_USER_HOME}/.minikube/machines/minikube/id_rsa" ]]; then
         mkdir -p "${HOME}/.minikube/machines/minikube"
-        cat "${HOST_USER_HOME}/.minikube/machines/minikube/id_rsa" "${HOME}/.minikube/machines/minikube/id_rsa"
+        cat "${HOST_USER_HOME}/.minikube/machines/minikube/id_rsa" > "${HOME}/.minikube/machines/minikube/id_rsa"
     fi
 fi
 
