@@ -8,7 +8,7 @@ if [[ -z "${distribution}" ]]; then
     fi
 fi
 
-wsl --upgrade "${distribution}"
+wsl --set-version "${distribution}" 2
 
 # shellcheck disable=SC2016
 MSYS_NO_PATHCONV=1 wsl --distribution "${distribution}" bash -c 'echo "$(id -u -n) ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/nopassword'
@@ -16,7 +16,8 @@ MSYS_NO_PATHCONV=1 wsl --distribution "${distribution}" bash -c 'echo "$(id -u -
 MSYS_NO_PATHCONV=1 wsl --distribution "${distribution}" --user root bash "/mnt/$(dirname "$(readlink -m "${BASH_SOURCE[0]}")")/init-system.sh"
 
 host_user_home="$(cygpath -ua "${HOME}")"
-config_script_d="$(dirname "$(dirname "$(readlink -m "${BASH_SOURCE[0]}")")")"
+my_bash_dir="$(dirname "$(dirname "$(readlink -m "${BASH_SOURCE[0]}")")")"
+my_bash_dir_name=$(basename "${my_bash_dir}")
 
 # shellcheck disable=SC2016
 cat - <<EOS | MSYS_NO_PATHCONV=1 wsl --distribution "${distribution}" bash -c 'cat - > ${HOME}/.bash_profile; ls -l ${HOME}/.bash_profile'
@@ -31,9 +32,9 @@ export HOST_USER_HOME
 HOST_USER_HOME="${host_user_home}"
 
 # dotfile の置き場所は固定
-/bin/rm -rf "\${HOME}/config-script"
-if [[ -d "${config_script_d}" ]]; then
-    /bin/ln -f -s "${config_script_d}" "\${HOME}/config-script"
+/bin/rm -rf "\${HOME}/${my_bash_dir_name}"
+if [[ -d "${my_bash_dir}" ]]; then
+    /bin/ln -f -s "${my_bash_dir}" "\${HOME}/${my_bash_dir_name}"
 fi
 
 # 任意。あると便利だと思う
@@ -45,5 +46,5 @@ for d in work Downloads .aws .m2; do
 done
 
 # 必須。読み込みする
-[[ -e \${HOME}/config-script/init.sh ]] && source \${HOME}/config-script/init.sh
+[[ -e \${HOME}/${my_bash_dir_name}/init.sh ]] && source \${HOME}/${my_bash_dir_name}/init.sh
 EOS
