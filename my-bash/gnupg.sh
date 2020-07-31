@@ -152,7 +152,7 @@ if ! gpg-agent 2>/dev/null; then
     fi
 
     MSYS_NO_PATHCONV=1 gpg-connect-agent --homedir "${GNUPGHOME}" killagent '/bye'
-    rm -f "${GNUPGHOME}"/S.*
+    rm -f "${GNUPGHOME}"/S.* "${HOME}/gpg-agent.log"
     MSYS_NO_PATHCONV=1 gpg-connect-agent --homedir "${GNUPGHOME}" '/bye'
     MSYS_NO_PATHCONV=1 gpg-connect-agent --homedir "${GNUPGHOME}" updatestartuptty '/bye'
 fi
@@ -176,6 +176,7 @@ if [[ "${OS}" = "Linux" ]]; then
 
     if [[ -d "${HOST_USER_HOME}/gpg" ]]; then
         rsync --delete -avz "${HOST_USER_HOME}/gpg/" "${HOME}/gpg/"
+        chmod 700 "${HOME}/gpg"
         find "${HOME}/gpg" -type f -exec grep --text -l "PRIVATE" {} \; | while read -r f; do
             gpg --import "${f}"
         done
