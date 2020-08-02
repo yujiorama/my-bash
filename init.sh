@@ -57,6 +57,10 @@ export MY_BASH_ENV
 MY_BASH_ENV="${HOME}/.config/my-bash/env"
 /bin/mkdir -p "${MY_BASH_ENV}"
 
+export MY_BASH_APP
+MY_BASH_APP="${HOME}/.config/my-bash/app"
+/bin/mkdir -p "${MY_BASH_APP}"
+
 export MY_BASH_DEBUG
 MY_BASH_DEBUG="${MY_BASH_DEBUG:-}"
 

@@ -1,5 +1,6 @@
 #!/bin/bash
-ecs-cli-download() {
+
+function ecscli-install {
     local ecs_cli_ext ecs_cli_domain ecs_cli_executable_url ecs_cli_checksum_url
 
     ecs_cli_ext=".exe"
@@ -38,4 +39,47 @@ ecs-cli-download() {
     fi
 }
 
-ecs-cli-download
+function awscli-install {
+
+    if command -v aws >/dev/null 2>&1; then
+
+        local awscliv2_dir
+        awscliv2_dir=$(dirname "$(command -v aws)")
+        if [[ "${awscliv2_dir}" = "${AWSCLIV2}" ]]; then
+            return
+        fi
+    fi
+
+    if ! command -v msiexec >/dev/null 2>&1; then
+        return
+    fi
+
+    local url
+    url="https://awscli.amazonaws.com/AWSCLIV2.msi"
+
+    download_new_file "${url}" "${AWSCLIV2_INSTALLER}"
+    if [[ ! -e "${AWSCLIV2_INSTALLER}" ]]; then
+        return
+    fi
+
+    MSYS_NO_PATHCONV=1 msiexec /i "$(cygpath -wa "${AWSCLIV2_INSTALLER}")" AWSCLIV2="$(cygpath -wa "${AWSCLIV2}")" /qb
+
+    command -v aws
+
+    # shellcheck disable=SC1090
+    source "${MY_BASH_SOURCES}/aws.sh"
+}
+
+function awscli-uninstall {
+
+    if [[ ! -e "${AWSCLIV2_INSTALLER}" ]]; then
+        return
+    fi
+
+    MSYS_NO_PATHCONV=1 msiexec /uninstall "$(cygpath -wa "${AWSCLIV2_INSTALLER}")" /qb
+}
+
+
+if command -v aws_completer >/dev/null 2>&1; then
+    echo "complete -C aws_completer aws" > "${MY_BASH_COMPLETION}/awscli"
+fi
