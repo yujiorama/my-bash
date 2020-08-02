@@ -54,7 +54,9 @@ apt install \
     lsb-release \
     fzf \
     build-essential \
-    openssh-client
+    openssh-client \
+    cgroupfs-mount \
+    software-properties-common
 
 apt autoremove -y
 apt-file update

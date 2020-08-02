@@ -14,13 +14,14 @@ function install-podman {
             key_url="https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/Release.key"
             curl -fsSL "${key_url}" | sudo apt-key add -
 
-            local sourceline
-            sourceline="'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/ /'"
-            sudo add-apt-repository --update "${sourceline}"
+            sudo add-apt-repository --update 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/ /'
 
             sudo apt update -qq
 
             sudo apt install -y -qq podman
+
+            [[ ! -e /etc/subuid ]] && sudo usermod --add-subuids 10000-75535 "$(id -un)"
+            [[ ! -e /etc/subgid ]] && sudo usermod --add-subgids 10000-75535 "$(id -un)"
         fi
     fi
 

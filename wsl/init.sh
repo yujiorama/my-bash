@@ -48,3 +48,9 @@ done
 # 必須。読み込みする
 [[ -e \${HOME}/${my_bash_dir_name}/init.sh ]] && source \${HOME}/${my_bash_dir_name}/init.sh
 EOS
+
+cat - <<EOS > "${USERPROFILE}/.wslconfig"
+[wsl2]
+memory=$(grep MemTotal /proc/meminfo | awk '{printf("%d",0.3*$2/1024/1024)}')GB
+swap=0
+EOS
