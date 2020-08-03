@@ -1,5 +1,7 @@
 #!/bin/bash
 
+[[ -e "/c/WINDOWS/system32/chcp.com" ]] && /c/WINDOWS/system32/chcp.com 65001
+
 umask 0022
 
 /bin/stty -ixon
