@@ -28,7 +28,7 @@ function __download_new_file {
     elif command -v http >/dev/null 2>&1; then
         http --follow --continue --download --output "${dst}" "${src}" >/dev/null 2>&1
     fi
-    /bin/ls -l "${dst}"
+    /bin/ls "${dst}"
 }
 alias download_new_file='__download_new_file '
 

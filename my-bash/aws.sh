@@ -41,28 +41,51 @@ function ecscli-install {
 
 function awscli-install {
 
-    if command -v aws >/dev/null 2>&1; then
-
-        local awscliv2_dir
-        awscliv2_dir=$(dirname "$(command -v aws)")
-        if [[ "${awscliv2_dir}" = "${AWSCLIV2}" ]]; then
+    if [[ "${OS}" = "Linux" ]]; then
+        
+        if ! command -v unzip >/dev/null 2>&1; then
             return
         fi
+
+        local url
+        url="https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip"
+
+        local install_file
+        install_file=$(download_new_file "${url}" "${AWSCLIV2_INSTALLER}/$(basename "${url}")")
+        if [[ ! -e "${install_file}" ]]; then
+            return
+        fi
+
+        unzip -q -d "${AWSCLIV2_INSTALLER}" "${install_file}"
+
+
+        if [[ ! -e "${AWSCLIV2_INSTALLER}/aws/install" ]]; then
+            return
+        fi
+
+        bash "${AWSCLIV2_INSTALLER}/aws/install" \
+          --install-dir "${AWSCLIV2_INSTALLER}/aws-cli" \
+          --bin-dir "${AWSCLIV2}" \
+          --update
     fi
 
-    if ! command -v msiexec >/dev/null 2>&1; then
-        return
+    if [[ "${OS}" != "Linux" ]]; then
+
+        if ! command -v msiexec >/dev/null 2>&1; then
+            return
+        fi
+
+        local url
+        url="https://awscli.amazonaws.com/AWSCLIV2.msi"
+
+        local install_file
+        install_file=$(download_new_file "${url}" "${AWSCLIV2_INSTALLER}/$(basename "${url}")")
+        if [[ ! -e "${install_file}" ]]; then
+            return
+        fi
+
+        MSYS_NO_PATHCONV=1 msiexec /i "$(cygpath -wa "${install_file}")" AWSCLIV2="$(cygpath -wa "${AWSCLIV2}")" /qb
     fi
-
-    local url
-    url="https://awscli.amazonaws.com/AWSCLIV2.msi"
-
-    download_new_file "${url}" "${AWSCLIV2_INSTALLER}"
-    if [[ ! -e "${AWSCLIV2_INSTALLER}" ]]; then
-        return
-    fi
-
-    MSYS_NO_PATHCONV=1 msiexec /i "$(cygpath -wa "${AWSCLIV2_INSTALLER}")" AWSCLIV2="$(cygpath -wa "${AWSCLIV2}")" /qb
 
     command -v aws
 
