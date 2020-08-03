@@ -30,7 +30,9 @@ LANGUAGE="ja_JP:jp"
 export LC_CTYPE
 LC_CTYPE="${LANG}"
 export PAGER
-PAGER='less -r -F'
+PAGER='less -R -F -X'
+export MANPAGER
+MANPAGER='less'
 export EDITOR
 EDITOR="$(/usr/bin/which vi)"
 
