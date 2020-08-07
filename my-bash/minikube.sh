@@ -119,6 +119,7 @@ function minikube-start-hyperv {
         --disk-size \""${disksize}"\" \
         --docker-opt \""${dockerOptBip}"\" \
         --docker-opt \""${dockerOptFixedCidr}"\" \
+        --apiserver-names='docker' \
         \""${registry}"\" \
         --insecure-registry \""${localRegistry}"\" \
         --interactive=false \
@@ -224,7 +225,7 @@ EOS
 
 function host-customize {
     local newline
-    newline="$(minikube ip) minikube.internal"
+    newline="$(minikube ip) minikube.internal minikube"
 
     add-line-to-hosts "${newline}"
 }
