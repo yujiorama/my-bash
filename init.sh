@@ -36,7 +36,7 @@ PAGER='less -R -F -X'
 export MANPAGER
 MANPAGER='less'
 export EDITOR
-EDITOR="$(/usr/bin/which vi)"
+EDITOR="$(command -v vi)"
 
 export MY_BASH_SOURCES
 MY_BASH_SOURCES="$(/usr/bin/dirname "${BASH_SOURCE[0]}")/my-bash"
@@ -124,7 +124,7 @@ fi
 [[ -e "${HOME}/.bashrc" ]] && source "${HOME}/.bashrc"
 
 # shellcheck disable=SC1090
-[[ -e "${MY_BASH_SOURCES}/functions" ]] && source "${MY_BASH_SOURCES}/functions"
+[[ -e "$(/usr/bin/dirname "${BASH_SOURCE[0]}")/functions.sh" ]] && source "$(/usr/bin/dirname "${BASH_SOURCE[0]}")/functions.sh"
 
 echo "== mybash-reload-sources"
 mybash-reload-sources

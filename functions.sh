@@ -8,7 +8,7 @@ function __here {
     fi
 }
 
-function __download_new_file {
+function download_new_file {
     local src dst ctime
     src=$1
     dst=$2
@@ -30,10 +30,8 @@ function __download_new_file {
     fi
     /bin/ls "${dst}"
 }
-alias download_new_file='__download_new_file '
 
-
-function __online {
+function online {
     local schema host port rc
     host="${1:-www.google.com}"
     port="${2:-80}"
@@ -68,9 +66,8 @@ function __online {
     echo "${schema}://${host}:${port} status: ${rc}" >/dev/stderr
     return $rc
 }
-alias online='__online '
 
-function __another_console_exists {
+function another_console_exists {
     local c
     c=$(/bin/ps -e | /bin/grep -c bash)
     (( c-- ))
@@ -79,7 +76,7 @@ function __another_console_exists {
     fi
     return 0
 }
-alias another_console_exists='__another_console_exists '
+
 
 function mybash-cache-id {
     /usr/bin/find -L "${MY_BASH_SOURCES}" -type f \
