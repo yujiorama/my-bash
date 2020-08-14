@@ -14,8 +14,8 @@ docker-reconfigure() {
     done
 
     if [[ "force" = "${force}" ]]; then
-        eval "$(env|grep DOCKER|cut -d '=' -f 1 | sed -e 's/^/unset /')"
-        rm -f "${HOME}/.docker_env"
+        eval "$(env | grep DOCKER | cut -d '=' -f 1 | sed -e 's/^/unset /')"
+        rm -f "${MY_BASH_ENV}/docker"
     fi
 
     # shellcheck source=/dev/null
@@ -29,6 +29,11 @@ docker-reconfigure() {
 }
 
 function docker-install {
+
+    if [[ "${OS}" != "Linux" ]]; then
+        return
+    fi
+
     # https://docs.docker.com/install/linux/docker-ce/debian/
     local username
     username="$1"
@@ -51,79 +56,76 @@ function docker-install {
     sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose
     sudo usermod -aG docker "${username}"
 
-    # shellcheck disable=SC1090
-    [[ -e "${MY_BASH_SOURCES}/docker.env" ]] && source "${MY_BASH_SOURCES}/docker.env"
-    # shellcheck disable=SC1090
-    [[ -e "${MY_BASH_SOURCES}/docker.sh" ]] && source "${MY_BASH_SOURCES}/docker.sh"
+    docker-reconfigure -v
 }
 
-if [[ "${OS}" = "Linux" ]] && [[ -e "${HOST_USER_HOME}/.docker_env" ]]; then
-    cat "${HOST_USER_HOME}/.docker_env" > "${HOME}/.docker_env"
-    # shellcheck disable=SC1090
-    source "${HOME}/.docker_env"
-    mkdir -p "${HOME}/.docker_cert"
-    /usr/bin/find -L "${HOME}/.docker_cert" -type f -exec rm -f {} \;
-    /usr/bin/find -L "$(wslpath -u "${DOCKER_CERT_PATH}")" -type f | while read -r f; do
-        cat "${f}" > "${HOME}/.docker_cert/$(basename "${f}")"
-    done
+if ! command -v docker >/dev/null 2>&1; then
+    return
 fi
 
-if [[ ! -e "${HOME}/.docker_env" ]] && command -v docker-machine >/dev/null 2>&1; then
-    alias dm='docker-machine'
+if [[ ! -e "${MY_BASH_ENV}/docker" ]] && [[ -e "${MY_BASH_APP}/minikube/docker/env" ]] \
+                                      && [[ -d "${MY_BASH_APP}/minikube/docker/certs" ]]; then
+    # shellcheck disable=SC2002
+    cat "${MY_BASH_APP}/minikube/docker/env" | tee "${MY_BASH_ENV}/docker"
+    certs_path="${MY_BASH_APP}/minikube/docker/certs"
+    if [[ "${OS}" != "Linux" ]]; then
+        certs_path=$(cygpath -ma "${MY_BASH_APP}/minikube/docker/certs")
+    fi
+    echo -e "\nexport DOCKER_CERT_PATH=\"${certs_path}\"\n" | tee -a "${MY_BASH_ENV}/docker"
+    unset certs_path
+
+fi
+
+if [[ ! -e "${MY_BASH_ENV}/docker" ]]; then
+
+    if command -v rclone >/dev/null 2>&1; then
+
+        if rclone ls dropbox:office/env/minikube/docker/env >/dev/null 2>&1; then
+            mkdir -p "${MY_BASH_APP}/minikube/docker"
+            rclone copyto dropbox:office/env/minikube/docker/env "${MY_BASH_APP}/minikube/docker/env"
+        fi
+
+        if rclone ls dropbox:office/env/minikube/docker/certs >/dev/null 2>&1; then
+            mkdir -p "${MY_BASH_APP}/minikube/docker/certs"
+            rclone sync dropbox:office/env/minikube/docker/certs "${MY_BASH_APP}/minikube/docker/certs"
+        fi
+
+        # shellcheck source=/dev/null
+        source "${MY_BASH_SOURCES}/docker.sh"
+    fi
+fi
+
+if [[ ! -e "${MY_BASH_ENV}/docker" ]] && command -v docker-machine >/dev/null 2>&1; then
+
     if (docker-machine ls --quiet --timeout 1 --filter state=Running | grep -i running) >/dev/null 2>&1; then
         echo "docker-machine: running"
-        docker-machine env > "${HOME}/.docker_env"
+        docker-machine env | tee "${MY_BASH_ENV}/docker"
     fi
 fi
 
-if [[ ! -e "${HOME}/.docker_env" ]] && command -v minikube >/dev/null 2>&1; then
-    minikube completion bash > "${MY_BASH_COMPLETION}/minikube"
-    if (minikube status --profile minikube --format '{{.Host}}' | grep -i running) >/dev/null 2>&1; then
+if [[ ! -e "${MY_BASH_ENV}/docker" ]] && command -v minikube >/dev/null 2>&1; then
+
+    if (minikube status --format '{{.Host}}' | grep -i running) >/dev/null 2>&1; then
         echo "minikube: running"
-        minikube docker-env --profile minikube > "${HOME}/.docker_env"
+        minikube docker-env | tee "${MY_BASH_ENV}/docker"
+        minikube completion bash > "${MY_BASH_COMPLETION}/minikube"
     fi
 fi
 
-if [[ ! -e "${HOME}/.docker_env" ]]; then
-    if command -v dbxcli >/dev/null 2>&1; then
-        mkdir -p "${HOME}/.remote-minikube/certs"
+if [[ -e "${MY_BASH_ENV}/docker" ]]; then
 
-        if dbxcli ls office/env/minikube/docker/env 2>/dev/null; then
-            dbxcli get office/env/minikube/docker/env "${HOME}/.remote-minikube/minikube.docker_env"
-        fi
-        if dbxcli ls office/env/minikube/docker/certs 2>/dev/null; then
-            for t in $(dbxcli ls office/env/minikube/docker/certs); do
-                dbxcli get "${t#/}" "${HOME}/.remote-minikube/certs/$(basename "${t}")"
-            done
-        fi
-    fi
-
-    if [[ -d "${HOME}/.remote-minikube" ]]; then
-        if [[ -e "${HOME}/.remote-minikube/minikube.docker_env" ]]; then
-            docker_host_=$(grep DOCKER_HOST "${HOME}/.remote-minikube/minikube.docker_env" | cut -d ' ' -f 2 | cut -d '=' -f 2 | sed -e 's/"//g')
-            if [[ -n "${docker_host_}" ]] && online "${docker_host_}"; then
-                echo "minikube: remote"
-                sed -e "s|DOCKER_CERT_PATH=.*|DOCKER_CERT_PATH=${HOME}/.remote-minikube/certs|" \
-                    < "${HOME}/.remote-minikube/minikube.docker_env" \
-                    > "${HOME}/.docker_env"
-            fi
-        fi
-    fi
-fi
-
-if [[ -e ${HOME}/.docker_env ]]; then
-    docker_host_=$(grep DOCKER_HOST "${HOME}/.docker_env" | cut -d ' ' -f 2 | cut -d '=' -f 2 | sed -e 's/"//g')
+    docker_host_=$(grep DOCKER_HOST "${MY_BASH_ENV}/docker" | cut -d ' ' -f 2 | cut -d '=' -f 2 | sed -e 's/"//g')
     if [[ -n "${docker_host_}" ]] && online "${docker_host_}"; then
         # shellcheck source=/dev/null
-        source "${HOME}/.docker_env"
-        if [[ -d "${HOME}/.docker_cert" ]]; then
-            export DOCKER_CERT_PATH="${HOME}/.docker_cert"
-        fi
+        source "${MY_BASH_ENV}/docker"
     fi
     unset docker_host_
+
+    docker version
 fi
 
 if command -v docker >/dev/null 2>&1; then
+
     completion="${MY_BASH_COMPLETION}/docker"
     url="https://raw.githubusercontent.com/docker/docker-ce/master/components/cli/contrib/completion/bash/docker"
 
@@ -140,4 +142,8 @@ if command -v docker-compose >/dev/null 2>&1; then
     download_new_file "${url}" "${completion}"
 
     unset version completion url
+
+    if [[ "${OS}" = "Windows_NT" ]]; then
+        export COMPOSE_CONVERT_WINDOWS_PATHS=1
+    fi
 fi

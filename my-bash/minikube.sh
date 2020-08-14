@@ -164,7 +164,7 @@ function port-forward-bg {
         myip="127.0.0.1,${myip}"
     fi
 
-    pod_name="$(kubectl -n "${n}" get pods -l "${selector}" -o jsonpath='{.items[0].metadata.name}')"
+    pod_name="$(kubectl -n "${ns}" get pods -l "${selector}" -o jsonpath='{.items[0].metadata.name}')"
     if [[ -z "${pod_name}" ]]; then
         return
     fi
@@ -240,33 +240,35 @@ function minikube-enable-addons {
     return 0
 }
 
-function update-docker-env {
-
-    (minikube docker-env; echo export DOCKER_BUILDKIT=1) | tee "${HOME}/minikube.docker_env" > "${HOME}/.docker_env"
+function minikube-update-docker-env {
 
     if ! command -v rclone >/dev/null 2>&1; then
         return
     fi
 
+    mkdir -p "${MY_BASH_APP}/minikube/docker"
+    mkdir -p "${MY_BASH_APP}/minikube/docker/certs"
+    (minikube docker-env; echo export DOCKER_BUILDKIT=1) > "${MY_BASH_APP}/minikube/docker/env"
+    rclone sync "${HOME}/.minikube/certs" "${MY_BASH_APP}/minikube/docker/certs"
+
     rclone mkdir dropbox:office/env/minikube/docker
-    rclone copyto "${HOME}/minikube.docker_env" dropbox:office/env/minikube/docker/env
-    rclone sync "${HOME}/.minikube/certs" dropbox:office/env/minikube/docker/certs
+    rclone sync "${MY_BASH_APP}/minikube/docker" dropbox:office/env/minikube/docker
     rclone lsl dropbox:office/env/minikube/docker
 }
 
-function update-kube-config {
-
-    KUBECONFIG="" minikube kubectl config view > /dev/null
-    KUBECONFIG="" minikube kubectl config view > "${HOME}/.kube_config"
-    kubectl --kubeconfig="${HOME}/.kube_config" config view --flatten > "${HOME}/minikube.kube_config"
+function minikube-update-kube-config {
 
     if ! command -v rclone >/dev/null 2>&1; then
         return
     fi
 
-    rclone mkdir dropbox:office/env/minikube/kubernetes/config
-    rclone copyto "${HOME}/minikube.kube_config" dropbox:office/env/minikube/kubernetes/config/minikube.kube_config
-    rclone lsl dropbox:office/env/minikube/kubernetes/config
+    mkdir -p "${MY_BASH_APP}/minikube/kubernetes"
+    KUBECONFIG="" minikube kubectl config view > /dev/null
+    KUBECONFIG="" kubectl config view --flatten > "${MY_BASH_APP}/minikube/kubernetes/config"
+
+    rclone mkdir dropbox:office/env/minikube/kubernetes
+    rclone sync "${MY_BASH_APP}/minikube/kubernetes" dropbox:office/env/minikube/kubernetes
+    rclone lsl dropbox:office/env/minikube/kubernetes
 }
 
 function minikube-start-usage {
@@ -324,9 +326,9 @@ function minikube-start {
         return 1
     fi
 
-    update-docker-env
+    minikube-update-docker-env
 
-    update-kube-config
+    minikube-update-kube-config
 
     minikube-customize
 

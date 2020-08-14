@@ -15,7 +15,7 @@ k8s-reconfigure() {
 
     if [[ "force" = "${force}" ]]; then
         unset KUBECONFIG
-        rm -f "${HOME}/.kube_config"
+        rm -f "${MY_BASH_APP}/kubectl/config"
     fi
 
     # shellcheck source=/dev/null
@@ -30,6 +30,10 @@ k8s-reconfigure() {
 }
 
 function kubectl-install {
+    if [[ "${OS}" != "Linux" ]]; then
+        return
+    fi
+
     local version url
     # https://kubernetes.io/docs/tasks/tools/install-kubectl/
     if ! online storage.googleapis.com 443; then
@@ -39,15 +43,12 @@ function kubectl-install {
     version="$(curl -fsSL https://storage.googleapis.com/kubernetes-release/release/stable.txt)"
     url="https://storage.googleapis.com/kubernetes-release/release/${version}/bin/linux/amd64/kubectl"
 
-    download_new_file "${url}" "${HOME}/bin/kubectl"
-    if [[ -e "${HOME}/bin/kubectl" ]]; then
-        chmod 755 "${HOME}/bin/kubectl"
+    download_new_file "${url}" "${MY_BASH_APP}/kubectl/kubectl"
+    if [[ -e "${MY_BASH_APP}/kubectl/kubectl" ]]; then
+        chmod 755 "${MY_BASH_APP}/kubectl/kubectl"
     fi
 
-    # shellcheck disable=SC1090
-    [[ -e "${MY_BASH_SOURCES}/k8s.env" ]] && source "${MY_BASH_SOURCES}/k8s.env"
-    # shellcheck disable=SC1090
-    [[ -e "${MY_BASH_SOURCES}/k8s.sh" ]] && source "${MY_BASH_SOURCES}/k8s.sh"
+    k8s-reconfigure -v
 }
 
 function helm-install {
@@ -62,11 +63,11 @@ function helm-install {
 
     download_new_file "${url}" "${install_script}"
     if [[ -e "${install_script}" ]]; then
-        env BINARY_NAME="helm" USE_SUDO=false HELM_INSTALL_DIR="${HOME}/bin" bash "${install_script}"
-        if [[ -e "${HOME}/bin/helm" ]]; then
-            chmod 755 "${HOME}/bin/helm"
-            ls -l "${HOME}/bin/helm"
-            "${HOME}/bin/helm" version
+        env BINARY_NAME="helm" USE_SUDO=false HELM_INSTALL_DIR="${MY_BASH_APP}/helm" bash "${install_script}"
+        if [[ -e "${MY_BASH_APP}/helm/helm" ]]; then
+            chmod 755 "${MY_BASH_APP}/helm/helm"
+            ls -l "${MY_BASH_APP}/helm/helm"
+            "${MY_BASH_APP}/helm/helm" version
         fi
     fi
 
@@ -93,54 +94,42 @@ if ! command -v kubectl >/dev/null 2>&1; then
     return
 fi
 
-if [[ "${OS}" = "Linux" ]] && [[ -e "${HOST_USER_HOME}/.kube_config" ]]; then
-    mkdir -p "${HOME}/.kube"
-    # shellcheck disable=SC2002
-    /bin/cat "${HOST_USER_HOME}/.kube_config" > "${HOME}/.kube_config"
+if [[ ! -e "${MY_BASH_APP}/kubectl/config" ]] && [[ -e "${MY_BASH_APP}/minikube/kubernetes/config" ]]; then
+
+    k8s_api_url="$(yq r "${MY_BASH_APP}/minikube/kubernetes/config" clusters[0].cluster.server)"
+
+    if [[ -n "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
+        kubectl --kubeconfig="${MY_BASH_APP}/minikube/kubernetes/config" config view --flatten > "${MY_BASH_APP}/kubectl/config"
+    fi
+    unset k8s_api_url
 fi
 
-if [[ ! -e "${HOME}/.kube_config" ]]; then
-    if [[ -e "${HOME}/.kube/config" ]] && command -v yq >/dev/null 2>&1; then
-        k8s_api_url="$(yq r "${HOME}/.kube/config" clusters[0].cluster.server)"
+if [[ ! -e "${MY_BASH_APP}/kubectl/config" ]] && [[ -e "${HOME}/.kube/config" ]]; then
 
-        if [[ -n "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
-            kubectl --kubeconfig="${HOME}/.kube/config" config view --flatten > "${HOME}/.kube_config"
+    k8s_api_url="$(yq r "${HOME}/.kube/config" clusters[0].cluster.server)"
+
+    if [[ -n "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
+        kubectl --kubeconfig="${HOME}/.kube/config" config view --flatten > "${MY_BASH_APP}/kubectl/config"
+    fi
+    unset k8s_api_url
+fi
+
+if [[ ! -e "${MY_BASH_APP}/kubectl/config" ]]; then
+
+    if command -v rclone >/dev/null 2>&1; then
+        if rclone ls dropbox:office/env/minikube/kubernetes/config >/dev/null 2>&1; then
+            mkdir -p "${MY_BASH_APP}/kubectl"
+            rclone copyto dropbox:office/env/minikube/kubernetes/config "${MY_BASH_APP}/kubectl/config"
         fi
-        unset k8s_api_url
     fi
 fi
 
-if [[ ! -e "${HOME}/.kube_config" ]]; then
-    if command -v dbxcli >/dev/null 2>&1; then
-        mkdir -p "${HOME}/.remote-minikube"
-  
-        if dbxcli ls office/env/minikube/kubernetes/config 2>/dev/null; then
-            for t in $(dbxcli ls office/env/minikube/kubernetes/config); do
-                dbxcli get "${t#/}" "${HOME}/.remote-minikube/$(basename "${t}")"
-            done
-        fi
-    fi
+if [[ -e "${MY_BASH_APP}/kubectl/config" ]]; then
 
-    if [[ -d "${HOME}/.remote-minikube" ]]; then
-        kubeconfig="$(find "${HOME}/.remote-minikube" -type f -name \*.kube_config | while read -r c; do
-            k8s_api_url="$(yq r "${c}" clusters[0].cluster.server)"
-            if [[ -n "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
-                echo -n "${c}:"
-            fi
-            done)"
-        kubeconfig="${kubeconfig%:}"
+    export KUBECONFIG="${MY_BASH_APP}/kubectl/config"
+    kubectl version
+    kubectl get nodes -o wide
 
-        if [[ -n "${kubeconfig}" ]]; then
-            kubectl --kubeconfig="${kubeconfig}" config view --flatten --merge > "${HOME}/.kube_config"
-        fi
-
-        unset kubeconfig
-    fi
-fi
-
-if [[ -e "${HOME}/.kube_config" ]]; then
-    export KUBECONFIG="${HOME}/.kube_config"
-    kubectl config get-contexts
 fi
 
 if command -v kubectl >/dev/null 2>&1; then
