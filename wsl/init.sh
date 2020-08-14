@@ -45,6 +45,13 @@ for d in work Downloads .aws .m2; do
     fi
 done
 
+for c in .config/rclone/rclone.conf; do
+    /bin/rm -rf "\${HOME}/\${c}"
+    if [[ -e "\${HOST_USER_HOME}/\${c}" ]]; then
+        cat "\${HOST_USER_HOME}/\${c}" > "\${HOME}/\${c}"
+    fi
+done
+
 # 必須。読み込みする
 [[ -e \${HOME}/${my_bash_dir_name}/init.sh ]] && source \${HOME}/${my_bash_dir_name}/init.sh
 EOS

@@ -45,6 +45,7 @@ apt install \
     zip \
     unzip \
     netcat \
+    rclone \
     rsync \
     pass \
     git \
