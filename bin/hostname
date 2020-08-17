@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [[ ! -e /bin/hostname ]]; then
+    echo "${HOSTNAME}"
+    exit
+fi
+
+if /bin/hostname --version | grep coreutils >/dev/null 2>&1; then
+    /bin/hostname
+    exit
+fi
+
+/bin/hostname "$@"
