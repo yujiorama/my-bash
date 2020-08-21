@@ -10,4 +10,3 @@ if [[ "${OS}" != "Linux" ]]; then
         esac
     }
 fi
-
