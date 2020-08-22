@@ -94,6 +94,16 @@ if ! command -v kubectl >/dev/null 2>&1; then
     return
 fi
 
+if [[ ! -e "${MY_BASH_APP}/kubectl/config" ]] && [[ ! -e "${MY_BASH_APP}/minikube/kubernetes/config" ]]; then
+
+    if command -v rclone >/dev/null 2>&1; then
+        if rclone ls dropbox:office/env/minikube/kubernetes/config >/dev/null 2>&1; then
+            mkdir -p "${MY_BASH_APP}/minikube/kubernetes"
+            rclone copyto dropbox:office/env/minikube/kubernetes/config "${MY_BASH_APP}/minikube/kubernetes"
+        fi
+    fi
+fi
+
 if [[ ! -e "${MY_BASH_APP}/kubectl/config" ]] && [[ -e "${MY_BASH_APP}/minikube/kubernetes/config" ]]; then
 
     k8s_api_url="$(yq r "${MY_BASH_APP}/minikube/kubernetes/config" clusters[0].cluster.server)"
@@ -112,16 +122,6 @@ if [[ ! -e "${MY_BASH_APP}/kubectl/config" ]] && [[ -e "${HOME}/.kube/config" ]]
         kubectl --kubeconfig="${HOME}/.kube/config" config view --flatten > "${MY_BASH_APP}/kubectl/config"
     fi
     unset k8s_api_url
-fi
-
-if [[ ! -e "${MY_BASH_APP}/kubectl/config" ]]; then
-
-    if command -v rclone >/dev/null 2>&1; then
-        if rclone ls dropbox:office/env/minikube/kubernetes/config >/dev/null 2>&1; then
-            mkdir -p "${MY_BASH_APP}/kubectl"
-            rclone copyto dropbox:office/env/minikube/kubernetes/config "${MY_BASH_APP}/kubectl/config"
-        fi
-    fi
 fi
 
 if [[ -e "${MY_BASH_APP}/kubectl/config" ]]; then
