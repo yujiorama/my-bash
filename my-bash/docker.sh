@@ -63,20 +63,8 @@ if ! command -v docker >/dev/null 2>&1; then
     return
 fi
 
-if [[ ! -e "${MY_BASH_ENV}/docker" ]] && [[ -e "${MY_BASH_APP}/minikube/docker/env" ]] \
-                                      && [[ -d "${MY_BASH_APP}/minikube/docker/certs" ]]; then
-    # shellcheck disable=SC2002
-    cat "${MY_BASH_APP}/minikube/docker/env" | tee "${MY_BASH_ENV}/docker"
-    certs_path="${MY_BASH_APP}/minikube/docker/certs"
-    if [[ "${OS}" != "Linux" ]]; then
-        certs_path=$(cygpath -ma "${MY_BASH_APP}/minikube/docker/certs")
-    fi
-    echo -e "\nexport DOCKER_CERT_PATH=\"${certs_path}\"\n" | tee -a "${MY_BASH_ENV}/docker"
-    unset certs_path
-
-fi
-
-if [[ ! -e "${MY_BASH_ENV}/docker" ]]; then
+if [[ ! -e "${MY_BASH_ENV}/docker" ]] && [[ ! -e "${MY_BASH_APP}/minikube/docker/env" ]] \
+                                      && [[ ! -d "${MY_BASH_APP}/minikube/docker/certs" ]]; then
 
     if command -v rclone >/dev/null 2>&1; then
 
@@ -89,10 +77,20 @@ if [[ ! -e "${MY_BASH_ENV}/docker" ]]; then
             mkdir -p "${MY_BASH_APP}/minikube/docker/certs"
             rclone sync dropbox:office/env/minikube/docker/certs "${MY_BASH_APP}/minikube/docker/certs"
         fi
-
-        # shellcheck source=/dev/null
-        source "${MY_BASH_SOURCES}/docker.sh"
     fi
+fi
+
+if [[ ! -e "${MY_BASH_ENV}/docker" ]] && [[ -e "${MY_BASH_APP}/minikube/docker/env" ]] \
+                                      && [[ -d "${MY_BASH_APP}/minikube/docker/certs" ]]; then
+
+    certs_path="${MY_BASH_APP}/minikube/docker/certs"
+    if [[ "${OS}" != "Linux" ]]; then
+        certs_path=$(cygpath -ma "${MY_BASH_APP}/minikube/docker/certs")
+    fi
+    # shellcheck disable=SC2002
+    cat "${MY_BASH_APP}/minikube/docker/env"                | tee "${MY_BASH_ENV}/docker"
+    echo -e "\nexport DOCKER_CERT_PATH=\"${certs_path}\"\n" | tee -a "${MY_BASH_ENV}/docker"
+    unset certs_path
 fi
 
 if [[ ! -e "${MY_BASH_ENV}/docker" ]] && command -v docker-machine >/dev/null 2>&1; then
@@ -118,10 +116,9 @@ if [[ -e "${MY_BASH_ENV}/docker" ]]; then
     if [[ -n "${docker_host_}" ]] && online "${docker_host_}"; then
         # shellcheck source=/dev/null
         source "${MY_BASH_ENV}/docker"
+        docker version
     fi
     unset docker_host_
-
-    docker version
 fi
 
 if command -v docker >/dev/null 2>&1; then
