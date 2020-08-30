@@ -15,7 +15,11 @@ docker-reconfigure() {
 
     if [[ "force" = "${force}" ]]; then
         eval "$(env | grep DOCKER | cut -d '=' -f 1 | sed -e 's/^/unset /')"
-        rm -f "${MY_BASH_ENV}/docker"
+        rm -rf "${MY_BASH_APP}/docker" \
+               "${MY_BASH_ENV}/docker" \
+               "${MY_BASH_COMPLETION}/docker" \
+               "${MY_BASH_COMPLETION}/docker-compose" \
+               "${MY_BASH_COMPLETION}/minikube"
     fi
 
     # shellcheck source=/dev/null
@@ -57,14 +61,17 @@ function docker-install {
     sudo usermod -aG docker "${username}"
 
     docker-reconfigure -v
+    docker version
 }
 
 if ! command -v docker >/dev/null 2>&1; then
     return
 fi
 
-if [[ ! -e "${MY_BASH_ENV}/docker" ]] && [[ ! -e "${MY_BASH_APP}/minikube/docker/env" ]] \
-                                      && [[ ! -d "${MY_BASH_APP}/minikube/docker/certs" ]]; then
+mkdir -p "${MY_BASH_APP}/docker"
+
+if [[ ! -e "${MY_BASH_APP}/docker/env" ]] && [[ ! -e "${MY_BASH_APP}/minikube/docker/env" ]] \
+                                          && [[ ! -d "${MY_BASH_APP}/minikube/docker/certs" ]]; then
 
     if command -v rclone >/dev/null 2>&1; then
 
@@ -80,43 +87,45 @@ if [[ ! -e "${MY_BASH_ENV}/docker" ]] && [[ ! -e "${MY_BASH_APP}/minikube/docker
     fi
 fi
 
-if [[ ! -e "${MY_BASH_ENV}/docker" ]] && [[ -e "${MY_BASH_APP}/minikube/docker/env" ]] \
-                                      && [[ -d "${MY_BASH_APP}/minikube/docker/certs" ]]; then
+if [[ ! -e "${MY_BASH_APP}/docker/env" ]] && [[ -e "${MY_BASH_APP}/minikube/docker/env" ]] \
+                                          && [[ -d "${MY_BASH_APP}/minikube/docker/certs" ]]; then
 
-    certs_path="${MY_BASH_APP}/minikube/docker/certs"
+    mkdir -p "${MY_BASH_APP}/docker/certs"
+    rclone sync "${MY_BASH_APP}/minikube/docker/certs" "${MY_BASH_APP}/docker/certs"
+    certs_path="${MY_BASH_APP}/docker/certs"
     if [[ "${OS}" != "Linux" ]]; then
-        certs_path=$(cygpath -ma "${MY_BASH_APP}/minikube/docker/certs")
+        certs_path=$(cygpath -ma "${MY_BASH_APP}/docker/certs")
     fi
     # shellcheck disable=SC2002
-    cat "${MY_BASH_APP}/minikube/docker/env"                | tee "${MY_BASH_ENV}/docker"
-    echo -e "\nexport DOCKER_CERT_PATH=\"${certs_path}\"\n" | tee -a "${MY_BASH_ENV}/docker"
+    cat "${MY_BASH_APP}/minikube/docker/env"                | tee "${MY_BASH_APP}/docker/env"
+    echo -e "\nexport DOCKER_CERT_PATH=\"${certs_path}\"\n" | tee -a "${MY_BASH_APP}/docker/env"
     unset certs_path
 fi
 
-if [[ ! -e "${MY_BASH_ENV}/docker" ]] && command -v docker-machine >/dev/null 2>&1; then
+if [[ ! -e "${MY_BASH_APP}/docker/env" ]] && command -v docker-machine >/dev/null 2>&1; then
 
     if (docker-machine ls --quiet --timeout 1 --filter state=Running | grep -i running) >/dev/null 2>&1; then
         echo "docker-machine: running"
-        docker-machine env | tee "${MY_BASH_ENV}/docker"
+        docker-machine env | tee "${MY_BASH_APP}/docker/env"
     fi
 fi
 
-if [[ ! -e "${MY_BASH_ENV}/docker" ]] && command -v minikube >/dev/null 2>&1; then
+if [[ ! -e "${MY_BASH_APP}/docker/env" ]] && command -v minikube >/dev/null 2>&1; then
 
     if (minikube status --format '{{.Host}}' | grep -i running) >/dev/null 2>&1; then
         echo "minikube: running"
-        minikube docker-env | tee "${MY_BASH_ENV}/docker"
+        minikube docker-env | tee "${MY_BASH_APP}/docker/env"
         minikube completion bash > "${MY_BASH_COMPLETION}/minikube"
     fi
 fi
 
-if [[ -e "${MY_BASH_ENV}/docker" ]]; then
+if [[ -e "${MY_BASH_APP}/docker/env" ]]; then
 
-    docker_host_=$(grep DOCKER_HOST "${MY_BASH_ENV}/docker" | cut -d ' ' -f 2 | cut -d '=' -f 2 | sed -e 's/"//g')
+    docker_host_=$(grep DOCKER_HOST "${MY_BASH_APP}/docker/env" | cut -d ' ' -f 2 | cut -d '=' -f 2 | sed -e 's/"//g')
     if [[ -n "${docker_host_}" ]] && online "${docker_host_}"; then
-        # shellcheck source=/dev/null
-        source "${MY_BASH_ENV}/docker"
-        docker version
+        cp "${MY_BASH_APP}/docker/env" "${MY_BASH_ENV}/docker"
+    else
+        cp /dev/null "${MY_BASH_ENV}/docker"
     fi
     unset docker_host_
 fi
