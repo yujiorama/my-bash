@@ -26,6 +26,8 @@ k8s-reconfigure() {
     # shellcheck source=/dev/null
     source "${MY_BASH_SOURCES}/k8s.sh"
 
+    mybash-reload-env
+
     if [[ "verbose" = "${verbose}" ]]; then
         kubectl version
         kubectl get nodes -o wide

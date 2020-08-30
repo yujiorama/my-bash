@@ -27,6 +27,8 @@ docker-reconfigure() {
     # shellcheck source=/dev/null
     source "${MY_BASH_SOURCES}/docker.sh"
 
+    mybash-reload-env
+
     if [[ "verbose" = "${verbose}" ]]; then
         docker version
     fi
