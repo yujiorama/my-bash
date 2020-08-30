@@ -15,7 +15,10 @@ k8s-reconfigure() {
 
     if [[ "force" = "${force}" ]]; then
         unset KUBECONFIG
-        rm -f "${MY_BASH_APP}/kubectl/config"
+        rm -f "${MY_BASH_APP}/kubectl/config" \
+              "${MY_BASH_COMPLETION}/kubectl" \
+              "${MY_BASH_COMPLETION}/helm" \
+              "${MY_BASH_COMPLETION}/eksctl"
     fi
 
     # shellcheck source=/dev/null
