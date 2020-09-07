@@ -87,10 +87,12 @@ function awscli-install {
         MSYS_NO_PATHCONV=1 msiexec /i "$(cygpath -wa "${install_file}")" AWSCLIV2="$(cygpath -wa "${AWSCLIV2}")" /qb
     fi
 
-    command -v aws
-
+    # shellcheck disable=SC1090
+    source "${MY_BASH_SOURCES}/aws.env"
     # shellcheck disable=SC1090
     source "${MY_BASH_SOURCES}/aws.sh"
+
+    command -v aws
 }
 
 function awscli-uninstall {
@@ -100,6 +102,40 @@ function awscli-uninstall {
     fi
 
     MSYS_NO_PATHCONV=1 msiexec /uninstall "$(cygpath -wa "${AWSCLIV2_INSTALLER}")" /qb
+}
+
+function ssm-plugin-install {
+
+    if [[ "${OS}" = "Linux" ]]; then
+        return
+    fi
+
+    if [[ "${OS}" != "Linux" ]]; then
+
+        if [[ ! -d "${AWSCLI_SSMPLUGIN_INSTALLER}" ]]; then
+            mkdir -p "${AWSCLI_SSMPLUGIN_INSTALLER}"
+        fi
+
+        local url
+        url='https://s3.amazonaws.com/session-manager-downloads/plugin/latest/windows/SessionManagerPluginSetup.exe'
+
+        local install_file
+        install_file=$(download_new_file "${url}" "${AWSCLI_SSMPLUGIN_INSTALLER}/$(basename "${url}")")
+        if [[ ! -e "${install_file}" ]]; then
+            return
+        fi
+
+        "${install_file}"
+
+        rm -f "${install_file}"
+    fi
+
+    # shellcheck disable=SC1090
+    source "${MY_BASH_SOURCES}/aws.env"
+    # shellcheck disable=SC1090
+    source "${MY_BASH_SOURCES}/aws.sh"
+
+    command -v session-manager-plugin
 }
 
 
