@@ -5,7 +5,7 @@
 ########################################
 # HELP
 ########################################
-HTTPS = (File.basename(__FILE__) == 'https')
+HTTPS = ! ENV['HTTPS'].nil?
 
 HELP=<<EOS
 simplest http server shows current directory
@@ -51,13 +51,16 @@ CLEAR = "\x1b[0m"
 require "webrick"
 require "webrick/https"
 require "json"
+require 'socket'
 
 # common
 port = ARGV.shift || 3000
 
 # https
-key  = ARGV.shift || "#{ENV["DOTFILES"]}/keys/privkey.pem"
-cert = ARGV.shift || "#{ENV["DOTFILES"]}/keys/fullchain.pem"
+key  = ARGV.shift
+key = "#{ENV["DOTFILES"]}/keys/privkey.pem" if File.exist?("#{ENV["DOTFILES"]}/keys/privkey.pem")
+cert = ARGV.shift
+cert = "#{ENV["DOTFILES"]}/keys/fullchain.pem" if File.exist?("#{ENV["DOTFILES"]}/keys/fullchain.pem")
 
 # http://svn.ruby-lang.org/cgi-bin/viewvc.cgi/trunk/lib/webrick/httputils.rb?view=markup
 mime = WEBrick::HTTPUtils::DefaultMimeTypes.merge({
@@ -77,7 +80,10 @@ http_config = {
   :DocumentRoot  => ".",
   :MimeTypes     => mime,
   :StartCallback => lambda {
-    puts `$DOTFILES/bin/addr`
+    i = Socket.ip_address_list.detect{|intf|
+      intf.ipv4? and !intf.ipv4_loopback? and !intf.ipv4_multicast? and !intf.ipv4_private?
+    }
+    puts i.ip_address unless i.nil?
   },
   :RequestCallback => lambda {|req, res|
     puts req.header.map{|k, v|
