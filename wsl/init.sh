@@ -21,6 +21,9 @@ my_bash_dir_name=$(basename "${my_bash_dir}")
 
 # shellcheck disable=SC2016
 cat - <<EOS | MSYS_NO_PATHCONV=1 wsl --distribution "${distribution}" bash -c 'cat - > ${HOME}/.bash_profile; ls -l ${HOME}/.bash_profile'
+
+[[ -e "\${HOME}/.bashrc" ]] && source "\${HOME}/.bashrc"
+
 # ホスト側の C:\ を /c にマウント
 if [[ -d /mnt/c ]] && [[ -d /c ]] && ! mountpoint -q /c; then
     sudo mount --bind /mnt/c /c

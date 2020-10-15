@@ -89,27 +89,29 @@ function mybash-cache-dir {
     local cacheid
     cacheid="$1"
     [[ -z "${cacheid}" ]] && cacheid="$(mybash-cache-id)"
+    mkdir -p "${MY_BASH_CACHE}/${cacheid}"
     echo -n "${MY_BASH_CACHE}/${cacheid}"
 }
 
 function mybash-cache-init {
+    local force
+    force="$1"
     local cacheid
     cacheid="$(mybash-cache-id)"
-    local force_reload
-    force_reload="$2"
+
     /usr/bin/find -L "${MY_BASH_CACHE}" -mindepth 1 -type d -not -name "${cacheid}" \
     | xargs -r /bin/rm -rf
-    if [[ -n "${force_reload}" ]]; then
+    if [[ -n "${force}" ]]; then
         /usr/bin/find -L "${MY_BASH_CACHE}" -mindepth 1 -type d -name "${cacheid}" \
         | xargs -r /bin/rm -rf
     fi
-    local cachedir
-    cachedir="$(mybash-cache-dir "${cacheid}")"
-    mkdir -p "${cachedir}"
-    echo -n "${cachedir}"
+
+    mybash-cache-dir "${cacheid}"
 }
 
 function mybash-cache-flush {
+    local force
+    force="$1"
     local cacheid
     cacheid="$(mybash-cache-id)"
     local cachedir
@@ -117,11 +119,15 @@ function mybash-cache-flush {
     local cacheenv cachefunc
     cacheenv="${cachedir}/env"
     cachefunc="${cachedir}/func"
+    if [[ -s "${cacheenv}" ]] && [[ -s "${cachefunc}" ]]; then
+        return
+    fi
 
     # shellcheck disable=SC2016
     /usr/bin/printenv \
     | /bin/grep -E -v '^(BASH.*|LS_COLORS|ORIGINAL.*|SSH_.*|SHELLOPTS|EUID|PPID|UID|PWD|F:)=' \
     | /bin/grep -E -v '^(_=|ConEmu.*=|!::=|CommonProgram.*=|COMMONPROGRAMFILES=|Program.*=|PROGRAMFILES=|asl.log=)' \
+    | /bin/grep -E -v '^MY_BASH_.*=' \
     | while IFS='=' read -r key value; do
         echo "export ${key}=$(echo -n "${value}" | sed -E 's|([`$" ;\(\)])|\\\1|g')"
     done \
@@ -137,56 +143,77 @@ function mybash-cache-flush {
     > "${cachefunc}"
 
     alias >> "${cachefunc}"
+
+    /bin/ls -l "${cacheenv}" "${cachefunc}"
 }
 
 function mybash-reload-sources {
-    local force_reload
-    force_reload="$1"
-    local cacheid
-    cacheid="$(mybash-cache-id)"
+    local force
+    force="$1"
     local cachedir
-    cachedir="$(mybash-cache-init "${cacheid}" "${force_reload}")"
-    local cacheenv cachefunc
+    cachedir="$(mybash-cache-init "${force}")"
+    local cacheenv
     cacheenv="${cachedir}/env"
-    cachefunc="${cachedir}/func"
     # shellcheck disable=SC1090
     [[ -e "${cacheenv}" ]] && source "${cacheenv}"
+    local cachefunc
+    cachefunc="${cachedir}/func"
     # shellcheck disable=SC1090
     [[ -e "${cachefunc}" ]] && source "${cachefunc}"
 
     local sources
-    if [[ -e "${cacheenv}" ]]; then
-        sources=$(/usr/bin/find -L "${MY_BASH_SOURCES}" -type f -a \( -name \*.sh -o -name \*.env \) \
-            | /usr/bin/sort -d \
-            | /usr/bin/xargs -r /bin/grep -l "skip: no")
-    else
-        sources=$(/usr/bin/find -L "${MY_BASH_SOURCES}" -type f -a \( -name \*.sh -o -name \*.env \) \
+    sources=$(/usr/bin/find -L "${MY_BASH_SOURCES}" -type f -a -name \*.sh \
             | /usr/bin/sort -d)
-    fi
 
     local f
     for f in ${sources}; do
-        local stdout_log stderr_log starttime laptime cached
+        local stdout_log
         stdout_log=$(/bin/mktemp)
+        local stderr_log
         stderr_log=$(/bin/mktemp)
-        echo -n "${f}: "
+        local starttime
         starttime=$SECONDS
+        local laptime
         laptime=${starttime}
-        cached=""
-        if [[ "env" = "${f##*.}" ]]; then
-            local cachefile envbefore envafter
-            cachefile="${cachedir}/$(basename "${f}")"
+
+        echo -n "${f}"
+
+        local ext
+        for ext in "env" "sh"; do
+            local ff
+            ff="$(dirname "${f}")/$(basename "${f}" .sh).${ext}"
+            if [[ ! -e "${ff}" ]]; then
+                continue
+            fi
+
+            if [[ "sh" = "${ext}" ]]; then
+                if [[ -e "${cacheenv}" ]]; then
+                    if ! grep -E '^#\s*skip:\s*no$' "${ff}" >/dev/null 2>&1; then
+                        echo -n "(skip)"
+                        continue
+                    fi
+                fi
+
+                # shellcheck source=/dev/null
+                source "${ff}" 2>"${stderr_log}" >"${stdout_log}"
+                continue
+            fi
+
+            local cachefile
+            cachefile="${cachedir}/$(basename "${ff}")"
 
             if [[ -e "${cachefile}" ]]; then
-                cached=" (cached)"
+                echo -n "(cached)"
                 # shellcheck source=/dev/null
                 source "${cachefile}"
             else
+                local envbefore
                 envbefore=$(mktemp)
+                local envafter
                 envafter=$(mktemp)
                 /usr/bin/printenv | /usr/bin/sort > "${envbefore}"
                 # shellcheck source=/dev/null
-                source "${f}" 2>"${stderr_log}" >"${stdout_log}"
+                source "${ff}" 2>"${stderr_log}" >"${stdout_log}"
                 /usr/bin/printenv | /usr/bin/sort > "${envafter}"
                 /usr/bin/diff --text --suppress-common-lines "${envbefore}" "${envafter}" \
                     | /bin/grep -E '^>' \
@@ -195,12 +222,9 @@ function mybash-reload-sources {
                     > "${cachefile}"
                 /bin/rm -f "${envbefore}" "${envafter}"
             fi
-        else
-            # shellcheck source=/dev/null
-            source "${f}" 2>"${stderr_log}" >"${stdout_log}"
-        fi
+        done
         laptime=$(( SECONDS - starttime ))
-        echo "${laptime} sec${cached}"
+        echo ": ${laptime} sec"
         if [[ -s ${stdout_log} ]]; then
             echo "=== stdout"; /bin/cat "${stdout_log}"; echo
         fi

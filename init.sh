@@ -38,31 +38,37 @@ MANPAGER='less'
 export EDITOR
 EDITOR="$(command -v vi)"
 
+export MY_BASH_DIR
+MY_BASH_DIR="$(/usr/bin/dirname "${BASH_SOURCE[0]}")"
+
 export MY_BASH_SOURCES
-MY_BASH_SOURCES="$(/usr/bin/dirname "${BASH_SOURCE[0]}")/my-bash"
+MY_BASH_SOURCES="${MY_BASH_DIR}/sources"
+
+export MY_BASH_CONFIG_DIR
+MY_BASH_CONFIG_DIR="${HOME}/.config/my-bash"
 
 export MY_BASH_BIN
-MY_BASH_BIN="${HOME}/.config/my-bash/bin"
+MY_BASH_BIN="${MY_BASH_CONFIG_DIR}/bin"
 /bin/mkdir -p "${MY_BASH_BIN}"
 
 export MY_BASH_LOGOUT
-MY_BASH_LOGOUT="${HOME}/.config/my-bash/logout"
+MY_BASH_LOGOUT="${MY_BASH_CONFIG_DIR}/logout"
 /bin/mkdir -p "${MY_BASH_LOGOUT}"
 
 export MY_BASH_CACHE
-MY_BASH_CACHE="${HOME}/.config/my-bash/cache"
+MY_BASH_CACHE="${MY_BASH_CONFIG_DIR}/cache"
 /bin/mkdir -p "${MY_BASH_CACHE}"
 
 export MY_BASH_COMPLETION
-MY_BASH_COMPLETION="${HOME}/.config/my-bash/completion"
+MY_BASH_COMPLETION="${MY_BASH_CONFIG_DIR}/completion"
 /bin/mkdir -p "${MY_BASH_COMPLETION}"
 
 export MY_BASH_ENV
-MY_BASH_ENV="${HOME}/.config/my-bash/env"
+MY_BASH_ENV="${MY_BASH_CONFIG_DIR}/env"
 /bin/mkdir -p "${MY_BASH_ENV}"
 
 export MY_BASH_APP
-MY_BASH_APP="${HOME}/.config/my-bash/app"
+MY_BASH_APP="${MY_BASH_CONFIG_DIR}/app"
 /bin/mkdir -p "${MY_BASH_APP}"
 
 export MY_BASH_DEBUG
@@ -121,10 +127,7 @@ if [[ "${OS}" != "Linux" ]]; then
 fi
 
 # shellcheck disable=SC1090
-[[ -e "${HOME}/.bashrc" ]] && source "${HOME}/.bashrc"
-
-# shellcheck disable=SC1090
-[[ -e "$(/usr/bin/dirname "${BASH_SOURCE[0]}")/functions.sh" ]] && source "$(/usr/bin/dirname "${BASH_SOURCE[0]}")/functions.sh"
+[[ -e "${MY_BASH_DIR}/functions.sh" ]] && source "${MY_BASH_DIR}/functions.sh"
 
 echo "== mybash-reload-sources"
 mybash-reload-sources
