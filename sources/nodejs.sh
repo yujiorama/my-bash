@@ -8,8 +8,6 @@ if [[ -d "${HOME}/scoop/apps/nodejs-lts/current" ]]; then
     PATH=${PATH}:${HOME}/scoop/apps/nodejs-lts/current
 fi
 
-if command -v npm >/dev/null 2>&1; then
-    mkdir -p "${HOME}/.nodejs"
-    npm set prefix "${HOME}/.nodejs"
-    PATH=${HOME}/.nodejs:${PATH}
+if [[ -d "${HOME}/.nodejs/bin" ]]; then
+    PATH=${HOME}/.nodejs/bin:${PATH}
 fi
