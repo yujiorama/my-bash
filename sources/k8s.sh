@@ -16,6 +16,7 @@ k8s-reconfigure() {
     if [[ "force" = "${force}" ]]; then
         unset KUBECONFIG
         rm -f "${MY_BASH_APP}/kubectl/config" \
+              "${MY_BASH_APP}/minikube/kubernetes/config" \
               "${MY_BASH_COMPLETION}/kubectl" \
               "${MY_BASH_COMPLETION}/helm" \
               "${MY_BASH_COMPLETION}/eksctl"
@@ -104,7 +105,7 @@ if [[ ! -e "${MY_BASH_APP}/kubectl/config" ]] && [[ ! -e "${MY_BASH_APP}/minikub
     if command -v rclone >/dev/null 2>&1; then
         if rclone ls dropbox:office/env/minikube/kubernetes/config >/dev/null 2>&1; then
             mkdir -p "${MY_BASH_APP}/minikube/kubernetes"
-            rclone copyto dropbox:office/env/minikube/kubernetes/config "${MY_BASH_APP}/minikube/kubernetes"
+            rclone copyto dropbox:office/env/minikube/kubernetes/config "${MY_BASH_APP}/minikube/kubernetes/config"
         fi
     fi
 fi

@@ -16,14 +16,13 @@ docker-reconfigure() {
     if [[ "force" = "${force}" ]]; then
         eval "$(env | grep DOCKER | cut -d '=' -f 1 | sed -e 's/^/unset /')"
         rm -rf "${MY_BASH_APP}/docker" \
+        rm -rf "${MY_BASH_APP}/minikube/docker" \
                "${MY_BASH_ENV}/docker" \
                "${MY_BASH_COMPLETION}/docker" \
                "${MY_BASH_COMPLETION}/docker-compose" \
                "${MY_BASH_COMPLETION}/minikube"
     fi
 
-    # shellcheck source=/dev/null
-    source "${MY_BASH_SOURCES}/docker.env"
     # shellcheck source=/dev/null
     source "${MY_BASH_SOURCES}/docker.sh"
 
