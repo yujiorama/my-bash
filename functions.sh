@@ -283,7 +283,6 @@ function mybash-secret-backup {
         "${HOME}/.gnupg"
         "${HOME}/.password-store"
         "${HOME}/.ssh"
-        "${HOME}/.config"
         "${HOME}/.aws"
         "${HOME}/.azure"
         "${HOME}/AppData/Roaming/gcloud"
