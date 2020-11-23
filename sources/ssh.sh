@@ -20,6 +20,7 @@ complete -o default -o nospace -F __hostname_completion ssh
 EOS
 
 if [[ "${OS}" != "Linux" ]]; then
+
     if ! command -v ssh-pageant >/dev/null 2>&1; then
         return
     fi
@@ -36,11 +37,8 @@ if [[ "${OS}" != "Linux" ]]; then
     fi
     # shellcheck disable=SC2046
     pageant $(/usr/bin/find -L "${HOME}/.ssh" -type f -name \*.ppk | xargs -r -L1 -I{} cygpath -ma {})
-else
 
-    if [[ -z "${SSH_AUTH_SOCK}" ]]; then
-        return
-    fi
+else
 
     if [[ -d "${HOST_USER_HOME}/.ssh" ]]; then
         mkdir -p "${HOME}/.ssh"
@@ -52,16 +50,22 @@ else
     fi
 
     if gpg-agent 2>/dev/null; then
-        /usr/bin/find "${HOME}/.ssh" -type f \
-        | xargs -r grep -l 'PRIVATE KEY' \
-        | while read -r f; do
-            fp="$(ssh-keygen -lf "${f}" | cut -d ' ' -f 1,2)"
-            if ! grep "${fp}" <(ssh-add -l) >/dev/null 2>&1; then
-                ssh-add -q "${f}"
-            fi
-            unset fp
-        done
+        unset SSH_AUTH_SOCK SSH_AGENT_PID
+        if [ "${gnupg_SSH_AUTH_SOCK_by:-0}" -ne $$ ]; then
+            export SSH_AUTH_SOCK
+            SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+        fi
     fi
+
+    /usr/bin/find "${HOME}/.ssh" -type f \
+    | xargs -r grep -l 'PRIVATE KEY' \
+    | while read -r f; do
+        fp="$(ssh-keygen -lf "${f}" | cut -d ' ' -f 1,2)"
+        if ! grep "${fp}" <(ssh-add -l) >/dev/null 2>&1; then
+            ssh-add -q "${f}"
+        fi
+        unset fp
+    done
 fi
 
 

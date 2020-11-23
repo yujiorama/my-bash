@@ -114,8 +114,8 @@ fi
 export GPG_TTY
 GPG_TTY=$(tty)
 
-mkdir -p "${GNUPGHOME}"
-chmod 700 "${GNUPGHOME}"
+mkdir -p "${GNUPGHOME}" "${HOME}/gpg"
+chmod 700 "${GNUPGHOME}" "${HOME}/gpg"
 
 if [[ "${OS}" = "Linux" ]]; then
     pinentry_program="$(command -v pinentry-curses)"
@@ -137,6 +137,7 @@ EOS
 unset pinentry_program ssh_support
 
 if ! gpg-agent 2>/dev/null; then
+
     if [[ "${OS}" = "Linux" ]]; then
         if [[ -d "${HOST_USER_HOME}/$(basename "${GNUPGHOME}")" ]]; then
             rsync --delete -avz \
@@ -146,8 +147,8 @@ if ! gpg-agent 2>/dev/null; then
                 --exclude='*.lock' \
                 --exclude='private-keys-v1.d/*' \
                 "${HOST_USER_HOME}/$(basename "${GNUPGHOME}")/" "${GNUPGHOME}/"
-            find "${GNUPGHOME}" -type f -exec chmod 600 {} \;
             chmod 700 "${GNUPGHOME}"
+            find "${GNUPGHOME}" -type f -exec chmod 600 {} \;
         fi
     fi
 
@@ -158,31 +159,27 @@ if ! gpg-agent 2>/dev/null; then
 fi
 
 if [[ "${OS}" != "Linux" ]]; then
+
     if [[ -d "${HOME}/gpg" ]]; then
         find "${HOME}/gpg" -type f -name \*.gpg | while read -r f; do
             gpg-export-secret "${f}" "${f}.key"
             gpg-revoke-key "${f}" "${f}.revoke"
         done
-        gpg --list-secret-keys --keyid-format long
     fi
-fi
 
-if [[ "${OS}" = "Linux" ]]; then
-    unset SSH_AGENT_PID
-    if [ "${gnupg_SSH_AUTH_SOCK_by:-0}" -ne $$ ]; then
-        export SSH_AUTH_SOCK
-        SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-    fi
+else
 
     if [[ -d "${HOST_USER_HOME}/gpg" ]]; then
         rsync --delete -avz "${HOST_USER_HOME}/gpg/" "${HOME}/gpg/"
         chmod 700 "${HOME}/gpg"
+        find "${HOME}/gpg" -type f -exec chmod 600 {} \;
         find "${HOME}/gpg" -type f -exec grep --text -l "PRIVATE" {} \; | while read -r f; do
             gpg --import "${f}"
         done
-        gpg --list-secret-keys --keyid-format long
     fi
 fi
+
+gpg --list-secret-keys --keyid-format long
 
 cat - <<'EOS' > "${MY_BASH_LOGOUT}/gnupg"
 
