@@ -25,6 +25,10 @@
 
     "snapToGridOnResize": true,
 
+    "alwaysShowTabs": true,
+
+    "tabWidthMode": "titleLength",
+
     // A profile specifies a command to execute paired with information about how it should look and feel.
     // Each one of them will appear in the 'New Tab' dropdown,
     //   and can be invoked from the commandline with `wt.exe -p xxx`
@@ -34,7 +38,7 @@
         "defaults":
         {
             // Put settings here that you want to apply to all profiles.
-            "fontFace": "Hackgen35 Console",
+            "fontFace": "Hackgen35 Console",//"Cascadia Mono",
             "fontSize": 10,
             "padding": "0, 0, 0, 0",
             "suppressApplicationTitle": false,
