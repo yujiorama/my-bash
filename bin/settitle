@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+msg="${1}"
+if [[ -z "${msg}" ]]; then
+  echo -e "\033]2;${OS} ${PWD}\a"
+else
+  echo -e "\033]2;${OS} ${msg}\a"
+fi
