@@ -50,11 +50,10 @@ else
     fi
 
     if gpg-agent 2>/dev/null; then
+        gpg-connect-agent --homedir "${GNUPGHOME}" updatestartuptty '/bye'
         unset SSH_AUTH_SOCK SSH_AGENT_PID
-        if [ "${gnupg_SSH_AUTH_SOCK_by:-0}" -ne $$ ]; then
-            export SSH_AUTH_SOCK
-            SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-        fi
+        export SSH_AUTH_SOCK
+        SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
     fi
 
     /usr/bin/find "${HOME}/.ssh" -type f \
