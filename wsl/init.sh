@@ -61,6 +61,8 @@ EOS
 
 cat - <<EOS > "${USERPROFILE}/.wslconfig"
 [wsl2]
-memory=$(grep MemTotal /proc/meminfo | awk '{printf("%d",0.3*$2/1024/1024)}')GB
-swap=0
+memory=$(grep MemTotal /proc/meminfo | awk '{printf("%d",0.5*$2/1024)}')MB
+processors=$(grep -c 'cpu cores' /proc/cpuinfo)
+swap=$(grep MemTotal /proc/meminfo | awk '{printf("%d",0.1*$2/1024)}')MB
+localhostForwarding=true
 EOS
