@@ -1,40 +1,6 @@
 # shellcheck shell=bash
 # skip: no
 
-k8s-reconfigure() {
-    local OPTIND
-    local verbose=""
-    local force=""
-    while getopts "vf" opt; do
-        case "${opt}" in
-            v) verbose="verbose" ;;
-            f) force="force" ;;
-            *) ;;
-        esac
-    done
-
-    if [[ "force" = "${force}" ]]; then
-        unset KUBECONFIG
-        rm -f "${MY_BASH_APP}/kubectl/config" \
-              "${MY_BASH_APP}/minikube/kubernetes/config" \
-              "${MY_BASH_COMPLETION}/kubectl" \
-              "${MY_BASH_COMPLETION}/helm" \
-              "${MY_BASH_COMPLETION}/eksctl"
-    fi
-
-    # shellcheck source=/dev/null
-    source "${MY_BASH_SOURCES}/k8s.env"
-    # shellcheck source=/dev/null
-    source "${MY_BASH_SOURCES}/k8s.sh"
-
-    mybash-reload-env
-
-    if [[ "verbose" = "${verbose}" ]]; then
-        kubectl version
-        kubectl get nodes -o wide
-    fi
-}
-
 function kubectl-install {
     if [[ "${OS}" != "Linux" ]]; then
         return
@@ -100,43 +66,39 @@ if ! command -v kubectl >/dev/null 2>&1; then
     return
 fi
 
-if [[ ! -e "${MY_BASH_APP}/kubectl/config" ]] && [[ ! -e "${MY_BASH_APP}/minikube/kubernetes/config" ]]; then
+function k8s-reconfigure {
+    local OPTIND
+    local verbose=""
+    local force=""
+    while getopts "vf" opt; do
+        case "${opt}" in
+            v) verbose="verbose" ;;
+            f) force="force" ;;
+            *) ;;
+        esac
+    done
 
-    if command -v rclone >/dev/null 2>&1; then
-        if rclone ls dropbox:office/env/minikube/kubernetes/config >/dev/null 2>&1; then
-            mkdir -p "${MY_BASH_APP}/minikube/kubernetes"
-            rclone copyto dropbox:office/env/minikube/kubernetes/config "${MY_BASH_APP}/minikube/kubernetes/config"
-        fi
+    if [[ "force" = "${force}" ]]; then
+        unset KUBECONFIG
+        rm -rf "${MY_BASH_APP}/kubectl" \
+              "${MY_BASH_APP}/minikube/kubernetes" \
+              "${MY_BASH_COMPLETION}/kubectl" \
+              "${MY_BASH_COMPLETION}/helm" \
+              "${MY_BASH_COMPLETION}/eksctl"
     fi
-fi
 
-if [[ ! -e "${MY_BASH_APP}/kubectl/config" ]] && [[ -e "${MY_BASH_APP}/minikube/kubernetes/config" ]]; then
+    # shellcheck source=/dev/null
+    source "${MY_BASH_SOURCES}/k8s.env"
+    # shellcheck source=/dev/null
+    source "${MY_BASH_SOURCES}/k8s.sh"
 
-    k8s_api_url="$(yq r "${MY_BASH_APP}/minikube/kubernetes/config" clusters[0].cluster.server)"
+    mybash-reload-env
 
-    if [[ -n "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
-        kubectl --kubeconfig="${MY_BASH_APP}/minikube/kubernetes/config" config view --flatten > "${MY_BASH_APP}/kubectl/config"
+    if [[ "verbose" = "${verbose}" ]]; then
+        kubectl version
+        kubectl get nodes -o wide
     fi
-    unset k8s_api_url
-fi
-
-if [[ ! -e "${MY_BASH_APP}/kubectl/config" ]] && [[ -e "${HOME}/.kube/config" ]]; then
-
-    k8s_api_url="$(yq r "${HOME}/.kube/config" clusters[0].cluster.server)"
-
-    if [[ -n "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
-        kubectl --kubeconfig="${HOME}/.kube/config" config view --flatten > "${MY_BASH_APP}/kubectl/config"
-    fi
-    unset k8s_api_url
-fi
-
-if [[ -e "${MY_BASH_APP}/kubectl/config" ]]; then
-
-    export KUBECONFIG="${MY_BASH_APP}/kubectl/config"
-    kubectl --request-timeout 3 version
-    kubectl --request-timeout 3 get nodes -o wide
-
-fi
+}
 
 if command -v kubectl >/dev/null 2>&1; then
 
@@ -148,10 +110,6 @@ if command -v kubectl >/dev/null 2>&1; then
     download_new_file "${url}" "${completion}"
 
     unset completion url
-
-    kubectl krew update >/dev/null 2>&1
-    kubectl plugin list 2>/dev/null
-    kubectl krew list 2>/dev/null
 fi
 
 if command -v helm >/dev/null 2>&1; then
@@ -161,4 +119,30 @@ fi
 if command -v eksctl >/dev/null 2>&1; then
     # shellcheck source=/dev/null
     eksctl completion bash > "${MY_BASH_COMPLETION}/eksctl"
+fi
+
+if [[ ! -e "${MY_BASH_APP}/kubectl/config" ]]; then
+
+    if [[ ! -e "${MY_BASH_APP}/minikube/kubernetes/config" ]]; then
+        if command -v rclone >/dev/null 2>&1; then
+            if rclone ls dropbox:office/env/minikube/kubernetes/config >/dev/null 2>&1; then
+                mkdir -p "${MY_BASH_APP}/minikube/kubernetes"
+                rclone copyto dropbox:office/env/minikube/kubernetes/config "${MY_BASH_APP}/minikube/kubernetes/config"
+            fi
+        fi
+    fi
+
+    if [[ -e "${MY_BASH_APP}/minikube/kubernetes/config" ]]; then
+        k8s_api_url="$(yq r "${MY_BASH_APP}/minikube/kubernetes/config" clusters[0].cluster.server)"
+
+        if [[ -n "${k8s_api_url}" ]] && online "${k8s_api_url}"; then
+            kubectl --kubeconfig="${MY_BASH_APP}/minikube/kubernetes/config" config view --flatten > "${MY_BASH_APP}/kubectl/config"
+        fi
+        unset k8s_api_url
+    fi
+fi
+
+if [[ -e "${MY_BASH_APP}/kubectl/config" ]]; then
+
+    export KUBECONFIG="${MY_BASH_APP}/kubectl/config"
 fi
