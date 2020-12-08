@@ -88,13 +88,14 @@ if command -v docker-compose >/dev/null 2>&1; then
 
     unset version completion url
 
-    export COMPOSE_CONVERT_WINDOWS_PATHS=1
-
     url="https://raw.githubusercontent.com/docker/cli/master/cli/compose/schema/data/config_schema_v3.9.json"
     schema="${MY_BASH_APP}/docker-compose/schema.json"
     download_new_file "${url}" "${schema}"
 
     unset url schema
+
+    export COMPOSE_CONVERT_WINDOWS_PATHS=1
+    export COMPOSE_DOCKER_CLI_BUILD=1
 fi
 
 if docker version >/dev/null 2>&1; then
