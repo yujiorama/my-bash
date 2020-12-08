@@ -89,9 +89,21 @@ if command -v docker-compose >/dev/null 2>&1; then
     unset version completion url
 
     export COMPOSE_CONVERT_WINDOWS_PATHS=1
+
+    url="https://raw.githubusercontent.com/docker/cli/master/cli/compose/schema/data/config_schema_v3.9.json"
+    schema="${MY_BASH_APP}/docker-compose/schema.json"
+    download_new_file "${url}" "${schema}"
+
+    unset url schema
 fi
 
 if docker version >/dev/null 2>&1; then
+    if command -v wsl >/dev/null 2>&1; then
+        if wsl --list | iconv -f UTF-16LE -t UTF-8 | grep docker-desktop >/dev/null 2>&1; then
+            wsl -d docker-desktop bash -c "sysctl -w vm.max_map_count=524288;sysctl -w fs.file-max=131072"
+            wsl -d docker-desktop bash -c "(echo vm.max_map_count=524288;echo fs.file-max=131072) > /etc/sysctl.d/99-sysctl.conf"
+        fi
+    fi
     return
 fi
 

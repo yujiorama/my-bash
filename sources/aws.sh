@@ -142,3 +142,8 @@ function ssm-plugin-install {
 if command -v aws_completer >/dev/null 2>&1; then
     echo "complete -C aws_completer aws" > "${MY_BASH_COMPLETION}/awscli"
 fi
+
+url="https://d33vqc0rt9ld30.cloudfront.net/latest/gzip/CloudFormationResourceSpecification.json"
+schema="${MY_BASH_APP}/cloud-formation/schema.json"
+download_new_file "${url}" "${schema}"
+unset url schema
