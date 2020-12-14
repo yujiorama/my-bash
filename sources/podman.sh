@@ -1,7 +1,7 @@
 # shellcheck shell=bash
 
 # https://podman.io/getting-started/installation
-function install-podman {
+function podman-install {
 
     if ! command -v curl >/dev/null 2>&1; then
         return
@@ -22,6 +22,8 @@ function install-podman {
 
             [[ ! -e /etc/subuid ]] && sudo usermod --add-subuids 10000-75535 "$(id -un)"
             [[ ! -e /etc/subgid ]] && sudo usermod --add-subgids 10000-75535 "$(id -un)"
+        else
+            sudo apt upgrade -y -qq podman
         fi
     fi
 
@@ -61,27 +63,3 @@ function install-podman {
 if ! command -v podman >/dev/null 2>&1; then
     return
 fi
-
-POMDMAN_REMOTE_CONF="${HOME}/.config/containers/podman-remote.conf"
-
-if [[ "${OS}" = "Linux" ]]; then
-    if [[ -e "${HOST_USER_HOME}/.minikube/machines/minikube/id_rsa" ]]; then
-        mkdir -p "${HOME}/.minikube/machines/minikube"
-        cat "${HOST_USER_HOME}/.minikube/machines/minikube/id_rsa" > "${HOME}/.minikube/machines/minikube/id_rsa"
-    fi
-fi
-
-if [[ "${OS}" != "Linux" ]]; then
-    POMDMAN_REMOTE_CONF="${HOME}/AppData/podman/podman-remote.conf"
-fi
-
-mkdir -p "$(dirname "${POMDMAN_REMOTE_CONF}")"
-
-cat - <<EOF > "${POMDMAN_REMOTE_CONF}"
-[connections]
-    [connections.minikube]
-    destination = "minikube.internal"
-    username = "docker"
-    default = true
-    identity_file = "${HOME}/.minikube/machines/minikube/id_rsa"
-EOF
