@@ -77,6 +77,27 @@ if [[ "${OS}" != "Linux" ]]; then
 
         ${exe_path} "$@"
     }
+    function pwgen {
+        if ! command -v docker >/dev/null 2>&1; then
+            exit 1
+        fi
+        docker run --rm sofianinho/pwgen-alpine "$@"
+    }
+    function lpass {
+        if ! command -v docker >/dev/null 2>&1; then
+            exit 1
+        fi
+        docker run --rm -it yujiorama/lastpass-cli "$@"
+    }
+    function dot {
+        if ! command -v docker >/dev/null 2>&1; then
+            exit 1
+        fi
+        local infile outfile
+        infile=$1
+        outfile=$2
+        docker run --rm --mount type=bind,src=/"$(pwd)",dst=//work fgrehm/graphviz dot -Tpng -o//work/"${outfile}" //work/"${infile}"
+    }
 fi
 
 if [[ "${OS}" = "Linux" ]]; then
