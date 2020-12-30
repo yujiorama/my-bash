@@ -1,0 +1,33 @@
+{
+    "working_dir": "$project_path/.go/src/github.com/mizunori/sepa_9th",
+    "file_patterns": [
+        "*.md",
+        "*.re"
+    ],
+    "file_regex": "^(.+):(\\d+):(\\d+):\\s(.+\\n?.+\\[.+\\]$)",
+    "variants": [
+        {
+            "name": "lint",
+            "cmd": [
+                "$project_path/scoop/apps/nodejs-lts/current/npx.cmd",
+                "textlint",
+                "--no-color",
+                "--format=unix",
+                "--config=$project_path/.go/src/github.com/mizunori/sepa_9th/lint/.textlintrc",
+                "$file"
+            ]
+        }
+        ,{
+            "name": "fix",
+            "cmd": [
+                "$project_path/scoop/apps/nodejs-lts/current/npx.cmd",
+                "textlint",
+                "--fix",
+                "--no-color",
+                "--format=unix",
+                "--config=$project_path/.go/src/github.com/mizunori/sepa_9th/lint/.textlintrc",
+                "$file"
+            ]
+        }
+    ]
+}
