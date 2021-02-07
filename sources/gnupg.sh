@@ -127,7 +127,7 @@ fi
 cat - <<EOS > "${GNUPGHOME}/gpg-agent.conf"
 pinentry-program ${pinentry_program}
 ${ssh_support}
-log-file ${HOME}/gpg-agent.log
+log-file $(cygpath -ma "${HOME}/gpg-agent.log")
 debug-level advanced
 default-cache-ttl     86400
 max-cache-ttl         86400
