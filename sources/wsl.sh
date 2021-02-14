@@ -2,7 +2,9 @@
 # skip: no
 
 if [[ "${OS}" == "Linux" ]]; then
-    sudo cgroupfs-mount
+    if [[ -e /etc/fstab ]]; then
+        sudo cgroupfs-mount
+    fi
 fi
 
 if [[ "${OS}" != "Linux" ]]; then
