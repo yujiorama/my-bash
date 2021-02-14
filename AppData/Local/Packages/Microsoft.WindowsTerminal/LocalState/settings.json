@@ -46,7 +46,8 @@
             "acrylicOpacity": 0.75,
             "antialiasingMode": "grayscale",
             "scrollbarState": "visible",
-            "historySize": 100000
+            "historySize": 100000,
+            "bellStyle": "none"
         },
         "list":
         [
