@@ -120,21 +120,24 @@ chmod 700 "${GNUPGHOME}" "${HOME}/gpg"
 if [[ "${OS}" = "Linux" ]]; then
     pinentry_program="$(command -v pinentry-curses)"
     ssh_support="enable-ssh-support"
+    log_file="${HOME}/gpg-agent.log"
 else
     pinentry_program="$(cygpath -ma "$(command -v pinentry-basic.exe)")"
     ssh_support="enable-putty-support"
+    log_file="$(cygpath -ma "${HOME}/gpg-agent.log")"
 fi
-cat - <<EOS > "${GNUPGHOME}/gpg-agent.conf"
+echo "${GNUPGHOME}/gpg-agent.conf"
+cat - <<EOS | tee "${GNUPGHOME}/gpg-agent.conf"
 pinentry-program ${pinentry_program}
 ${ssh_support}
-log-file ${HOME}/gpg-agent.log
+log-file ${log_file}
 debug-level advanced
 default-cache-ttl     86400
 max-cache-ttl         86400
 default-cache-ttl-ssh 86400
 max-cache-ttl-ssh     86400
 EOS
-unset pinentry_program ssh_support
+unset pinentry_program ssh_support log_file
 
 if ! gpg-agent 2>/dev/null; then
 
