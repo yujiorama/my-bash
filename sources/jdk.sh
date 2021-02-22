@@ -58,7 +58,7 @@ function __java_home {
         local version home
         version="$(echo "${latest}" | cut -d '_' -f 4)"
         home="$(printf "JAVA%s_HOME" "${version}")"
-        export JAVA_HOME=\"${!home}\"
+        export JAVA_HOME="${!home}"
     fi
 }
 
