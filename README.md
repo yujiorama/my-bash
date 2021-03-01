@@ -74,7 +74,7 @@ scoop bucket add extras
 scoop bucket add java
 scoop bucket add versions
 scoop bucket add jetbrains
-scoop bucket add dev-scoop https://bitbucket.org/yujiorama/scoop
+scoop bucket add my-scoop https://bitbucket.org/yujiorama/my-scoop
 scoop update
 ```
 
