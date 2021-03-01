@@ -27,8 +27,6 @@
 
     "alwaysShowTabs": true,
 
-    "tabWidthMode": "titleLength",
-
     // A profile specifies a command to execute paired with information about how it should look and feel.
     // Each one of them will appear in the 'New Tab' dropdown,
     //   and can be invoked from the commandline with `wt.exe -p xxx`
@@ -38,8 +36,8 @@
         "defaults":
         {
             // Put settings here that you want to apply to all profiles.
-            "fontFace": "Hackgen35 Console",//"Cascadia Mono",
-            "fontSize": 10,
+            "fontFace": "Hackgen Console",//"Cascadia Mono",
+            "fontSize": 11,
             "padding": "0, 0, 0, 0",
             "suppressApplicationTitle": false,
             "useAcrylic": true,
@@ -47,7 +45,8 @@
             "antialiasingMode": "grayscale",
             "scrollbarState": "visible",
             "historySize": 100000,
-            "bellStyle": "none"
+            "bellStyle": "none",
+            "closeOnExit": "always"
         },
         "list":
         [
@@ -89,13 +88,13 @@
                 "acrylicOpacity" : 0.75,
                 "closeOnExit" : true,
                 "colorScheme" : "Campbell",
-                "commandline" : "cmd.exe /k \"C://Program Files (x86)//Microsoft Visual Studio//2019//BuildTools//Common7//Tools//VsDevCmd.bat\"",
+                "commandline" : "cmd.exe /k \"C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/Common7/Tools/VsDevCmd.bat\"",
                 "cursorColor" : "#FFFFFF",
                 "cursorShape" : "bar",
                 "guid" : "{ea07e54d-7c51-4cf1-a248-dcabb9489b7e}",
                 "historySize" : 9001,
-                "icon" : "ms-appdata:///roaming/vs2019-32.png",
-                "name" : "Developer Command Prompt for VS2019",
+                "icon" : "ms-appdata:///roaming/vs2017-32.png",
+                "name" : "Developer Command Prompt for VS2017",
                 "padding" : "0, 0, 0, 0",
                 "snapOnInput" : true,
                 "startingDirectory" : "%USERPROFILE%",
