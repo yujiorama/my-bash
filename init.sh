@@ -126,6 +126,17 @@ if [[ "${OS}" != "Linux" ]]; then
     fi
 fi
 
+touch "${HOME}/.inputrc"
+(
+    if ! grep 'set bell-style none' "${HOME}/.inputrc" >/dev/null; then
+        echo 'set bell-style none'
+    fi
+
+    if ! grep 'set completion-ignore-case on' "${HOME}/.inputrc" >/dev/null; then
+        echo 'set completion-ignore-case on'
+    fi
+) | tee -a "${HOME}/.inputrc"
+
 # shellcheck disable=SC1090
 [[ -e "${MY_BASH_DIR}/functions.sh" ]] && source "${MY_BASH_DIR}/functions.sh"
 
