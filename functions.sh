@@ -79,10 +79,14 @@ function another_console_exists {
 
 
 function mybash-cache-id {
-    /usr/bin/find -L "${MY_BASH_SOURCES}" -type f \
+    local cacheid
+    cacheid=$(/usr/bin/find -L "${MY_BASH_SOURCES}" -type f \
     | /usr/bin/xargs -r /bin/cat \
     | /usr/bin/md5sum --binary - \
-    | /usr/bin/cut -d ' ' -f 1
+    | /usr/bin/cut -d ' ' -f 1)
+    local timestamp
+    timestamp="$(/bin/date +"%Y%W")"
+    echo -n "${cacheid}-${timestamp}"
 }
 
 function mybash-cache-dir {
