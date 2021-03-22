@@ -153,7 +153,7 @@ function uuidgen {
 function urlencode {
     local s="$1"
     if command -v ruby >/dev/null 2>&1; then
-        ruby -ruri -e "puts URI.parse($s).to_s"
+        ruby -rerb -e 'puts ERB::Util.url_encode(STDIN.gets.strip)' <<< "${s}"
         return
     fi
     if command -v powershell >/dev/null 2>&1; then
