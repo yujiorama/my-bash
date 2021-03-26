@@ -77,7 +77,7 @@ mime = WEBrick::HTTPUtils::DefaultMimeTypes.merge({
 
 http_config = {
   :Port          => port,
-  :DocumentRoot  => ".",
+  :DocumentRoot  => ENV['WWWROOT'] || ".",
   :MimeTypes     => mime,
   :StartCallback => lambda {
     i = Socket.ip_address_list.detect{|intf|
