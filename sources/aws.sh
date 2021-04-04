@@ -74,8 +74,14 @@ function awscli-ssm-plugin-install {
 }
 
 
-if command -v aws_completer >/dev/null 2>&1; then
+if [[ "${HOME}/scoop/shims/aws" = "$(command -v aws)" ]]; then
+    if [[ -e "${HOME}/scoop/apps/aws/current/aws_completer.exe" ]]; then
+        echo "complete -C ${HOME}/scoop/apps/aws/current/aws_completer.exe aws" > "${MY_BASH_COMPLETION}/awscli"
+    fi
+elif command -v aws_completer >/dev/null 2>&1; then
     echo "complete -C aws_completer aws" > "${MY_BASH_COMPLETION}/awscli"
+else
+    :
 fi
 
 url="https://d33vqc0rt9ld30.cloudfront.net/latest/gzip/CloudFormationResourceSpecification.json"
