@@ -36,7 +36,7 @@ if [[ "${OS}" != "Linux" ]]; then
         SSH_AUTH_SOCK="$(cygpath -ma "${SSH_AUTH_SOCK}")"
     fi
     # shellcheck disable=SC2046
-    pageant $(/usr/bin/find -L "${HOME}/.ssh" -type f -name \*.ppk | xargs -r -L1 -I{} cygpath -ma {})
+    pageant $(/usr/bin/find -L "${HOME}/.ssh" -type f -name \*.ppk | xargs -r -I{} cygpath -ma {})
 
 else
 
