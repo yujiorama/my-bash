@@ -9,13 +9,8 @@ function go-install {
         return
     fi
 
-    # https://tecadmin.net/install-go-on-debian/
-    if ! online dl.google.com 443; then
-        return
-    fi
-
     local version
-    version="${1:-1.14}"
+    version="${1:-1.17}"
     if command -v go >/dev/null 2>&1; then
         if [[ "go${version}" = "$(go version | cut -d ' ' -f 3)" ]]; then
             command -v go
@@ -62,9 +57,9 @@ function go-install {
         rm -f "${tmpfile}"
     fi
 
-    # shellcheck disable=SC1090
+    # shellcheck disable=SC1091
     [[ -e "${MY_BASH_SOURCES}/go.env" ]] && source "${MY_BASH_SOURCES}/go.env"
-    # shellcheck disable=SC1090
+    # shellcheck disable=SC1091
     [[ -e "${MY_BASH_SOURCES}/go.sh" ]] && source "${MY_BASH_SOURCES}/go.sh"
 }
 
@@ -87,7 +82,7 @@ __update-go-tool()
     fi
     currenttime=$(date --date="2 weeks ago" +"%s")
     if [[ ${dsttime} -lt ${currenttime} ]]; then
-        go get -u "${src}"
+        go install "${src}@latest"
     fi
 }
 alias update-go-tool='__update-go-tool'
@@ -98,7 +93,6 @@ bitbucket.org/yujiorama/tiny-nc \
 github.com/mikefarah/yq/v3 \
 github.com/visualfc/gocode \
 github.com/x-motemen/ghq \
-golang.org/x/lint \
 golang.org/x/tools/cmd/goimports \
 golang.org/x/tools/cmd/guru \
 ; do
