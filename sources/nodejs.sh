@@ -11,9 +11,3 @@ fi
 mkdir -p "${HOME}/.nodejs/node_modules"
 export PATH
 PATH=${HOME}/.nodejs:${PATH}
-
-# shellcheck disable=SC2086
-echo "prefix=${HOME}/.nodejs" | tee ${HOME}/.npmrc
-
-export NODE_PATH
-NODE_PATH="${HOME}/.nodejs/node_modules"
